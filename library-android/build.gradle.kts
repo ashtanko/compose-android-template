@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    compileSdkVersion(libs.versions.compile.sdk.version.get().toInt())
+    compileSdk = libs.versions.compile.sdk.version.get().toInt()
 
     defaultConfig {
-        minSdkVersion(libs.versions.min.sdk.version.get().toInt())
-        targetSdkVersion(libs.versions.target.sdk.version.get().toInt())
+        minSdk = libs.versions.min.sdk.version.get().toInt()
+        targetSdk = libs.versions.target.sdk.version.get().toInt()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -43,7 +43,7 @@ android {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
+    implementation(libs.kotlin.stdlib)
 
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)

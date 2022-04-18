@@ -8,7 +8,7 @@ plugins {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
+    implementation(libs.kotlin.stdlib)
 
     testImplementation(libs.junit)
 }

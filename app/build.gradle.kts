@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    compileSdkVersion(libs.versions.compile.sdk.version.get().toInt())
+    compileSdk = libs.versions.compile.sdk.version.get().toInt()
 
     defaultConfig {
-        minSdkVersion(libs.versions.min.sdk.version.get().toInt())
-        targetSdkVersion(libs.versions.target.sdk.version.get().toInt())
+        minSdk = libs.versions.min.sdk.version.get().toInt()
+        targetSdk = libs.versions.target.sdk.version.get().toInt()
 
         applicationId = AppCoordinates.APP_ID
         versionCode = AppCoordinates.APP_VERSION_CODE
@@ -55,7 +55,7 @@ android {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
+    implementation(libs.kotlin.stdlib)
 
     implementation(projects.libraryAndroid)
     implementation(projects.libraryKotlin)

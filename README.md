@@ -1,6 +1,10 @@
 # compose-android-template 🤖
 
-[![Use this template](https://img.shields.io/badge/from-kotlin--android--template-brightgreen?logo=dropbox)](https://github.com/ashtanko/compose-android-template/generate) ![Pre Merge Checks](https://github.com/cortinico/kotlin-android-template/workflows/Pre%20Merge%20Checks/badge.svg)  ![License](https://img.shields.io/github/license/cortinico/kotlin-android-template.svg) ![Language](https://img.shields.io/github/languages/top/cortinico/kotlin-android-template?color=blue&logo=kotlin) [![Android CI](https://github.com/ashtanko/compose-android-template/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ashtanko/compose-android-template/actions/workflows/ci.yml)
+[![Use this template](https://img.shields.io/badge/from-kotlin--android--template-brightgreen?logo=dropbox)](https://github.com/ashtanko/compose-android-template/generate) 
+![Pre Merge Checks](https://github.com/cortinico/kotlin-android-template/workflows/Pre%20Merge%20Checks/badge.svg)  
+![License](https://img.shields.io/github/license/cortinico/kotlin-android-template.svg) 
+![Language](https://img.shields.io/github/languages/top/cortinico/kotlin-android-template?color=blue&logo=kotlin) 
+[![Android CI](https://github.com/ashtanko/compose-android-template/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ashtanko/compose-android-template/actions/workflows/ci.yml)
 
 A simple Github template that lets you create an **Android/Kotlin** project and be up and running in a **few seconds**. 
 
@@ -8,7 +12,7 @@ This template is focused on delivering a project with **static analysis** and **
 
 ## How to use 👣
 
-Just click on [![Use this template](https://img.shields.io/badge/-Use%20this%20template-brightgreen)](https://github.com/cortinico/kotlin-android-template/generate) button to create a new repo starting from this template.
+Just click on [![Use this template](https://img.shields.io/badge/-Use%20this%20template-brightgreen)](https://github.com/ashtanko/compose-android-template/generate) button to create a new repo starting from this template.
 
 Once created don't forget to update the:
 - [App ID](buildSrc/src/main/java/Coordinates.kt)
@@ -24,7 +28,7 @@ Once created don't forget to update the:
 - CI Setup with GitHub Actions.
 - Publish to **Maven Central** with Github Actions.
 - Dependency versions managed via `buildSrc`.
-- Kotlin Static Analysis via `ktlint` and `detekt`.
+- Kotlin Static Analysis via `ktlint`, `detekt` and `spotless`.
 - Issues Template (bug report + feature request).
 - Pull Request Template.
 
