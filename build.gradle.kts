@@ -62,6 +62,19 @@ subprojects {
             licenseHeaderFile(licenseHeaderFile, delimiter)
         }
     }
+
+    tasks {
+        withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+            kotlinOptions {
+                // Treat all Kotlin warnings as errors (disabled by default)
+                // allWarningsAsErrors = project.hasProperty("warningsAsErrors") ? project.warningsAsErrors : false
+                // Opt-in to experimental compose APIs
+                freeCompilerArgs = freeCompilerArgs + listOf("-Xopt-in=kotlin.RequiresOptIn")
+
+                jvmTarget = "11"
+            }
+        }
+    }
 }
 
 tasks {

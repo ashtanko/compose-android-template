@@ -35,4 +35,5 @@ include(
     "base",
     "base-android",
     "common-resources",
+    "common-ui-compose",
 )

@@ -16,8 +16,13 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures {
-        viewBinding = true
+        compose = true
     }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.composecompiler.get()
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -36,8 +41,8 @@ android {
     }
 
     lint {
-        isWarningsAsErrors = true
-        isAbortOnError = true
+        warningsAsErrors = true
+        abortOnError = true
     }
 
     // Use this block to configure different flavors
@@ -57,12 +62,29 @@ android {
 dependencies {
     implementation(libs.kotlin.stdlib)
 
+    implementation(projects.base)
     implementation(projects.libraryAndroid)
     implementation(projects.libraryKotlin)
+    implementation(projects.commonUiCompose)
 
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraint.layout)
     implementation(libs.androidx.core.ktx)
+
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.compose.foundation.foundation)
+    implementation(libs.compose.foundation.layout)
+    implementation(libs.compose.material.material)
+    implementation(libs.compose.material.iconsext)
+    implementation(libs.compose.animation.animation)
+    implementation(libs.compose.ui.tooling)
+
+    implementation(libs.accompanist.insetsui)
+
+    implementation(libs.timber)
+
+    implementation(libs.kotlin.coroutines.core)
+    implementation(libs.kotlin.coroutines.android)
 
     testImplementation(libs.junit)
 

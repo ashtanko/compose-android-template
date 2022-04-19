@@ -31,6 +31,8 @@ Once created don't forget to update the:
 - Kotlin Static Analysis via `ktlint`, `detekt` and `spotless`.
 - Issues Template (bug report + feature request).
 - Pull Request Template.
+- Jetpack Compose
+- Theming
 
 ## Gradle Setup 🐘
 

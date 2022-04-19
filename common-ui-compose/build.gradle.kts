@@ -3,8 +3,6 @@ version = LibraryAndroidCoordinates.LIBRARY_VERSION
 plugins {
     id("com.android.library")
     kotlin("android")
-    id("maven-publish")
-    publish
 }
 
 android {
@@ -12,10 +10,6 @@ android {
 
     defaultConfig {
         minSdk = libs.versions.min.sdk.version.get().toInt()
-        targetSdk = libs.versions.target.sdk.version.get().toInt()
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
     }
 
     compileOptions {
@@ -26,20 +20,35 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
+    buildFeatures {
+        compose = true
+    }
+
     lint {
         warningsAsErrors = true
         abortOnError = true
     }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.composecompiler.get()
+    }
 }
 
 dependencies {
-    implementation(projects.base)
+
+    implementation(projects.baseAndroid)
     implementation(libs.kotlin.stdlib)
 
-    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
 
-    implementation(libs.timber)
+    implementation(libs.compose.ui.ui)
+    implementation(libs.compose.ui.uitextfonts)
+    implementation(libs.compose.foundation.foundation)
+    implementation(libs.compose.foundation.layout)
+    implementation(libs.compose.material.material)
+    implementation(libs.compose.material.iconsext)
+    implementation(libs.compose.animation.animation)
+    implementation(libs.compose.ui.tooling)
 
     testImplementation(libs.junit)
 

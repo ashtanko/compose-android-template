@@ -27,7 +27,7 @@ tasks.register("templateCleanup") {
             "rootProject.name = (\"$name\")"
         )
         file("buildSrc/src/main/java/Coordinates.kt").replace(
-            "dev.shtanko.kotlin.template",
+            "app.template",
             "com.github.$owner.$name"
         )
 

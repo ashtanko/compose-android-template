@@ -1,5 +1,5 @@
 [versions]
-kotlin = "1.6.20"
+kotlin = "1.6.10"
 ktlint = "0.43.2"
 detekt = "1.20.0"
 spotless = "6.3.0"
@@ -10,6 +10,7 @@ appcompat = "1.4.1"
 constraint_layout = "2.1.2"
 compose = "1.2.0-alpha07"
 composecompiler = "1.2.0-alpha07"
+accompanist = "0.24.6-alpha"
 core_ktx = "1.7.0"
 espresso_core = "3.4.0"
 compile_sdk_version = "31"
@@ -30,10 +31,17 @@ androidx_test_runner = { module = "androidx.test:runner", version.ref = "android
 androidx_test_ext_junit = { module = "androidx.test.ext:junit", version.ref = "androidx.test.ext" }
 androidx_test_ext_junit_ktx = { module = "androidx.test.ext:junit-ktx", version.ref = "androidx.test.ext" }
 espresso_core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso.core" }
-agp = { module = "com.android.tools.build:gradle", version = "7.0.4" }
+agp = { module = "com.android.tools.build:gradle", version = "7.1.2" }
 kgp = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 dokka_gradle_plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka"}
 dokka_core = { module = "org.jetbrains.dokka:dokka-core", version.ref = "dokka"}
+
+accompanist-flowlayout = { module = "com.google.accompanist:accompanist-flowlayout", version.ref = "accompanist" }
+accompanist-insetsui = { module = "com.google.accompanist:accompanist-insets-ui", version.ref = "accompanist" }
+accompanist-navigation-animation = { module = "com.google.accompanist:accompanist-navigation-animation", version.ref = "accompanist" }
+accompanist-swiperefresh = { module = "com.google.accompanist:accompanist-swiperefresh", version.ref = "accompanist" }
+accompanist-pager-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanist" }
+accompanist-pager-indicators = { module = "com.google.accompanist:accompanist-pager-indicators", version.ref = "accompanist" }
 
 compose-animation-animation = { module = "androidx.compose.animation:animation", version.ref = "compose" }
 compose-foundation-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose" }

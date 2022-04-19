@@ -34,6 +34,15 @@ jobs:
       - name: Detekt
         run: ./gradlew detekt --stacktrace
 
+      - name: Spotless
+        run: ./gradlew spotlessCheck --stacktrace
+
+      - name: ktlint
+        run: ./gradlew ktlintCheck --stacktrace
+
+      - name: Lint
+        run: ./gradlew lint --build-cache --stacktrace
+
       - name: Unit Tests
         run: ./gradlew test --build-cache --stacktrace
 
@@ -71,11 +80,11 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-#      - name: Build and analyze
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#        run: ./gradlew build sonarqube --info
+      - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew build sonarqube --info
 
       - name: Upload jacoco report
         uses: actions/upload-artifact@v2
