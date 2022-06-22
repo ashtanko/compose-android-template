@@ -1,6 +1,7 @@
 # compose-android-template 🤖
 
-[![Use this template](https://img.shields.io/badge/from-kotlin--android--template-brightgreen?logo=dropbox)](https://github.com/ashtanko/compose-android-template/generate) 
+[![Use this template](https://img.shields.io/badge/from-kotlin--android--template-brightgreen?logo=dropbox)](https://github.com/ashtanko/compose-android-template/generate) [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fashtanko%2Fcompose-android-template.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fashtanko%2Fcompose-android-template?ref=badge_shield)
+
 ![Pre Merge Checks](https://github.com/cortinico/kotlin-android-template/workflows/Pre%20Merge%20Checks/badge.svg)  
 ![License](https://img.shields.io/github/license/cortinico/kotlin-android-template.svg) 
 ![Language](https://img.shields.io/github/languages/top/cortinico/kotlin-android-template?color=blue&logo=kotlin) 
@@ -95,3 +96,7 @@ You probably want to disable the [Publish Snapshot] and [Publish Release](.githu
 ## Contributing 🤝
 
 Feel free to open a issue or submit a pull request for any bugs/improvements.
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fashtanko%2Fcompose-android-template.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fashtanko%2Fcompose-android-template?ref=badge_large)
