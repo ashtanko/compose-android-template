@@ -30,9 +30,27 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
+
+    signingConfigs {
+        getByName("debug") {
+            storeFile = rootProject.file("release/app-debug.jks")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
+
+        getByName("debug") {
+            signingConfig = signingConfigs.getByName("debug")
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-dev"
+        }
+
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -43,20 +61,23 @@ android {
     lint {
         warningsAsErrors = true
         abortOnError = true
+        baseline = file("lint-baseline.xml")
+        checkReleaseBuilds = false
+        ignoreTestSources = true
+        checkDependencies = true
     }
 
-    // Use this block to configure different flavors
-//    flavorDimensions("version")
-//    productFlavors {
-//        create("full") {
-//            dimension = "version"
-//            applicationIdSuffix = ".full"
-//        }
-//        create("demo") {
-//            dimension = "version"
-//            applicationIdSuffix = ".demo"
-//        }
-//    }
+    flavorDimensions("version")
+    productFlavors {
+        create("prod") {
+            dimension = "version"
+            applicationIdSuffix = ".prod"
+        }
+        create("stage") {
+            dimension = "version"
+            applicationIdSuffix = ".stage"
+        }
+    }
 }
 
 dependencies {
