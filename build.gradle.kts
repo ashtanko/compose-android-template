@@ -23,10 +23,12 @@ allprojects {
 val ktlintVersion: String = libs.versions.ktlint.get()
 
 subprojects {
+
     apply {
         plugin("io.gitlab.arturbosch.detekt")
         plugin("org.jlleitschuh.gradle.ktlint")
         plugin("com.diffplug.spotless")
+        plugin("jacoco")
     }
 
     ktlint {
@@ -74,6 +76,17 @@ subprojects {
                 jvmTarget = "11"
             }
         }
+
+        withType<Test>().configureEach {
+            jvmArgs = listOf(
+                "-Dkotlintest.tags.exclude=Integration,EndToEnd,Performance",
+            )
+            testLogging {
+                events("passed", "skipped", "failed")
+            }
+            testLogging.showStandardStreams = true
+            useJUnitPlatform()
+        }
     }
 }
 
@@ -82,6 +95,17 @@ tasks {
         rejectVersionIf {
             candidate.version.isStableVersion().not()
         }
+    }
+
+    withType<Test>().configureEach {
+        jvmArgs = listOf(
+            "-Dkotlintest.tags.exclude=Integration,EndToEnd,Performance",
+        )
+        testLogging {
+            events("passed", "skipped", "failed")
+        }
+        testLogging.showStandardStreams = true
+        useJUnitPlatform()
     }
 
     register<io.gitlab.arturbosch.detekt.Detekt>("templateDetekt") {
