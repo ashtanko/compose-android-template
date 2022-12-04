@@ -34,6 +34,6 @@ include(
     "library-kotlin",
     "base",
     "base-android",
-    "common-resources",
-    "common-ui-compose",
+    ":common:ui:resources",
+    ":common:ui:compose",
 )

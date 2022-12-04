@@ -87,7 +87,7 @@ dependencies {
     implementation(projects.base)
     implementation(projects.libraryAndroid)
     implementation(projects.libraryKotlin)
-    implementation(projects.commonUiCompose)
+    implementation(projects.common.ui.compose)
 
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraint.layout)

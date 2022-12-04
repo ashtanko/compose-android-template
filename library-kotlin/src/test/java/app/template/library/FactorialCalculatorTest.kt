@@ -17,10 +17,10 @@
 package app.template.library
 
 import app.template.library.FactorialCalculator.computeFactorial
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertThrows
-import org.junit.Test
 import java.lang.Exception
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Test
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -30,19 +30,19 @@ import java.lang.Exception
 class FactorialCalculatorTest {
 
     @Test
-    fun computeFactorial_withNegative_raiseException() {
+    fun `compute factorial with negative, should throw raise exception`() {
         assertThrows(Exception::class.java) {
             computeFactorial(-1)
         }
     }
 
     @Test
-    fun computeFactorial_forZero() {
-        assertEquals(1, computeFactorial(0))
+    fun `compute factorial for zero, should equal 1`() {
+        assertThat(computeFactorial(0)).isEqualTo(1)
     }
 
     @Test
-    fun computeFactorial_forFive() {
-        assertEquals(120, computeFactorial(5))
+    fun `compute factorial for five, should equal 120`() {
+        assertThat(computeFactorial(5)).isEqualTo(120)
     }
 }

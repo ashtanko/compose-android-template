@@ -3,14 +3,13 @@ version = LibraryKotlinCoordinates.LIBRARY_VERSION
 plugins {
     id("java-library")
     kotlin("jvm")
-    id("maven-publish")
-    publish
 }
 
 dependencies {
     implementation(libs.kotlin.stdlib)
 
-    testImplementation(libs.junit)
+    testImplementation(libs.junit5)
+    testImplementation(libs.assertj)
 }
 
 java {
