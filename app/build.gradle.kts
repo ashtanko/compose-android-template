@@ -1,117 +1,122 @@
+import  dev.shtanko.template.ShotBuildType
+
 plugins {
-    id("com.android.application")
-    kotlin("android")
-    jacoco
+  alias(libs.plugins.template.android.application)
+  alias(libs.plugins.template.android.application.compose)
+  alias(libs.plugins.template.android.application.jacoco)
+  alias(libs.plugins.template.hilt)
+  alias(libs.plugins.roborazzi)
 }
 
 android {
-    compileSdk = libs.versions.compile.sdk.version.get().toInt()
+  namespace = "dev.shtanko.template"
+  compileSdk = 35
+  compileSdkPreview = "VanillaIceCream"
 
-    defaultConfig {
-        minSdk = libs.versions.min.sdk.version.get().toInt()
-        targetSdk = libs.versions.target.sdk.version.get().toInt()
+  defaultConfig {
+    applicationId = "dev.shtanko.template"
+    minSdk = 26
+    targetSdk = 35
+    versionCode = 1
+    versionName = "0.0.1" // X.Y.Z; X = Major, Y = minor, Z = Patch level
 
-        applicationId = AppCoordinates.APP_ID
-        versionCode = AppCoordinates.APP_VERSION_CODE
-        versionName = AppCoordinates.APP_VERSION_NAME
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+    vectorDrawables {
+      useSupportLibrary = true
     }
-    buildFeatures {
-        compose = true
-    }
+  }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composecompiler.get()
+  buildTypes {
+    debug {
+      applicationIdSuffix = ShotBuildType.DEBUG.applicationIdSuffix
     }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+    release {
+      isMinifyEnabled = true
+      applicationIdSuffix = ShotBuildType.RELEASE.applicationIdSuffix
+      proguardFiles(
+        getDefaultProguardFile("proguard-android-optimize.txt"),
+        "proguard-rules.pro"
+      )
     }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+  }
+
+  compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+  }
+
+  testOptions {
+    unitTests {
+      isIncludeAndroidResources = true
     }
+  }
 
-    signingConfigs {
-        getByName("debug") {
-            storeFile = rootProject.file("release/app-debug.jks")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
-        }
-    }
+  kotlinOptions {
+    jvmTarget = "1.8"
+  }
 
-    buildTypes {
+  buildFeatures {
+    compose = true
+  }
 
-        getByName("debug") {
-            signingConfig = signingConfigs.getByName("debug")
-            applicationIdSuffix = ".debug"
-            versionNameSuffix = "-dev"
-        }
+  packaging.resources {
+    // The Rome library JARs embed some internal utils libraries in nested JARs.
+    // We don't need them so we exclude them in the final package.
+    excludes += "/*.jar"
 
-        getByName("release") {
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
-
-    lint {
-        warningsAsErrors = true
-        abortOnError = true
-        baseline = file("lint-baseline.xml")
-        checkReleaseBuilds = false
-        ignoreTestSources = true
-        checkDependencies = true
-    }
-
-    flavorDimensions("version")
-    productFlavors {
-        create("prod") {
-            dimension = "version"
-            applicationIdSuffix = ".prod"
-        }
-        create("stage") {
-            dimension = "version"
-            applicationIdSuffix = ".stage"
-        }
-    }
+    // Multiple dependency bring these files in. Exclude them to enable
+    // our test APK to build (has no effect on our AARs)
+    excludes += "/META-INF/AL2.0"
+    excludes += "/META-INF/LGPL2.1"
+  }
 }
 
 dependencies {
-    implementation(libs.kotlin.stdlib)
+  implementation(libs.androidx.palette)
 
-    implementation(projects.base)
-    implementation(projects.libraryAndroid)
-    implementation(projects.libraryKotlin)
-    implementation(projects.common.ui.compose)
+  implementation(libs.androidx.activity.compose)
+  implementation(libs.androidx.compose.material3.adaptive)
+  implementation(libs.androidx.compose.material3.adaptive.layout)
+  implementation(libs.androidx.compose.material3.adaptive.navigation)
+  implementation(libs.androidx.compose.material3.windowSizeClass)
+  implementation(libs.androidx.compose.runtime.tracing)
+  implementation(libs.androidx.core.ktx)
+  implementation(libs.androidx.hilt.navigation.compose)
+  implementation(libs.androidx.tracing.ktx)
+  implementation(libs.coil.kt)
+  implementation(libs.androidx.material3.android)
 
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.constraint.layout)
-    implementation(libs.androidx.core.ktx)
+  implementation(libs.paging.compose)
 
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.compose.foundation.foundation)
-    implementation(libs.compose.foundation.layout)
-    implementation(libs.compose.material.material)
-    implementation(libs.compose.material.iconsext)
-    implementation(libs.compose.animation.animation)
-    implementation(libs.compose.ui.tooling)
+  val composeBom = platform(libs.androidx.compose.bom)
+  implementation(composeBom)
+  androidTestImplementation(composeBom)
 
-    implementation(libs.accompanist.insetsui)
+  // Dependency injection
+  implementation(libs.androidx.hilt.navigation.compose)
+  implementation(libs.hilt.android)
+  ksp(libs.hilt.compiler)
 
-    implementation(libs.timber)
+  implementation(libs.androidx.hilt.navigation.compose)
+  implementation(libs.androidx.ui)
+  implementation(libs.androidx.ui.graphics)
+  implementation(libs.androidx.ui.tooling.preview)
+  implementation(libs.androidx.compose.runtime.tracing)
 
-    implementation(libs.kotlin.coroutines.core)
-    implementation(libs.kotlin.coroutines.android)
+  ksp(libs.hilt.compiler)
 
-    testImplementation(libs.junit)
+  testImplementation(libs.junit)
+  testImplementation(libs.hilt.android.testing)
 
-    androidTestImplementation(libs.androidx.test.ext.junit)
-    androidTestImplementation(libs.androidx.test.ext.junit.ktx)
-    androidTestImplementation(libs.androidx.test.rules)
-    androidTestImplementation(libs.espresso.core)
+  androidTestImplementation(libs.androidx.junit)
+  androidTestImplementation(libs.androidx.ui.test.junit4)
+  androidTestImplementation(libs.hilt.android.testing)
+  debugImplementation(libs.androidx.ui.tooling)
+  debugImplementation(libs.androidx.ui.test.manifest)
+}
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(17)
+  }
 }

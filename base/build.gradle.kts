@@ -5,7 +5,7 @@ plugins {
     kotlin("jvm")
     id("maven-publish")
     id("com.android.lint")
-    publish
+    //publish
     jacoco
 }
 
