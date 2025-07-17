@@ -1,18 +1,18 @@
 import com.android.build.api.dsl.ApplicationExtension
-import dev.shtanko.template.configureAndroidCompose
+import dev.shtanko.androidlab.configureAndroidCompose
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.getByType
 
 class AndroidApplicationComposeConventionPlugin : Plugin<Project> {
-  override fun apply(target: Project) {
-    with(target) {
-      apply(plugin = "com.android.application")
-      apply(plugin = "org.jetbrains.kotlin.plugin.compose")
+    override fun apply(target: Project) {
+        with(target) {
+            apply(plugin = "com.android.application")
+            apply(plugin = "org.jetbrains.kotlin.plugin.compose")
 
-      val extension = extensions.getByType<ApplicationExtension>()
-      configureAndroidCompose(extension)
+            val extension = extensions.getByType<ApplicationExtension>()
+            configureAndroidCompose(extension)
+        }
     }
-  }
 }

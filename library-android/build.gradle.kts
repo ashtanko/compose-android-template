@@ -1,57 +1,52 @@
-version = LibraryAndroidCoordinates.LIBRARY_VERSION
-
 plugins {
-    id("com.android.library")
-    kotlin("android")
-    id("maven-publish")
-    publish
+    alias(libs.plugins.androidlab.android.library)
+    alias(libs.plugins.androidlab.android.library.compose)
+    alias(libs.plugins.androidlab.android.library.jacoco)
+    alias(libs.plugins.roborazzi)
 }
 
 android {
-    compileSdk = libs.versions.compile.sdk.version.get().toInt()
+    namespace = "app.template.library.android"
+
+    compileSdk = libs.versions.compile.sdk.get().toInt()
 
     defaultConfig {
-        minSdk = libs.versions.min.sdk.version.get().toInt()
-        targetSdk = libs.versions.target.sdk.version.get().toInt()
+        minSdk = libs.versions.min.sdk.get().toInt()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
-    }
-
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
-
-    lint {
-        warningsAsErrors = true
-        abortOnError = true
-    }
 }
 
 dependencies {
-    implementation(libs.kotlin.stdlib)
+    libs.apply {
+        androidx.apply {
+            compose.apply {
+                api(foundation)
+                api(foundation.layout)
+                api(icons.extended)
+                api(material3.adaptive)
+                api(material3.adaptive.layout)
+                api(material3.adaptive.navigation)
+                api(material3.adaptive.navigationSuite)
+                api(materialWindow)
+            }
+            ui.apply {
+                api(text.google.fonts)
+                debugApi(test.manifest)
+                androidTestApi(test.junit4)
+                androidTestApi(test)
+            }
+        }
 
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.core.ktx)
+        junit5.apply {
+            testImplementation(api)
+            testImplementation(params)
 
-    testImplementation(libs.junit)
-    testImplementation(libs.junit5)
-    testImplementation(libs.assertj)
+            testRuntimeOnly(jupiterEngine)
+            testRuntimeOnly(vintageEngine)
+        }
 
-    androidTestImplementation(libs.androidx.test.runner)
-    androidTestImplementation(libs.androidx.test.ext.junit)
+        testImplementation(assertj.core)
+    }
 }

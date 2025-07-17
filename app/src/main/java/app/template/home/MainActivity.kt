@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
   @Composable
   private fun TemplateApp() {
     CompositionLocalProvider {
-
+        // TODO
     }
   }
 }

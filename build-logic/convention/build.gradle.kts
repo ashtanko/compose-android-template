@@ -2,7 +2,7 @@ plugins {
     `kotlin-dsl`
 }
 
-group = "dev.shtanko.template.buildlogic"
+group = "dev.shtanko.androidlab.buildlogic"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -18,60 +18,61 @@ dependencies {
     compileOnly(libs.room.gradlePlugin)
     compileOnly(libs.detekt.gradle)
     compileOnly(libs.spotless.gradlePlugin)
+    compileOnly(libs.compose.guardPlugin)
 }
 
 gradlePlugin {
     plugins {
         register("androidApplicationCompose") {
-            id = "template.android.application.compose"
+            id = "androidlab.android.application.compose"
             implementationClass = "AndroidApplicationComposeConventionPlugin"
         }
         register("androidApplication") {
-            id = "template.android.application"
+            id = "androidlab.android.application"
             implementationClass = "AndroidApplicationConventionPlugin"
         }
         register("androidLibraryCompose") {
-            id = "template.android.library.compose"
+            id = "androidlab.android.library.compose"
             implementationClass = "AndroidLibraryComposeConventionPlugin"
         }
         register("androidLibrary") {
-            id = "template.android.library"
+            id = "androidlab.android.library"
             implementationClass = "AndroidLibraryConventionPlugin"
         }
         register("androidFeature") {
-            id = "template.android.feature"
+            id = "androidlab.android.feature"
             implementationClass = "AndroidFeatureConventionPlugin"
         }
         register("hilt") {
-            id = "template.hilt"
+            id = "androidlab.hilt"
             implementationClass = "HiltConventionPlugin"
         }
         register("androidHilt") {
-            id = "template.hilt.android"
+            id = "androidlab.hilt.android"
             implementationClass = "AndroidHiltConventionPlugin"
         }
         register("spotless") {
-            id = "template.spotless"
+            id = "androidlab.spotless"
             implementationClass = "SpotlessConventionPlugin"
         }
         register("androidLint") {
-            id = "template.android.lint"
+            id = "androidlab.android.lint"
             implementationClass = "AndroidLintConventionPlugin"
         }
         register("androidApplicationJacoco") {
-            id = "template.android.application.jacoco"
+            id = "androidlab.android.application.jacoco"
             implementationClass = "AndroidApplicationJacocoConventionPlugin"
         }
         register("androidLibraryJacoco") {
-            id = "template.android.library.jacoco"
+            id = "androidlab.android.library.jacoco"
             implementationClass = "AndroidLibraryJacocoConventionPlugin"
         }
         register("jvmLibrary") {
-            id = "template.jvm.library"
+            id = "androidlab.jvm.library"
             implementationClass = "JvmLibraryConventionPlugin"
         }
         register("room") {
-            id = "template.android.room"
+            id = "androidlab.android.room"
             implementationClass = "AndroidRoomConventionPlugin"
         }
     }

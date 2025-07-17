@@ -1,18 +1,17 @@
-version = LibraryKotlinCoordinates.LIBRARY_VERSION
-
 plugins {
-    id("java-library")
-    kotlin("jvm")
+    alias(libs.plugins.androidlab.jvm.library)
 }
 
 dependencies {
-    implementation(libs.kotlin.stdlib)
+    libs.apply {
+        junit5.apply {
+            testImplementation(api)
+            testImplementation(params)
 
-    testImplementation(libs.junit5)
-    testImplementation(libs.assertj)
-}
+            testRuntimeOnly(jupiterEngine)
+            testRuntimeOnly(vintageEngine)
+        }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+        testImplementation(assertj.core)
+    }
 }

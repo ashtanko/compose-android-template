@@ -1,22 +1,22 @@
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
-import dev.shtanko.template.configureJacoco
+import dev.shtanko.androidlab.configureJacoco
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.getByType
 
 class AndroidLibraryJacocoConventionPlugin : Plugin<Project> {
-  override fun apply(target: Project) {
-    with(target) {
-      pluginManager.apply("jacoco")
-      val androidExtension = extensions.getByType<LibraryExtension>()
+    override fun apply(target: Project) {
+        with(target) {
+            pluginManager.apply("jacoco")
+            val androidExtension = extensions.getByType<LibraryExtension>()
 
-      androidExtension.buildTypes.configureEach {
-        enableAndroidTestCoverage = true
-        enableUnitTestCoverage = true
-      }
+            androidExtension.buildTypes.configureEach {
+                enableAndroidTestCoverage = true
+                enableUnitTestCoverage = true
+            }
 
-      configureJacoco(extensions.getByType<LibraryAndroidComponentsExtension>())
+            configureJacoco(extensions.getByType<LibraryAndroidComponentsExtension>())
+        }
     }
-  }
 }

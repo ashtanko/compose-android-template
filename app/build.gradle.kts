@@ -1,122 +1,409 @@
-import  dev.shtanko.template.ShotBuildType
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+import io.gitlab.arturbosch.detekt.extensions.DetektExtension
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetContainer
+import java.util.Properties
+
+val isGithubActions = System.getenv("GITHUB_ACTIONS")?.toBoolean() == true
+val isCI = providers.environmentVariable("CI").isPresent
 
 plugins {
-  alias(libs.plugins.template.android.application)
-  alias(libs.plugins.template.android.application.compose)
-  alias(libs.plugins.template.android.application.jacoco)
-  alias(libs.plugins.template.hilt)
+  alias(libs.plugins.android.application)
+  alias(libs.plugins.kotlin.android)
+  alias(libs.plugins.kotlin.compose)
+  alias(libs.plugins.detekt)
+  alias(libs.plugins.compose.guard)
+  alias(libs.plugins.hilt)
+  alias(libs.plugins.kotlin.parcelize)
+  alias(libs.plugins.serialization)
+  alias(libs.plugins.kover)
+  alias(libs.plugins.ksp)
+  alias(libs.plugins.sonarqube)
+  alias(libs.plugins.screenshot)
+  alias(libs.plugins.baselineprofile)
   alias(libs.plugins.roborazzi)
+  jacoco
 }
 
 android {
   namespace = "dev.shtanko.template"
   compileSdk = 35
-  compileSdkPreview = "VanillaIceCream"
 
   defaultConfig {
     applicationId = "dev.shtanko.template"
-    minSdk = 26
+    minSdk = 33
     targetSdk = 35
     versionCode = 1
-    versionName = "0.0.1" // X.Y.Z; X = Major, Y = minor, Z = Patch level
+    versionName = "1.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+  }
 
-    vectorDrawables {
-      useSupportLibrary = true
+  signingConfigs {
+    register("release") {
+      enableV1Signing = true
+      enableV2Signing = true
+
+      if (isCI) {
+        storeFile = file("keystore.jks")
+        storePassword = System.getenv("SIGNING_STORE_PASSWORD")
+        keyAlias = System.getenv("SIGNING_KEY_ALIAS")
+        keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+      } else if (isGithubActions) {
+        storeFile = file("keystore.jks")
+        storePassword = System.getenv("SIGNING_STORE_PASSWORD")
+        keyAlias = System.getenv("SIGNING_KEY_ALIAS")
+        keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+      } else {
+        storeFile = getReleaseValue("storeFile")?.let { file(it) }
+        keyAlias = getReleaseValue("keyAlias")
+        keyPassword = getReleaseValue("keyPassword")
+        storePassword = getReleaseValue("storePassword")
+      }
     }
   }
 
   buildTypes {
     debug {
-      applicationIdSuffix = ShotBuildType.DEBUG.applicationIdSuffix
+      val apiKey: String =
+        gradleLocalProperties(rootDir, providers).getProperty("TMDB_API_KEY") ?: ""
+      buildConfigField("String", "TMDB_API_KEY", "\"$apiKey\"")
     }
     release {
       isMinifyEnabled = true
-      applicationIdSuffix = ShotBuildType.RELEASE.applicationIdSuffix
       proguardFiles(
         getDefaultProguardFile("proguard-android-optimize.txt"),
         "proguard-rules.pro"
       )
+      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+      signingConfig = signingConfigs.getByName("release")
+
+      val apiKey: String =
+        gradleLocalProperties(rootDir, providers).getProperty("TMDB_API_KEY") ?: ""
+      buildConfigField("String", "TMDB_API_KEY", "\"$apiKey\"")
+    }
+
+    create("benchmark") {
+      initWith(buildTypes.getByName("release"))
+      matchingFallbacks += listOf("release")
+      isDebuggable = false
+      proguardFiles("benchmark-rules.pro")
     }
   }
 
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility(libs.versions.jvmTarget.get())
+    targetCompatibility(libs.versions.jvmTarget.get())
   }
-
-  testOptions {
-    unitTests {
-      isIncludeAndroidResources = true
-    }
-  }
-
   kotlinOptions {
-    jvmTarget = "1.8"
+    jvmTarget = libs.versions.jvmTarget.get()
   }
-
   buildFeatures {
+    buildConfig = true
     compose = true
   }
-
-  packaging.resources {
-    // The Rome library JARs embed some internal utils libraries in nested JARs.
-    // We don't need them so we exclude them in the final package.
-    excludes += "/*.jar"
-
-    // Multiple dependency bring these files in. Exclude them to enable
-    // our test APK to build (has no effect on our AARs)
-    excludes += "/META-INF/AL2.0"
-    excludes += "/META-INF/LGPL2.1"
+  packaging {
+    resources {
+      excludes += "/META-INF/{AL2.0,LGPL2.1}"
+      excludes += "/META-INF/{AL2.0,LGPL2.1}"
+      merges += "META-INF/LICENSE.md"
+      merges += "META-INF/LICENSE-notice.md"
+    }
   }
+  testOptions {
+    // Required for Robolectric
+    unitTests.isIncludeAndroidResources = true
+    unitTests.isReturnDefaultValues = true
+
+    unitTests.all {
+      it.useJUnitPlatform()
+      it.jvmArgs(
+        "--add-opens",
+        "java.base/java.util=ALL-UNNAMED",
+        "--add-opens",
+        "java.base/java.lang=ALL-UNNAMED",
+        "--add-opens",
+        "java.base/java.time=ALL-UNNAMED",
+        "-Xshare:off",
+      )
+    }
+    screenshotTests {
+      imageDifferenceThreshold = 0.0001f // 0.01%
+    }
+  }
+  composeOptions {
+    kotlinCompilerExtensionVersion = "1.5.4"
+  }
+  experimentalProperties["android.experimental.enableScreenshotTest"] = true
+
+  ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+  }
+}
+
+fun getReleaseValue(key: String): String? {
+  return getValueFromConfig(key, false, configFile = "key.properties")
+}
+
+fun getValueFromConfig(
+  key: String,
+  quot: Boolean,
+  configFile: String = "local.properties"
+): String? {
+  val properties = Properties()
+  properties.load(project.rootProject.file(configFile).inputStream())
+  var value = if (properties.containsKey(key)) {
+    properties[key].toString()
+  } else {
+    ""
+  }
+  if (quot) {
+    value = "\"" + value + "\""
+  }
+  return value.takeIf { it.isNotEmpty() }
+}
+
+project.gradle.startParameter.excludedTaskNames.apply {
+  val excludedTasks = listOf(
+    "testDebugScreenshotTest",
+    "testReleaseScreenshotTest",
+    "testBenchmarkReleaseScreenshotTest",
+    "testBenchmarkScreenshotTest",
+    "testNonMinifiedReleaseScreenshotTest",
+    "testBenchmarkUnitTest",
+    "testReleaseUnitTest",
+    "finalizeTestRoborazziRelease",
+  )
+  if (isCI || isGithubActions) {
+    excludedTasks.forEach(::add)
+  }
+}
+
+tasks {
+  getByName("check") {
+    // Add detekt with type resolution to check
+    dependsOn("detekt")
+  }
+
+  getByName("sonar") {
+    dependsOn("check")
+  }
+
+  withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    jvmTarget = libs.versions.jvmTarget.get()
+  }
+
+  withType<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>().configureEach {
+    jvmTarget = libs.versions.jvmTarget.get()
+  }
+
+  withType<Test> {
+    useJUnitPlatform()
+    maxHeapSize = "2g"
+    maxParallelForks = Runtime.getRuntime().availableProcessors()
+    jvmArgs = jvmArgs.orEmpty() + "-XX:+UseParallelGC"
+    android.sourceSets["main"].res.srcDirs("src/test/res")
+    jvmArgs(
+      "--add-opens",
+      "java.base/java.util=ALL-UNNAMED",
+      "--add-opens",
+      "java.base/java.lang=ALL-UNNAMED",
+      "--add-opens",
+      "java.base/java.time=ALL-UNNAMED",
+      "-Xshare:off",
+    )
+  }
+
+  register<JacocoReport>("testCoverage") {
+    dependsOn("test")
+    group = "Reporting"
+    description = "Generate Jacoco coverage reports"
+
+    val excludedFiles = mutableSetOf("**/*Test*.*")
+    val projectBuildDirectory = project.layout.buildDirectory.get().asFile.absoluteFile
+    val sourceDirs = fileTree(
+      "$projectBuildDirectory/classes/kotlin/",
+    ) {
+      exclude(excludedFiles)
+    }
+    val coverageDirs = listOf(
+      "src/main/java",
+      "src/main/kotlin",
+    )
+    classDirectories.setFrom(files(sourceDirs))
+    additionalClassDirs.setFrom(files(coverageDirs))
+    executionData.setFrom(
+      files("$projectBuildDirectory/jacoco/test.exec")
+    )
+
+    reports {
+      listOf(xml, html).map { it.required }.forEach { it.set(true) }
+      xml.outputLocation.set(file("$projectBuildDirectory/reports/jacoco/report.xml"))
+    }
+  }
+}
+
+composeGuardCheck {
+  errorOnNewDynamicProperties = false
+  errorOnNewUnstableClasses = false
+  reportAllOnMissingBaseline = true
+}
+
+composeGuard {
+  configureKotlinTasks = false
+}
+
+kotlin {
+  compilerOptions {
+    jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmTarget.get()))
+  }
+}
+
+detekt {
+  config.setFrom("${project.rootDir}/config/detekt/detekt.yml")
+
+  val projectDir = projectDir
+  val kotlinExtension = project.extensions.getByType(KotlinSourceSetContainer::class.java)
+
+  source.setFrom(
+    provider {
+      kotlinExtension.sourceSets
+        .flatMap { sourceSet ->
+          sourceSet.kotlin.srcDirs.filter {
+            it.relativeTo(projectDir).startsWith("src")
+          }
+        }
+    },
+  )
+}
+
+configure<DetektExtension> {
+  config.from("${project.rootDir}/config/detekt/detekt-compose.yml")
 }
 
 dependencies {
-  implementation(libs.androidx.palette)
+  // implementation(projects.core.designsystem)
 
-  implementation(libs.androidx.activity.compose)
-  implementation(libs.androidx.compose.material3.adaptive)
-  implementation(libs.androidx.compose.material3.adaptive.layout)
-  implementation(libs.androidx.compose.material3.adaptive.navigation)
-  implementation(libs.androidx.compose.material3.windowSizeClass)
-  implementation(libs.androidx.compose.runtime.tracing)
-  implementation(libs.androidx.core.ktx)
-  implementation(libs.androidx.hilt.navigation.compose)
-  implementation(libs.androidx.tracing.ktx)
-  implementation(libs.coil.kt)
-  implementation(libs.androidx.material3.android)
+  libs.apply {
+    androidx.apply {
+      implementation(core.ktx)
+      implementation(lifecycle.runtime.ktx)
+      implementation(activity.compose)
+      implementation(platform(compose.bom))
+      implementation(ui)
+      implementation(ui.graphics)
+      implementation(ui.tooling.preview)
+      implementation(material3)
+      implementation(hilt.navigation.compose)
+      implementation(runtime.tracing)
+      implementation(tracing.ktx)
 
-  implementation(libs.paging.compose)
+      compose.apply {
+        implementation(material3.adaptive)
+        implementation(material3.adaptive.layout)
+        implementation(material3.adaptive.navigation)
+        implementation(material3.adaptive.navigationSuite)
+        implementation(materialWindow)
+        implementation(icons.extended)
+      }
 
-  val composeBom = platform(libs.androidx.compose.bom)
-  implementation(composeBom)
-  androidTestImplementation(composeBom)
+      androidTestImplementation(junit)
+      androidTestImplementation(platform(compose.bom))
+      androidTestImplementation(ui.test.junit4)
+      testImplementation(ui.test.junit4)
 
-  // Dependency injection
-  implementation(libs.androidx.hilt.navigation.compose)
-  implementation(libs.hilt.android)
-  ksp(libs.hilt.compiler)
+      debugImplementation(ui.tooling)
+      debugImplementation(ui.test.manifest)
 
-  implementation(libs.androidx.hilt.navigation.compose)
-  implementation(libs.androidx.ui)
-  implementation(libs.androidx.ui.graphics)
-  implementation(libs.androidx.ui.tooling.preview)
-  implementation(libs.androidx.compose.runtime.tracing)
+      ui.apply {
+        implementation(text.google.fonts)
+        debugImplementation(test.manifest)
+        androidTestImplementation(test.junit4)
+        androidTestImplementation(test)
+      }
 
-  ksp(libs.hilt.compiler)
+      androidTestImplementation(arch.core.test)
+      screenshotTestImplementation(compose.ui.tooling)
+    }
 
-  testImplementation(libs.junit)
-  testImplementation(libs.hilt.android.testing)
+    implementation(profileinstaller)
 
-  androidTestImplementation(libs.androidx.junit)
-  androidTestImplementation(libs.androidx.ui.test.junit4)
-  androidTestImplementation(libs.hilt.android.testing)
-  debugImplementation(libs.androidx.ui.tooling)
-  debugImplementation(libs.androidx.ui.test.manifest)
-}
-java {
-  toolchain {
-    languageVersion = JavaLanguageVersion.of(17)
+    implementation(paging.runtime)
+    implementation(paging.compose)
+
+    implementation(generativeai)
+
+    kotlinx.apply {
+      implementation(collections.immutable)
+      implementation(coroutines.android)
+      implementation(coroutines.core)
+      implementation(serialization)
+
+      testImplementation(coroutines.test)
+      testImplementation(coroutines.debug)
+    }
+
+    detekt.apply {
+      detektPlugins(rules)
+      detektPlugins(formatting)
+    }
+
+    coil.apply {
+      implementation(kt)
+      implementation(kt.compose)
+      implementation(kt.svg)
+    }
+
+    google.hilt.apply {
+      implementation(android)
+      ksp(compiler)
+      kspTest(compiler)
+      kspAndroidTest(compiler)
+      testImplementation(android.testing)
+    }
+
+    implementation(profileinstaller)
+
+    implementation(accompanist.adaptive)
+    implementation(accompanist.permissions)
+
+    implementation(libs.androidx.window)
+    implementation(libs.androidx.window.core)
+
+    implementation(room.runtime)
+    implementation(room.ktx)
+    implementation(room.paging)
+    ksp(room.compiler)
+
+    implementation(jacoco.core)
+
+    implementation(square.okhttp)
+    implementation(square.okhttp.logging)
+    implementation(square.okhttp.mockwebserver)
+    implementation(square.retrofit.core)
+    implementation(skydoves.sandwich.retrofit)
+    implementation(square.retrofit.kotlin.serialization)
+
+    testImplementation(square.turbine)
+    testImplementation(mockito)
+    testImplementation(mockito.kotlin2)
+    testImplementation(mockk.kotlin)
+    androidTestImplementation(mockk.android)
+
+    testImplementation(robolectric.robolectric)
+    testImplementation(roborazzi)
+    testImplementation(roborazzi.accessibility.check)
+    testImplementation(androidx.activity.compose)
+
+    junit5.apply {
+      testImplementation(api)
+      testImplementation(params)
+
+      androidTestImplementation(api)
+      androidTestImplementation(params)
+
+      testRuntimeOnly(jupiterEngine)
+      testRuntimeOnly(vintageEngine)
+    }
   }
 }
