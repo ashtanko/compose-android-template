@@ -1,102 +1,249 @@
-# compose-android-template 🤖
+# Android Compose Template 🚀
 
-[![Use this template](https://img.shields.io/badge/from-kotlin--android--template-brightgreen?logo=dropbox)](https://github.com/ashtanko/compose-android-template/generate) [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fashtanko%2Fcompose-android-template.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fashtanko%2Fcompose-android-template?ref=badge_shield)
-
-![Pre Merge Checks](https://github.com/cortinico/kotlin-android-template/workflows/Pre%20Merge%20Checks/badge.svg)  
-![License](https://img.shields.io/github/license/cortinico/kotlin-android-template.svg) 
-![Language](https://img.shields.io/github/languages/top/cortinico/kotlin-android-template?color=blue&logo=kotlin) 
+[![Use this template](https://img.shields.io/badge/from-kotlin--android--template-brightgreen?logo=dropbox)](https://github.com/ashtanko/compose-android-template/generate) 
 [![Android CI](https://github.com/ashtanko/compose-android-template/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ashtanko/compose-android-template/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/cortinico/kotlin-android-template.svg)](LICENSE)
+[![Language](https://img.shields.io/github/languages/top/cortinico/kotlin-android-template?color=blue&logo=kotlin)](https://kotlinlang.org/)
 
-A simple Github template that lets you create an **Android/Kotlin** project and be up and running in a **few seconds**. 
+A modern, production-ready Android template built with **Jetpack Compose** and **Kotlin**. This template provides a solid foundation for building Android applications with best practices, comprehensive testing, and CI/CD already configured.
 
-This template is focused on delivering a project with **static analysis** and **continuous integration** already in place.
+## 🎯 Quick Start
 
-## How to use 👣
+### Using the Template
 
-Just click on [![Use this template](https://img.shields.io/badge/-Use%20this%20template-brightgreen)](https://github.com/ashtanko/compose-android-template/generate) button to create a new repo starting from this template.
+1. Click the **[Use this template](https://github.com/ashtanko/compose-android-template/generate)** button to create a new repository
+2. Clone your new repository
+3. Update the following files with your project details:
+   - `buildSrc/src/main/kotlin/dev/shtanko/template/Configuration.kt` - Update version and SDK configurations
+   - `app/src/main/AndroidManifest.xml` - Update package name and permissions
+   - `library-android/src/main/AndroidManifest.xml` - Update package name
+   - Rename package directories to match your project structure
 
-Once created don't forget to update the:
-- [App ID](buildSrc/src/main/java/Coordinates.kt)
-- AndroidManifest ([here](app/src/main/AndroidManifest.xml) and [here](library-android/src/main/AndroidManifest.xml))
-- Package of the source files
+### Building the Project
 
-## Features 🎨
+```bash
+# Build the project
+./gradlew build
 
-- **100% Kotlin-only template**.
-- 3 Sample modules (Android app, Android library, Kotlin library).
-- Sample Espresso, Instrumentation & JUnit tests.
-- 100% Gradle Kotlin DSL setup.
-- CI Setup with GitHub Actions.
-- Publish to **Maven Central** with Github Actions.
-- Dependency versions managed via `buildSrc`.
-- Kotlin Static Analysis via `ktlint`, `detekt` and `spotless`.
-- Issues Template (bug report + feature request).
-- Pull Request Template.
-- Jetpack Compose
-- Theming
+# Run tests
+./gradlew test
 
-## Gradle Setup 🐘
+# Run linting and code analysis
+./gradlew detekt
 
-This template is using [**Gradle Kotlin DSL**](https://docs.gradle.org/current/userguide/kotlin_dsl.html) as well as the [Plugin DSL](https://docs.gradle.org/current/userguide/plugins.html#sec:plugins_block) to setup the build.
-
-Dependencies are centralized inside the [Dependencies.kt](buildSrc/src/main/java/Dependencies.kt) file in the `buildSrc` folder. This provides convenient auto-completion when writing your gradle files.
-
-## Static Analysis 🔍
-
-This template is using [**ktlint**](https://github.com/pinterest/ktlint) with the [ktlint-gradle](https://github.com/jlleitschuh/ktlint-gradle) plugin to format your code. To reformat all the source code as well as the buildscript you can run the `ktlintFormat` gradle task.
-
-This template is also using [**detekt**](https://github.com/detekt/detekt) to analyze the source code, with the configuration that is stored in the [detekt.yml](config/detekt/detekt.yml) file (the file has been generated with the `detektGenerateConfig` task).
-
-## CI ⚙️
-
-This template is using [**GitHub Actions**](https://github.com/cortinico/kotlin-android-template/actions) as CI. You don't need to setup any external service and you should have a running CI once you start using this template.
-
-There are currently the following workflows available:
-- [Validate Gradle Wrapper](.github/workflows/gradle-wrapper-validation.yml) - Will check that the gradle wrapper has a valid checksum
-- [Pre Merge Checks](.github/workflows/pre-merge.yaml) - Will run the `build`, `check` and `publishToMavenLocal` tasks.
-- [Publish Snapshot](.github/workflows/publish-snapshot.yaml) - Will publish a `-SNAPSHOT` of the libraries to Sonatype.
-- [Publish Release](.github/workflows/publish-release.yaml) - Will publish a new release version of the libraries to Maven Central on tag pushes.
-
-## Publishing 🚀
-
-The template is setup to be **ready to publish** a library/artifact on a Maven Repository.
-
-For every module you want to publish you simply have to add the `publish` plugin:
-
-```
-plugins {
-    publish
-}
+# Format code
+./gradlew spotlessApply
 ```
 
-### To Maven Central
+## 🏗️ Project Architecture
 
-In order to use this template to publish on Maven Central, you need to configure some secrets on your repository:
+This template follows a modular architecture with the following structure:
 
-| Secret name | Value |
-| --- | --- | 
-| `ORG_GRADLE_PROJECT_NEXUS_USERNAME` | The username you use to access Sonatype's services (such as [Nexus](https://oss.sonatype.org/) and [Jira](https://issues.sonatype.org/)) |
-| `ORG_GRADLE_PROJECT_NEXUS_PASSWORD` | The password you use to access Sonatype's services (such as [Nexus](https://oss.sonatype.org/) and [Jira](https://issues.sonatype.org/)) |
-| `ORG_GRADLE_PROJECT_SIGNING_KEY` | The GPG Private key to sign your artifacts. You can obtain it with `gpg --armor --export-secret-keys <your@email.here>` or you can create one key online on [pgpkeygen.com](https://pgpkeygen.com). The key starts with a `-----BEGIN PGP PRIVATE KEY BLOCK-----`. |
-| `ORG_GRADLE_PROJECT_SIGNING_PWD` | The passphrase to unlock your private key (you picked it when creating the key). |
+```
+├── app/                    # Main Android application module
+├── library-android/        # Android library module
+├── library-kotlin/         # Kotlin-only library module
+├── buildSrc/              # Build configuration and dependencies
+├── gradle/                # Version catalogs and build scripts
+├── config/                # Static analysis configuration
+└── .github/workflows/     # CI/CD workflows
+```
 
-The template already sets up [Dokka](https://kotlin.github.io/dokka/) for project documentation and attaches `-sources.jar` to your publications.
+### Module Structure
 
-Once set up, the following workflows will take care of publishing:
+- **app**: Main Android application with Compose UI
+- **library-android**: Reusable Android components and utilities
+- **library-kotlin**: Platform-agnostic business logic and data models
 
-- [Publish Snapshot](.github/workflows/publish-snapshot.yaml) - To publish `-SNAPSHOT` versions to Sonatype. The workflow is setup to run either manually (with `workflow_dispatch`) or on every merge.
-- [Publish Release](.github/workflows/publish-release.yaml) - Will publish a new release version of the libraries to Maven Central on tag pushes. You can trigger the workflow also manually if needed.
+## 🛠️ Technology Stack
 
-### To Jitpack
+### Core Technologies
+- **Kotlin** - Primary programming language
+- **Jetpack Compose** - Modern UI toolkit
+- **Material 3** - Design system
+- **Android Gradle Plugin 8.10.1** - Build system
+- **Gradle Kotlin DSL** - Build configuration
 
-If you're using [JitPack](https://jitpack.io/), you don't need any further configuration and you can just configure the repo on JitPack.
+### Architecture & Dependencies
+- **Hilt** - Dependency injection
+- **Room** - Local database
+- **Retrofit + OkHttp** - Network communication
+- **Kotlinx Serialization** - JSON serialization
+- **Paging 3** - Pagination support
+- **Navigation Compose** - Navigation
+- **WorkManager** - Background tasks
+- **Coil** - Image loading
 
-You probably want to disable the [Publish Snapshot] and [Publish Release](.github/workflows/publish-release.yaml) workflows (delete the files), as Jitpack will take care of that for you.
+### Testing Framework
+- **JUnit 5** - Unit testing
+- **Espresso** - UI testing
+- **Robolectric** - Android framework testing
+- **Mockito/MockK** - Mocking
+- **Turbine** - Flow testing
+- **Roborazzi** - Screenshot testing
 
-## Contributing 🤝
+### Code Quality & Analysis
+- **Detekt** - Static code analysis
+- **KtLint** - Code formatting
+- **Spotless** - Code formatting
+- **SonarQube** - Code quality analysis
+- **Kover** - Code coverage
+- **Jacoco** - Coverage reporting
 
-Feel free to open a issue or submit a pull request for any bugs/improvements.
+## 📱 Features
 
+### UI/UX
+- **Material 3 Design System** - Modern, adaptive design
+- **Dark/Light Theme Support** - Complete theming system
+- **Responsive Layout** - Adaptive to different screen sizes
+- **Accessibility Support** - WCAG compliance ready
+- **Splash Screen** - Modern splash screen implementation
 
-## License
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fashtanko%2Fcompose-android-template.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fashtanko%2Fcompose-android-template?ref=badge_large)
+### Development Experience
+- **Hot Reload** - Fast development with Compose
+- **Type Safety** - Full Kotlin type safety
+- **Auto-completion** - Enhanced IDE support
+- **Debug Tools** - Comprehensive debugging utilities
+
+### Performance
+- **Baseline Profiles** - Performance optimization
+- **Benchmarking** - Performance measurement tools
+- **Memory Leak Detection** - Built-in memory analysis
+- **ProGuard/R8** - Code optimization and obfuscation
+
+## 🔧 Configuration
+
+### Build Configuration
+
+The project uses centralized dependency management through `gradle/libs.versions.toml`:
+
+```kotlin
+// Example dependency usage
+implementation(libs.androidx.compose.ui)
+implementation(libs.androidx.navigation.compose)
+implementation(libs.hilt.android)
+```
+
+### Static Analysis
+
+Configure code quality tools in their respective config files:
+
+- **Detekt**: `config/detekt/detekt.yml`
+- **KtLint**: Configured via Gradle plugin
+- **Spotless**: Configured in `build.gradle.kts`
+
+### CI/CD Pipeline
+
+The template includes GitHub Actions workflows for:
+
+- **Build & Test**: Automated testing on every PR
+- **Code Quality**: Static analysis and formatting checks
+- **Publishing**: Automated library publishing (configurable)
+
+## 🧪 Testing
+
+### Unit Tests
+```bash
+# Run all unit tests
+./gradlew testDebugUnitTest
+
+# Run tests with coverage
+./gradlew koverHtmlReport
+```
+
+### UI Tests
+```bash
+# Run Espresso tests
+./gradlew connectedAndroidTest
+
+# Run screenshot tests
+./gradlew updateDebugScreenshotTest
+./gradlew validateDebugScreenshotTest
+```
+
+### Code Quality Checks
+```bash
+# Run static analysis
+./gradlew detekt
+
+# Check code formatting
+./gradlew ktlintCheck
+
+# Apply code formatting
+./gradlew spotlessApply
+```
+
+## 📦 Publishing
+
+### Library Publishing
+
+The template is configured for publishing to Maven Central. Configure the following secrets:
+
+| Secret | Description |
+|--------|-------------|
+| `ORG_GRADLE_PROJECT_NEXUS_USERNAME` | Sonatype username |
+| `ORG_GRADLE_PROJECT_NEXUS_PASSWORD` | Sonatype password |
+| `ORG_GRADLE_PROJECT_SIGNING_KEY` | GPG private key |
+| `ORG_GRADLE_PROJECT_SIGNING_PWD` | GPG passphrase |
+
+### Publishing Workflows
+
+- **Snapshot Publishing**: Automatic on merge to main
+- **Release Publishing**: Triggered by version tags
+
+## 🚀 Available Commands
+
+Use the provided Makefile for common tasks:
+
+```bash
+# Build and test everything
+make default
+
+# Run code quality checks
+make check
+
+# Format code
+make spotless
+
+# Generate coverage report
+make kover
+
+# Run screenshot tests
+make screenshot
+```
+
+## 📋 Requirements
+
+- **Android Studio** - Latest stable version
+- **JDK 17** - Java Development Kit
+- **Android SDK** - API level 33+ (Android 13+)
+- **Gradle** - 8.0+ (included via wrapper)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and quality checks
+5. Submit a pull request
+
+### Development Guidelines
+
+- Follow Kotlin coding conventions
+- Write unit tests for new features
+- Ensure all CI checks pass
+- Update documentation as needed
+
+## 📄 License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built on top of the excellent [kotlin-android-template](https://github.com/cortinico/kotlin-android-template)
+- Uses modern Android development best practices
+- Incorporates community-driven improvements
+
+---
+
+**Ready to build amazing Android apps?** 🎉 Start with this template and focus on what matters most - your app's features and user experience!
