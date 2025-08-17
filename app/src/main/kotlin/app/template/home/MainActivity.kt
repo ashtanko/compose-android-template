@@ -25,21 +25,21 @@ import androidx.core.view.WindowCompat
 
 class MainActivity : ComponentActivity() {
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-    // This app draws behind the system bars, so we want to handle fitting system windows
-    WindowCompat.setDecorFitsSystemWindows(window, false)
+        // This app draws behind the system bars, so we want to handle fitting system windows
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
-    setContent {
-      TemplateApp()
+        setContent {
+            TemplateApp()
+        }
     }
-  }
 
-  @Composable
-  private fun TemplateApp() {
-    CompositionLocalProvider {
-        // TODO
+    @Composable
+    private fun TemplateApp() {
+        CompositionLocalProvider {
+            // TODO
+        }
     }
-  }
 }

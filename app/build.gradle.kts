@@ -27,12 +27,11 @@ plugins {
 
 android {
   namespace = "dev.shtanko.template"
-  compileSdk = 35
+  compileSdk = 36
 
   defaultConfig {
     applicationId = "dev.shtanko.template"
-    minSdk = 33
-    targetSdk = 35
+    minSdk = 26
     versionCode = 1
     versionName = "1.0"
 
