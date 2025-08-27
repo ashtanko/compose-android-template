@@ -8,12 +8,11 @@ val isGithubActions = System.getenv("GITHUB_ACTIONS")?.toBoolean() == true
 val isCI = providers.environmentVariable("CI").isPresent
 
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.detekt)
+    alias(libs.plugins.androidlab.android.application)
+    alias(libs.plugins.androidlab.android.application.compose)
+    alias(libs.plugins.androidlab.android.application.jacoco)
+    alias(libs.plugins.androidlab.hilt)
     alias(libs.plugins.compose.guard)
-    alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.serialization)
     alias(libs.plugins.kover)
@@ -258,27 +257,27 @@ kotlin {
     }
 }
 
-detekt {
-    config.setFrom("${project.rootDir}/config/detekt/detekt.yml")
+//detekt {
+//    config.setFrom("${project.rootDir}/config/detekt/detekt.yml")
+//
+//    val projectDir = projectDir
+//    val kotlinExtension = project.extensions.getByType(KotlinSourceSetContainer::class.java)
+//
+//    source.setFrom(
+//        provider {
+//            kotlinExtension.sourceSets
+//                .flatMap { sourceSet ->
+//                    sourceSet.kotlin.srcDirs.filter {
+//                        it.relativeTo(projectDir).startsWith("src")
+//                    }
+//                }
+//        },
+//    )
+//}
 
-    val projectDir = projectDir
-    val kotlinExtension = project.extensions.getByType(KotlinSourceSetContainer::class.java)
-
-    source.setFrom(
-        provider {
-            kotlinExtension.sourceSets
-                .flatMap { sourceSet ->
-                    sourceSet.kotlin.srcDirs.filter {
-                        it.relativeTo(projectDir).startsWith("src")
-                    }
-                }
-        },
-    )
-}
-
-configure<DetektExtension> {
-    config.from("${project.rootDir}/config/detekt/detekt-compose.yml")
-}
+//configure<DetektExtension> {
+//    config.from("${project.rootDir}/config/detekt/detekt-compose.yml")
+//}
 
 dependencies {
     // implementation(projects.core.designsystem)
@@ -342,10 +341,10 @@ dependencies {
             testImplementation(coroutines.debug)
         }
 
-        detekt.apply {
-            detektPlugins(rules)
-            detektPlugins(formatting)
-        }
+//        detekt.apply {
+//            detektPlugins(rules)
+//            detektPlugins(formatting)
+//        }
 
         coil.apply {
             implementation(kt)

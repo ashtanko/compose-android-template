@@ -1,5 +1,5 @@
 [versions]
-jvmTarget = "17"
+jvmTarget = "21"
 agp = "8.12.1"                              # https://mvnrepository.com/artifact/com.android.application/com.android.application.gradle.plugin
 kotlin = "2.2.10"                           # https://github.com/JetBrains/kotlin
 coreKtx = "1.17.0"                          # https://mvnrepository.com/artifact/androidx.core/core-ktx
@@ -215,6 +215,7 @@ androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-com
 google-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 google-hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hilt" }
 google-hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
+google-hilt-core = { group = "com.google.dagger", name = "hilt-core", version.ref = "hilt" }
 # endregion
 
 # region code style
