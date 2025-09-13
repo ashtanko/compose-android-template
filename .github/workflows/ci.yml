@@ -2,9 +2,21 @@ name: Android CI
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
   pull_request:
-    branches: [ main ]
+
+concurrency:
+  # Limit concurrency to 1 for PRs. 'main' concurrency isn't limited.
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+  JAVA_VERSION: 21
+  JAVA_VENDOR: 'zulu'
 
 jobs:
   build:
@@ -15,11 +27,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v5
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 17
+          distribution: ${{ env.JAVA_VENDOR }}
+          java-version: ${{ env.JAVA_VERSION }}
 
       - name: Cache Gradle
         uses: actions/cache@v4
