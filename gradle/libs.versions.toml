@@ -72,7 +72,7 @@ generativeai = "0.9.0"
 googleAndroidLibrariesMapsplatformSecretsGradlePlugin = "2.0.1"
 iconsExtended = "1.7.8"
 androidxComposeAlpha = "1.9.1"
-assertj = "3.27.4"
+assertj = "3.27.6"
 
 compileSdk = "36"
 minSdk = "24"
