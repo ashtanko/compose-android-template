@@ -71,7 +71,7 @@ androidx-window = "1.5.1"                   # https://mvnrepository.com/artifact
 generativeai = "0.9.0"
 googleAndroidLibrariesMapsplatformSecretsGradlePlugin = "2.0.1"
 iconsExtended = "1.7.8"
-androidxComposeAlpha = "1.9.5"
+androidxComposeAlpha = "1.10.0"
 assertj = "3.27.6"
 
 compileSdk = "36"
