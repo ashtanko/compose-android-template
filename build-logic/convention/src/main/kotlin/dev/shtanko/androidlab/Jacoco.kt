@@ -3,10 +3,13 @@ package dev.shtanko.androidlab
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.ScopedArtifacts
+import com.android.build.api.variant.SourceDirectories
+import java.util.Locale
 import org.gradle.api.Project
 import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
@@ -15,7 +18,6 @@ import org.gradle.kotlin.dsl.withType
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
-import java.util.Locale
 
 private val coverageExclusions = listOf(
     // Android
@@ -72,11 +74,14 @@ internal fun Project.configureJacoco(
                     html.required = true
                 }
 
-                // TODO: This is missing files in src/debug/, src/prod, src/demo, src/demoDebug...
+                fun SourceDirectories.Flat?.toFilePaths(): Provider<List<String>> = this
+                    ?.all
+                    ?.map { directories -> directories.map { it.asFile.path } }
+                    ?: provider { emptyList() }
                 sourceDirectories.setFrom(
                     files(
-                        "$projectDir/src/main/java",
-                        "$projectDir/src/main/kotlin",
+                        variant.sources.java.toFilePaths(),
+                        variant.sources.kotlin.toFilePaths()
                     ),
                 )
 

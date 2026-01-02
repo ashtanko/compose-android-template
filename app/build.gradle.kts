@@ -1,11 +1,15 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
-import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetContainer
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 val isGithubActions = System.getenv("GITHUB_ACTIONS")?.toBoolean() == true
 val isCI = providers.environmentVariable("CI").isPresent
+
+private val storePasswordKey = "storePassword"
+private val keyPasswordKey = "keyPassword"
+private val keyAliasKey = "keyAlias"
+private val storeFileKey = "storeFile"
 
 plugins {
     alias(libs.plugins.androidlab.android.application)
@@ -53,10 +57,12 @@ android {
                 keyAlias = System.getenv("SIGNING_KEY_ALIAS")
                 keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
             } else {
-                storeFile = getReleaseValue("storeFile")?.let { file(it) }
-                keyAlias = getReleaseValue("keyAlias")
-                keyPassword = getReleaseValue("keyPassword")
-                storePassword = getReleaseValue("storePassword")
+                if (isPropertiesValid()) {
+                    storeFile = getReleaseValue(storeFileKey)?.let { file(it) }
+                    keyAlias = getReleaseValue(keyAliasKey)
+                    keyPassword = getReleaseValue(keyPasswordKey)
+                    storePassword = getReleaseValue(storePasswordKey)
+                }
             }
         }
     }
@@ -92,9 +98,6 @@ android {
     compileOptions {
         sourceCompatibility(libs.versions.jvmTarget.get())
         targetCompatibility(libs.versions.jvmTarget.get())
-    }
-    kotlinOptions {
-        jvmTarget = libs.versions.jvmTarget.get()
     }
     buildFeatures {
         buildConfig = true
@@ -137,6 +140,38 @@ android {
     ksp {
         arg("room.schemaLocation", "$projectDir/schemas")
     }
+}
+
+tasks.withType<KotlinJvmCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmTarget.get()))
+    }
+}
+
+fun isPropertiesValid(configFileName: String = "key.properties"): Boolean {
+    val propsFile = rootProject.file(configFileName)
+    if (!propsFile.exists()) return false
+
+    val properties = Properties().apply {
+        propsFile.inputStream().use { load(it) }
+    }
+
+    val requiredKeys = listOf(
+        storePasswordKey,
+        keyPasswordKey,
+        keyAliasKey,
+        storeFileKey
+    )
+
+    // 1. Check if all required keys exist in the file
+    val hasAllKeys = properties.keys.map { it.toString() }.containsAll(requiredKeys)
+    if (!hasAllKeys) return false
+
+    // 2. Check if the store file defined INSIDE the properties exists
+    val storeFilePath = properties.getProperty(storeFileKey)
+    val storeFileExists = storeFilePath?.let { rootProject.file(it).exists() } ?: false
+
+    return storeFileExists
 }
 
 fun getReleaseValue(key: String): String? {
