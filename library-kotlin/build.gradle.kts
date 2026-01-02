@@ -3,15 +3,11 @@ plugins {
 }
 
 dependencies {
-    libs.apply {
-        junit5.apply {
-            testImplementation(api)
-            testImplementation(params)
 
-            testRuntimeOnly(jupiterEngine)
-            testRuntimeOnly(vintageEngine)
-        }
+}
 
-        testImplementation(assertj.core)
+tasks {
+    withType<Test> {
+        useJUnitPlatform()
     }
 }

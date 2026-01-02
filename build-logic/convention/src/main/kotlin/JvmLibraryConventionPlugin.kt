@@ -5,6 +5,7 @@ import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
 
 class JvmLibraryConventionPlugin : Plugin<Project> {
@@ -20,6 +21,14 @@ class JvmLibraryConventionPlugin : Plugin<Project> {
             }
             configureKotlinJvm()
             configureDetekt(extensions.getByType<DetektExtension>())
+            dependencies {
+                "testImplementation"(libs.findLibrary("junit5-api").get())
+                "testImplementation"(libs.findLibrary("junit5-params").get())
+                "testImplementation"(libs.findLibrary("assertj-core").get())
+                "testRuntimeOnly"(libs.findLibrary("junit5-jupiterEngine").get())
+                "testRuntimeOnly"(libs.findLibrary("junit5-vintageEngine").get())
+                "testImplementation"(libs.findLibrary("kotlin.test").get())
+            }
         }
     }
 }

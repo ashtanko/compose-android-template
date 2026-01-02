@@ -1,54 +1,45 @@
-import com.android.build.api.variant.LibraryAndroidComponentsExtension
-import com.android.build.gradle.LibraryExtension
-import dev.shtanko.androidlab.configureDetekt
+import dev.shtanko.androidlab.configureGradleManagedDevices
 import dev.shtanko.androidlab.configureKotlinAndroid
 import dev.shtanko.androidlab.libs
-import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.kotlin
+import kotlin.text.get
 
 class AndroidLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
-            with(pluginManager) {
-                apply("com.android.library")
-                apply("org.jetbrains.kotlin.android")
-                apply("androidlab.android.lint")
+            apply(plugin = "com.android.library")
+            apply(plugin = "org.jetbrains.kotlin.android")
+            apply(plugin = "androidlab.android.lint")
 
-                apply(
-                    libs.findLibrary("detekt-gradle").get().get().group.toString()
-                )
-            }
-
-            configureDetekt(extensions.getByType<DetektExtension>())
-
-            extensions.configure<LibraryExtension> {
+            extensions.configure<com.android.build.api.dsl.LibraryExtension> {
                 configureKotlinAndroid(this)
-                defaultConfig.targetSdk = 35
+                testOptions.targetSdk = 36
+                lint.targetSdk = 36
+                defaultConfig.targetSdk = 36
                 defaultConfig.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
                 testOptions.animationsDisabled = true
-                //configureFlavors(this)
-                //configureGradleManagedDevices(this)
-
+                configureGradleManagedDevices(this)
                 // The resource prefix is derived from the module name,
                 // so resources inside ":core:module1" must be prefixed with "core_module1_"
                 resourcePrefix =
                     path.split("""\W""".toRegex()).drop(1).distinct().joinToString(separator = "_")
                         .lowercase() + "_"
             }
-            extensions.configure<LibraryAndroidComponentsExtension> {
-                //configurePrintApksTask(this)
-                //disableUnnecessaryAndroidTests(target)
-            }
             dependencies {
-                add("androidTestImplementation", kotlin("test"))
-                add("testImplementation", kotlin("test"))
+                "androidTestImplementation"(libs.findLibrary("kotlin.test").get())
+                "androidTestImplementation"(libs.findLibrary("junit5-api").get())
+                "testImplementation"(libs.findLibrary("junit5-api").get())
+                "testImplementation"(libs.findLibrary("junit5-params").get())
+                "testImplementation"(libs.findLibrary("assertj-core").get())
+                "testImplementation"(libs.findLibrary("kotlin.test").get())
+                "testRuntimeOnly"(libs.findLibrary("junit5-jupiterEngine").get())
+                "testRuntimeOnly"(libs.findLibrary("junit5-vintageEngine").get())
 
-                add("implementation", libs.findLibrary("androidx.tracing.ktx").get())
+                "implementation"(libs.findLibrary("androidx.tracing.ktx").get())
             }
         }
     }
