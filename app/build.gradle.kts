@@ -1,3 +1,18 @@
+/*
+ * Designed and developed by 2026 ashtanko (Oleksii Shtanko)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -77,7 +92,7 @@ android {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
             signingConfig = signingConfigs.getByName("release")
@@ -128,9 +143,6 @@ android {
                 "-Xshare:off",
             )
         }
-        screenshotTests {
-            imageDifferenceThreshold = 0.0001f // 0.01%
-        }
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.15"
@@ -160,7 +172,7 @@ fun isPropertiesValid(configFileName: String = "key.properties"): Boolean {
         storePasswordKey,
         keyPasswordKey,
         keyAliasKey,
-        storeFileKey
+        storeFileKey,
     )
 
     // 1. Check if all required keys exist in the file
@@ -181,7 +193,7 @@ fun getReleaseValue(key: String): String? {
 fun getValueFromConfig(
     key: String,
     quot: Boolean,
-    configFile: String = "local.properties"
+    configFile: String = "local.properties",
 ): String? {
     val properties = Properties()
     properties.load(project.rootProject.file(configFile).inputStream())
@@ -266,7 +278,7 @@ tasks {
         classDirectories.setFrom(files(sourceDirs))
         additionalClassDirs.setFrom(files(coverageDirs))
         executionData.setFrom(
-            files("$projectBuildDirectory/jacoco/test.exec")
+            files("$projectBuildDirectory/jacoco/test.exec"),
         )
 
         reports {
@@ -439,4 +451,8 @@ dependencies {
             testRuntimeOnly(vintageEngine)
         }
     }
+}
+
+dependencyGuard {
+    configuration("releaseRuntimeClasspath")
 }

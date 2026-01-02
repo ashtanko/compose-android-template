@@ -1,11 +1,11 @@
 /*
- * Copyright 2022 Oleksii Shtanko
+ * Designed and developed by 2022 ashtanko (Oleksii Shtanko)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,10 +18,9 @@ package app.template.library
 
 object FactorialCalculator {
 
-    tailrec fun computeFactorial(input: Int, temp: Long = 1L): Long =
-        when {
-            input < 0 -> error("Factorial is not defined for negative numbers")
-            input == 0 -> temp
-            else -> computeFactorial(input - 1, temp * input)
-        }
+    tailrec fun computeFactorial(input: Int, temp: Long = 1L): Long = when {
+        input < 0 -> error("Factorial is not defined for negative numbers")
+        input == 0 -> temp
+        else -> computeFactorial(input - 1, temp * input)
+    }
 }
