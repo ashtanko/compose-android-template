@@ -77,7 +77,7 @@ jobs:
           ./gradlew dependencyGuardBaseline
 
       - name: Push new Dependency Guard baselines if available
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         if: steps.dependencyguard_baseline.outcome == 'success'
         with:
           file_pattern: '**/dependencies/*.txt'
