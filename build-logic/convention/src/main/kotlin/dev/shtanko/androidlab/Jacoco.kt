@@ -1,6 +1,7 @@
 package dev.shtanko.androidlab
 
 import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.api.variant.SourceDirectories
@@ -43,8 +44,15 @@ private fun String.capitalize() = replaceFirstChar {
  * tests on CI using a different Github Action or an external device farm.
  */
 internal fun Project.configureJacoco(
+    commonExtension: CommonExtension,
     androidComponentsExtension: AndroidComponentsExtension<*, *, *>,
 ) {
+    // Configure only the debug build, otherwise it will force the debuggable flag on release buildTypes as well
+    commonExtension.buildTypes.named("debug") {
+        enableAndroidTestCoverage = true
+        enableUnitTestCoverage = true
+    }
+
     configure<JacocoPluginExtension> {
         toolVersion = libs.findVersion("jacoco").get().toString()
     }
@@ -81,7 +89,7 @@ internal fun Project.configureJacoco(
                 sourceDirectories.setFrom(
                     files(
                         variant.sources.java.toFilePaths(),
-                        variant.sources.kotlin.toFilePaths()
+                        variant.sources.kotlin.toFilePaths(),
                     ),
                 )
 

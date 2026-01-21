@@ -339,7 +339,6 @@ dependencies {
             implementation(ui.graphics)
             implementation(ui.tooling.preview)
             implementation(material3)
-            implementation(hilt.navigation.compose)
             implementation(runtime.tracing)
             implementation(tracing.ktx)
 
@@ -399,7 +398,7 @@ dependencies {
             implementation(kt.svg)
         }
 
-        google.hilt.apply {
+        hilt.apply {
             implementation(android)
             ksp(compiler)
             kspTest(compiler)
