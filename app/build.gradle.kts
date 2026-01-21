@@ -207,21 +207,20 @@ fun getValueFromConfig(
     }
     return value.takeIf { it.isNotEmpty() }
 }
-subprojects.forEach {
-    it.gradle.startParameter.excludedTaskNames.apply {
-        val excludedTasks = listOf(
-            "testDebugScreenshotTest",
-            "testReleaseScreenshotTest",
-            "testBenchmarkReleaseScreenshotTest",
-            "testBenchmarkScreenshotTest",
-            "testNonMinifiedReleaseScreenshotTest",
-            "testBenchmarkUnitTest",
-            "testReleaseUnitTest",
-            "finalizeTestRoborazziRelease",
-        )
-        if (isCI || isGithubActions) {
-            excludedTasks.forEach(::add)
-        }
+
+project.gradle.startParameter.excludedTaskNames.apply {
+    val excludedTasks = listOf(
+        "testDebugScreenshotTest",
+        "testReleaseScreenshotTest",
+        "testBenchmarkReleaseScreenshotTest",
+        "testBenchmarkScreenshotTest",
+        "testNonMinifiedReleaseScreenshotTest",
+        "testBenchmarkUnitTest",
+        "testReleaseUnitTest",
+        "finalizeTestRoborazziRelease",
+    )
+    if (isCI || isGithubActions) {
+        excludedTasks.forEach(::add)
     }
 }
 
