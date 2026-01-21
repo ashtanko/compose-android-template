@@ -23,3 +23,23 @@ plugins {
     alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin) apply false
     alias(libs.plugins.dependencyGuard) apply false
 }
+
+// CI Task Exclusion Logic
+val isCI = System.getenv("CI") == "true" || System.getenv("GITHUB_ACTIONS") == "true"
+
+val excludedTasks = setOf(
+    "testDebugScreenshotTest",
+    "testReleaseScreenshotTest",
+    "testBenchmarkReleaseScreenshotTest",
+    "testBenchmarkScreenshotTest",
+    "testNonMinifiedReleaseScreenshotTest",
+    "testBenchmarkUnitTest",
+    "testReleaseUnitTest",
+    "finalizeTestRoborazziRelease"
+)
+
+tasks.configureEach {
+    if (name in excludedTasks && isCI) {
+        enabled = false
+    }
+}

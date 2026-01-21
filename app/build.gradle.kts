@@ -208,22 +208,6 @@ fun getValueFromConfig(
     return value.takeIf { it.isNotEmpty() }
 }
 
-project.gradle.startParameter.excludedTaskNames.apply {
-    val excludedTasks = listOf(
-        "testDebugScreenshotTest",
-        "testReleaseScreenshotTest",
-        "testBenchmarkReleaseScreenshotTest",
-        "testBenchmarkScreenshotTest",
-        "testNonMinifiedReleaseScreenshotTest",
-        "testBenchmarkUnitTest",
-        "testReleaseUnitTest",
-        "finalizeTestRoborazziRelease",
-    )
-    if (isCI || isGithubActions) {
-        excludedTasks.forEach(::add)
-    }
-}
-
 tasks {
     getByName("check") {
         // Add detekt with type resolution to check
@@ -339,7 +323,6 @@ dependencies {
             implementation(ui.graphics)
             implementation(ui.tooling.preview)
             implementation(material3)
-            implementation(hilt.navigation.compose)
             implementation(runtime.tracing)
             implementation(tracing.ktx)
 
@@ -399,7 +382,7 @@ dependencies {
             implementation(kt.svg)
         }
 
-        google.hilt.apply {
+        hilt.apply {
             implementation(android)
             ksp(compiler)
             kspTest(compiler)

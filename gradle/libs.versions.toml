@@ -1,6 +1,6 @@
 [versions]
 jvmTarget = "21"
-agp = "8.13.2"                              # https://mvnrepository.com/artifact/com.android.application/com.android.application.gradle.plugin
+agp = "9.0.0"                              # https://mvnrepository.com/artifact/com.android.application/com.android.application.gradle.plugin
 kotlin = "2.3.0"                            # https://github.com/JetBrains/kotlin
 coreKtx = "1.17.0"                          # https://mvnrepository.com/artifact/androidx.core/core-ktx
 junit5 = "6.0.2"                           # https://junit.org/junit5 | https://central.sonatype.com/artifact/org.junit.jupiter/junit-jupiter
@@ -26,6 +26,7 @@ ksp = "2.3.4"                               # https://mvnrepository.com/artifact
 dependencyGuard = "0.5.0"                   # https://mvnrepository.com/artifact/com.dropbox.dependency-guard/dependency-guard
 immutable = "0.4.0"                         # https://github.com/Kotlin/kotlinx.collections.immutable
 hilt = "2.58"                             # https://mvnrepository.com/artifact/com.google.dagger/hilt-android
+hiltExt = "1.2.0"
 sonarqube = "7.2.2.6593"                    # https://mvnrepository.com/artifact/org.sonarqube/org.sonarqube.gradle.plugin
 hiltNavigationCompose = "1.3.0"             # https://mvnrepository.com/artifact/androidx.hilt/hilt-navigation-compose
 jacoco = "0.8.14"                           # https://mvnrepository.com/artifact/org.jacoco/org.jacoco.core
@@ -73,6 +74,8 @@ googleAndroidLibrariesMapsplatformSecretsGradlePlugin = "2.0.1"
 iconsExtended = "1.7.8"
 androidxComposeAlpha = "1.10.1"
 assertj = "3.27.6"
+android-junit5-plugin = "1.11.0.0"
+android-junit5-test = "1.3.0"
 
 compileSdk = "36"
 minSdk = "24"
@@ -160,6 +163,7 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 kotlinx-coroutines-debug = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-debug", version.ref = "coroutines" }
 kotlinx-coroutines-slf4j = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-slf4j", version.ref = "coroutines" }
 kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+kotlin-metadata = { module = "org.jetbrains.kotlin:kotlin-metadata-jvm", version.ref = "kotlin" }
 # endregion
 
 # region junit
@@ -170,6 +174,8 @@ junit5-vintageEngine = { module = "org.junit.vintage:junit-vintage-engine", vers
 jacoco-core = { module = "org.jacoco:org.jacoco.core", version.ref = "jacoco" }
 assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
+android-junit5-test-core = { group = "de.mannodermaus.junit5", name = "android-test-core", version.ref = "android-junit5-test" }
+android-junit5-test-runner = { group = "de.mannodermaus.junit5", name = "android-test-runner", version.ref = "android-junit5-test" }
 # endregion
 
 # lint
@@ -212,11 +218,12 @@ coil-kt-svg = { group = "io.coil-kt", name = "coil-svg", version.ref = "coil" }
 # endregion
 
 # region hilt
-androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
-google-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
-google-hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hilt" }
-google-hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
-google-hilt-core = { group = "com.google.dagger", name = "hilt-core", version.ref = "hilt" }
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+hilt-core = { group = "com.google.dagger", name = "hilt-core", version.ref = "hilt" }
+hilt-ext-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltExt" }
+hilt-ext-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltExt" }
 # endregion
 
 # region code style
@@ -275,3 +282,4 @@ androidlab-android-test = { id = "androidlab.android.test", version = "unspecifi
 androidlab-hilt = { id = "androidlab.hilt", version = "unspecified" }
 androidlab-hilt-android = { id = "androidlab.hilt.android", version = "unspecified" }
 androidlab-jvm-library = { id = "androidlab.jvm.library", version = "unspecified" }
+android-junit5 = { id = "de.mannodermaus.android-junit5", version.ref = "android-junit5-plugin" }

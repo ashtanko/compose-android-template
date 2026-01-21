@@ -17,6 +17,7 @@ plugins {
     alias(libs.plugins.androidlab.android.library)
     alias(libs.plugins.androidlab.android.library.compose)
     alias(libs.plugins.androidlab.android.library.jacoco)
+    alias(libs.plugins.android.junit5)
     alias(libs.plugins.roborazzi)
 }
 
@@ -30,6 +31,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+        testInstrumentationRunnerArguments["runnerBuilder"] = "de.mannodermaus.junit5.AndroidJUnit5Builder"
     }
 
     testOptions {
@@ -74,8 +76,6 @@ dependencies {
             ui.apply {
                 api(text.google.fonts)
                 debugApi(test.manifest)
-                androidTestApi(test.junit4)
-                androidTestApi(test)
             }
         }
 
@@ -86,6 +86,10 @@ dependencies {
             testRuntimeOnly(jupiterEngine)
             testRuntimeOnly(vintageEngine)
         }
+
+        androidTestImplementation(libs.junit5.api)
+        androidTestImplementation(libs.android.junit5.test.core)
+        androidTestRuntimeOnly(libs.android.junit5.test.runner)
 
         testImplementation(assertj.core)
     }

@@ -1,4 +1,4 @@
-import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
+import com.android.build.api.dsl.ApplicationExtension
 import dev.shtanko.androidlab.configureDetekt
 import dev.shtanko.androidlab.configureKotlinAndroid
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
@@ -13,16 +13,16 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
         with(target) {
             with(pluginManager) {
                 apply(plugin = "com.android.application")
-                apply(plugin = "org.jetbrains.kotlin.android")
                 apply(plugin = "io.gitlab.arturbosch.detekt")
                 apply(plugin = "com.dropbox.dependency-guard")
             }
 
             configureDetekt(extensions.getByType<DetektExtension>())
 
-            extensions.configure<BaseAppModuleExtension> {
+            extensions.configure<ApplicationExtension> {
                 configureKotlinAndroid(this)
-                defaultConfig.targetSdk = 35
+                defaultConfig.targetSdk = 36
+                testOptions.animationsDisabled = true
             }
         }
     }
