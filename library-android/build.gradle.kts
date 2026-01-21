@@ -21,9 +21,6 @@ plugins {
     alias(libs.plugins.roborazzi)
 }
 
-val isGithubActions = System.getenv("GITHUB_ACTIONS")?.toBoolean() == true
-val isCI = providers.environmentVariable("CI").isPresent
-
 android {
     namespace = "app.template.library.android"
 
@@ -34,8 +31,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
-        testInstrumentationRunnerArguments["runnerBuilder"] =
-            "de.mannodermaus.junit5.AndroidJUnit5Builder"
+        testInstrumentationRunnerArguments["runnerBuilder"] = "de.mannodermaus.junit5.AndroidJUnit5Builder"
     }
 
     testOptions {
@@ -61,22 +57,6 @@ android {
 tasks {
     withType<Test> {
         useJUnitPlatform()
-    }
-}
-
-project.gradle.startParameter.excludedTaskNames.apply {
-    val excludedTasks = listOf(
-        "testDebugScreenshotTest",
-        "testReleaseScreenshotTest",
-        "testBenchmarkReleaseScreenshotTest",
-        "testBenchmarkScreenshotTest",
-        "testNonMinifiedReleaseScreenshotTest",
-        "testBenchmarkUnitTest",
-        "testReleaseUnitTest",
-        "finalizeTestRoborazziRelease",
-    )
-    if (isCI || isGithubActions) {
-        excludedTasks.forEach(::add)
     }
 }
 
