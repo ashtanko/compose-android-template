@@ -25,18 +25,21 @@ plugins {
 }
 
 // CI Task Exclusion Logic
-val isCI = System.getenv("CI") == "true"
-val isGithubActions = System.getenv("GITHUB_ACTIONS") == "true"
+val isCI = System.getenv("CI") == "true" || System.getenv("GITHUB_ACTIONS") == "true"
 
-if (isCI || isGithubActions) {
-    gradle.startParameter.excludedTaskNames.addAll(listOf(
-        "testDebugScreenshotTest",
-        "testReleaseScreenshotTest",
-        "testBenchmarkReleaseScreenshotTest",
-        "testBenchmarkScreenshotTest",
-        "testNonMinifiedReleaseScreenshotTest",
-        "testBenchmarkUnitTest",
-        "testReleaseUnitTest",
-        "finalizeTestRoborazziRelease"
-    ))
+val excludedTasks = setOf(
+    "testDebugScreenshotTest",
+    "testReleaseScreenshotTest",
+    "testBenchmarkReleaseScreenshotTest",
+    "testBenchmarkScreenshotTest",
+    "testNonMinifiedReleaseScreenshotTest",
+    "testBenchmarkUnitTest",
+    "testReleaseUnitTest",
+    "finalizeTestRoborazziRelease"
+)
+
+tasks.configureEach {
+    if (name in excludedTasks && isCI) {
+        enabled = false
+    }
 }
