@@ -22,7 +22,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
@@ -174,8 +173,6 @@ private fun ContentMauve(
     content = content,
 )
 
-`@Composable`
-private fun ContentBase(
 @Composable
 private fun ContentBase(
     title: String,
