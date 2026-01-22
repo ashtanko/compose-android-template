@@ -174,7 +174,8 @@ private fun ContentMauve(
     content = content,
 )
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+`@Composable`
+private fun ContentBase(
 @Composable
 private fun ContentBase(
     title: String,
