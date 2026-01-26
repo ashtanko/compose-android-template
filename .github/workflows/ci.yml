@@ -145,6 +145,13 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
 
+      - name: Enable KVM group perms
+        if: matrix.job == 'instrumentation' && matrix.os == 'ubuntu-latest'
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       - name: Run instrumented tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -155,7 +162,7 @@ jobs:
           profile: Nexus 6
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew connectedDebugAndroidTest
+          script: ./gradlew :app:connectedDebugAndroidTest
 
       - name: Upload instrumented test results (XML)
         if: ${{ !cancelled() }}
