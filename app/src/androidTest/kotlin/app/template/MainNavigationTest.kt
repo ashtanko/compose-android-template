@@ -20,10 +20,10 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.test.espresso.Espresso
 import app.template.home.navigation.MainNavigation
 import app.template.home.navigation.Screen
-import androidx.navigation3.runtime.rememberNavBackStack
 import org.junit.Rule
 import org.junit.Test
 
