@@ -325,6 +325,9 @@ dependencies {
             implementation(material3)
             implementation(runtime.tracing)
             implementation(tracing.ktx)
+            implementation(navigation3.runtime)
+            implementation(navigation3.ui)
+            implementation(material3.navigation3)
 
             compose.apply {
                 implementation(material3.adaptive)
@@ -433,6 +436,13 @@ dependencies {
             testRuntimeOnly(jupiterEngine)
             testRuntimeOnly(vintageEngine)
         }
+
+        androidTestImplementation(libs.androidx.junit)
+        androidTestImplementation(libs.androidx.espresso.core)
+        androidTestImplementation(platform(libs.androidx.compose.bom))
+        androidTestImplementation(libs.androidx.ui.test.junit4)
+        debugImplementation(libs.androidx.ui.tooling)
+        debugImplementation(libs.androidx.ui.test.manifest)
     }
 }
 
