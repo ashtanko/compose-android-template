@@ -21,7 +21,9 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.espresso.Espresso
-import app.template.home.MainNavigation
+import app.template.home.navigation.MainNavigation
+import app.template.home.navigation.Screen
+import androidx.navigation3.runtime.rememberNavBackStack
 import org.junit.Rule
 import org.junit.Test
 
@@ -69,5 +71,18 @@ class MainNavigationTest {
         // Verify we are back on Screen A
         composeTestRule.onNodeWithText("This is Screen A").assertIsDisplayed()
         composeTestRule.onNodeWithText("This is Screen B").assertDoesNotExist()
+    }
+
+    @Test
+    fun testStartAtScreenB() {
+        composeTestRule.setContent {
+            // Testability: we can start at any screen by providing a custom backstack
+            val backStack = rememberNavBackStack(Screen.ScreenB)
+            MainNavigation(backStack = backStack)
+        }
+
+        // Verify we start on Screen B
+        composeTestRule.onNodeWithText("This is Screen B").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Go to Screen C").assertIsDisplayed()
     }
 }
