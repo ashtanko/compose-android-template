@@ -1,5 +1,6 @@
 import com.android.build.api.dsl.ApplicationExtension
 import dev.shtanko.androidlab.configureDetekt
+import dev.shtanko.androidlab.configureGradleManagedDevices
 import dev.shtanko.androidlab.configureKotlinAndroid
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.gradle.api.Plugin
@@ -21,6 +22,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
             extensions.configure<ApplicationExtension> {
                 configureKotlinAndroid(this)
+                configureGradleManagedDevices(this)
                 defaultConfig.targetSdk = 36
                 testOptions.animationsDisabled = true
             }
