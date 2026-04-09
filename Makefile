@@ -1,4 +1,4 @@
-.PHONY: check run test lines md default jacoco spotless kover diktat cloc jar repo screenshot robo
+.PHONY: check run test lines md default jacoco spotless kover diktat cloc jar repo screenshot robo android-test guard-baseline
 
 # Run detekt + ktlint
 check:
@@ -26,6 +26,12 @@ run:
 # Run tests
 test:
 	./gradlew test
+
+android-test:
+    ./gradlew :app:connectedDebugAndroidTest
+
+guard-baseline:
+    ./gradlew :app:dependencyGuardBaseline
 
 # Print Kotlin lines count
 lines:
