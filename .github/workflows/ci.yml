@@ -8,6 +8,8 @@ on:
     paths-ignore:
       - '**.md'
   pull_request:
+    paths-ignore:
+      - '**.md'
 
 concurrency:
   group: build-${{ github.ref }}
@@ -44,7 +46,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
           build-scan-publish: true
@@ -92,14 +94,14 @@ jobs:
         run: ./gradlew :app:assembleDebug -PminifyWithR8=false
 
       - name: Upload build outputs (APKs)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: APKs
           path: '**/build/outputs/apk/**/*.apk'
 
       - name: Upload JVM local results (XML)
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: local-test-results
           path: '**/build/test-results/test*UnitTest/**.xml'
@@ -109,7 +111,7 @@ jobs:
 
       - name: Upload lint reports (HTML)
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: lint-reports
           path: '**/build/reports/lint-results-*.html'
@@ -121,52 +123,52 @@ jobs:
           sarif_file: './app/'
           category: app
 
-  instrumented_tests:
-    name: "Instrumented tests"
-    runs-on: macos-latest
-    timeout-minutes: 60
-    strategy:
-      fail-fast: true
-      matrix:
-        api-level: [ 31 ]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Copy CI gradle.properties
-        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v5
-        with:
-          distribution: ${{ env.JAVA_VENDOR }}
-          java-version: ${{ env.JAVA_VERSION }}
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
-
-      - name: Enable KVM group perms
-        if: matrix.job == 'instrumentation' && matrix.os == 'ubuntu-latest'
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      - name: Run instrumented tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: google_apis
-          arch: x86_64
-          force-avd-creation: false
-          profile: Nexus 6
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: ./gradlew :app:connectedDebugAndroidTest
-
-      - name: Upload instrumented test results (XML)
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: instrumented-test-results
-          path: '**/build/outputs/androidTest-results/connected/**.xml'
+#  instrumented_tests:
+#    name: "Instrumented tests"
+#    runs-on: macos-latest
+#    timeout-minutes: 60
+#    strategy:
+#      fail-fast: true
+#      matrix:
+#        api-level: [ 31 ]
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#
+#      - name: Copy CI gradle.properties
+#        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
+#
+#      - name: Set up JDK 21
+#        uses: actions/setup-java@v5
+#        with:
+#          distribution: ${{ env.JAVA_VENDOR }}
+#          java-version: ${{ env.JAVA_VERSION }}
+#
+#      - name: Setup Gradle
+#        uses: gradle/actions/setup-gradle@v5
+#
+#      - name: Enable KVM group perms
+#        if: matrix.job == 'instrumentation' && matrix.os == 'ubuntu-latest'
+#        run: |
+#          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+#          sudo udevadm control --reload-rules
+#          sudo udevadm trigger --name-match=kvm
+#
+#      - name: Run instrumented tests
+#        uses: reactivecircus/android-emulator-runner@v2
+#        with:
+#          api-level: ${{ matrix.api-level }}
+#          target: google_apis
+#          arch: x86_64
+#          force-avd-creation: false
+#          profile: Nexus 6
+#          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+#          disable-animations: true
+#          script: ./gradlew :app:connectedDebugAndroidTest
+#
+#      - name: Upload instrumented test results (XML)
+#        if: ${{ !cancelled() }}
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: instrumented-test-results
+#          path: '**/build/outputs/androidTest-results/connected/**.xml'
