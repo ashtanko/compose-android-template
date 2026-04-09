@@ -1,4 +1,4 @@
-.PHONY: check run test lines md default jacoco spotless kover diktat cloc jar repo screenshot robo android-test guard-baseline
+.PHONY: check run test lines md default jacoco spotless kover diktat cloc jar repo screenshot robo android-test guard-baseline benchmark baseline-profile
 
 # Run detekt + ktlint
 check:
@@ -57,5 +57,11 @@ screenshot:
 
 robo:
 	 ./gradlew clearRoborazziDebug && ./gradlew recordRoborazziDebug && ./gradlew compareRoborazziDebug && ./gradlew verifyRoborazziDebug
+
+benchmark:
+	./gradlew :benchmarks:connectedDebugAndroidTest
+
+baseline-profile:
+	./gradlew :app:generateBaselineProfile
 
 .DEFAULT_GOAL := default
