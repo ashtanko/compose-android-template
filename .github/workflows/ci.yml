@@ -8,6 +8,8 @@ on:
     paths-ignore:
       - '**.md'
   pull_request:
+    paths-ignore:
+      - '**.md'
 
 concurrency:
   group: build-${{ github.ref }}
