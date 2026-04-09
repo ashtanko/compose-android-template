@@ -50,7 +50,7 @@ The project follows a modular, clean architecture approach:
 ## 🛠️ Technology Stack
 
 ### Core Technologies
-- **Kotlin 2.1.x** - With Strong Skipping mode support.
+- **Kotlin 2.3.x** - With Strong Skipping mode support.
 - **Jetpack Compose** - Modern declarative UI.
 - **Material 3** - Adaptive design system.
 - **Navigation 3** - The latest evolution of Android Navigation.
