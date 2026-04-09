@@ -28,10 +28,10 @@ test:
 	./gradlew test
 
 android-test:
-    ./gradlew :app:connectedDebugAndroidTest
+	./gradlew :app:connectedDebugAndroidTest
 
 guard-baseline:
-    ./gradlew :app:dependencyGuardBaseline
+	./gradlew :app:dependencyGuardBaseline
 
 # Print Kotlin lines count
 lines:
