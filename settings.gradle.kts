@@ -29,3 +29,4 @@ rootProject.name = "Android Template"
 include(":app")
 include(":library-kotlin")
 include(":library-android")
+include(":benchmarks")

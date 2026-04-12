@@ -71,6 +71,10 @@ gradlePlugin {
             id = "androidlab.android.application.jacoco"
             implementationClass = "AndroidApplicationJacocoConventionPlugin"
         }
+        register("androidTest") {
+            id = "androidlab.android.test"
+            implementationClass = "AndroidTestConventionPlugin"
+        }
         register("androidLibraryJacoco") {
             id = "androidlab.android.library.jacoco"
             implementationClass = "AndroidLibraryJacocoConventionPlugin"
