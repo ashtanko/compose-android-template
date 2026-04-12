@@ -23,7 +23,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             extensions.configure<ApplicationExtension> {
                 configureKotlinAndroid(this)
                 configureGradleManagedDevices(this)
-                defaultConfig.targetSdk = 36
+                defaultConfig.targetSdk = 37
                 testOptions.animationsDisabled = true
             }
         }
