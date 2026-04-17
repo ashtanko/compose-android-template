@@ -147,9 +147,9 @@ androidx.window:window-core-android:1.5.1
 androidx.window:window-core:1.5.1
 androidx.window:window:1.5.1
 com.caverock:androidsvg-aar:1.4
-com.github.skydoves:sandwich-android:2.2.1
-com.github.skydoves:sandwich-retrofit:2.2.1
-com.github.skydoves:sandwich:2.2.1
+com.github.skydoves:sandwich-android:2.2.2
+com.github.skydoves:sandwich-retrofit:2.2.2
+com.github.skydoves:sandwich:2.2.2
 com.google.accompanist:accompanist-adaptive:0.37.3
 com.google.accompanist:accompanist-drawablepainter:0.32.0
 com.google.accompanist:accompanist-permissions:0.37.3
