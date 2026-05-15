@@ -13,10 +13,36 @@ A modern, production-ready Android template built with **Jetpack Compose**, **Na
 
 1. Click the **[Use this template](https://github.com/ashtanko/compose-android-template/generate)** button.
 2. Clone your new repository.
-3. Update project details in:
-   - `gradle/libs.versions.toml` - Update SDK and library versions (Source of truth).
-   - `app/src/main/AndroidManifest.xml` - Update package name and permissions.
-   - `app/build.gradle.kts` - Update `applicationId`.
+3. Run the rename script to replace template package names, applicationId, plugin aliases, folder structure, and (optionally) copyright headers with your own:
+
+   ```bash
+   # preview first
+   ./scripts/rename-template.sh \
+       --package com.example.myapp \
+       --name "My Awesome App" \
+       --author "Your Name" \
+       --dry-run
+
+   # apply
+   ./scripts/rename-template.sh \
+       --package com.example.myapp \
+       --name "My Awesome App" \
+       --author "Your Name"
+   ```
+
+   Or via Gradle (same flags, `-P`-style):
+
+   ```bash
+   ./gradlew renameProject \
+       -Ppackage=com.example.myapp \
+       -Pname="My Awesome App" \
+       -Pauthor="Your Name" \
+       -PdryRun=true   # drop this to apply
+   ```
+
+   After applying, run `./gradlew spotlessApply` then `./gradlew clean assembleDebug` to verify.
+
+4. Update SDK and library versions in `gradle/libs.versions.toml` as needed (source of truth for dependencies).
 
 ### Building the Project
 
