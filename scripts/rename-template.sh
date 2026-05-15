@@ -129,7 +129,12 @@ replace_in() {
 
 info "rewriting strings..."
 
-# 1) dev.shtanko.androidlab -> <new>.buildlogic   (must run before dev.shtanko.template)
+# 1a) dev.shtanko.androidlab.buildlogic -> <new>.buildlogic  (specific case first
+#     so the group declaration doesn't end up with a double .buildlogic suffix)
+replace_in "dev.shtanko.androidlab.buildlogic" "$NEW_BUILDLOGIC" \
+  build-logic -type f \( -name '*.kt' -o -name '*.kts' \)
+
+# 1b) dev.shtanko.androidlab -> <new>.buildlogic   (must run before dev.shtanko.template)
 replace_in "dev.shtanko.androidlab" "$NEW_BUILDLOGIC" \
   build-logic -type f \( -name '*.kt' -o -name '*.kts' \)
 
@@ -144,13 +149,19 @@ replace_in "app.template" "$NEW_PACKAGE" \
   -not -path './build/*' -not -path './*/build/*' -not -path './.git/*' -not -path './scripts/*'
 
 # 4) androidlab plugin alias -> <plugin-alias>
-#    Scoped to version catalog + every build file (root + modules + build-logic).
+#    Scoped to: version catalog, every build.gradle.kts, AND build-logic .kt files
+#    (which embed plugin ids as string literals like "androidlab.android.lint").
+#    Safe to run last because step 1 already rewrote every `dev.shtanko.androidlab`
+#    qualifier — what remains as bare `androidlab` is always a plugin id.
 replace_in "androidlab" "$PLUGIN_ALIAS" \
   gradle/libs.versions.toml
 
 replace_in "androidlab" "$PLUGIN_ALIAS" \
   . -type f -name 'build.gradle.kts' \
   -not -path './build/*' -not -path './*/build/*' -not -path './.git/*'
+
+replace_in "androidlab" "$PLUGIN_ALIAS" \
+  build-logic -type f -name '*.kt'
 
 # 5) Display names
 if [[ -f settings.gradle.kts ]] && grep -q '"Android Template"' settings.gradle.kts; then
