@@ -193,21 +193,39 @@ fi
 
 mover() {
   local src="$1" dst="$2"
-  [[ -d "$src" ]] || { note "skip move (missing): $src"; return 0; }
-  if [[ -e "$dst" ]]; then
-    note "skip move (target exists): $dst"
-    return 0
-  fi
+  [[ -d "$src" ]] || { note "skip (no source): $src"; return 0; }
+
   if [[ "$DRY_RUN" -eq 1 ]]; then
-    note "would move: $src -> $dst"
+    local label="would move"
+    [[ -d "$dst" ]] && label="would merge into existing"
+    local n
+    n=$(find "$src" -type f | wc -l | tr -d ' ')
+    note "$label ($n file(s)): $src -> $dst"
     return 0
   fi
-  mkdir -p "$(dirname "$dst")"
-  if [[ "$IN_GIT" -eq 1 ]]; then
-    git mv "$src" "$dst"
-  else
-    mv "$src" "$dst"
-  fi
+
+  # File-by-file move so we cope with partially-renamed trees where $dst
+  # already exists (e.g. an empty parent shell left by an earlier interrupted
+  # run). Re-running on a fully-renamed tree is a no-op.
+  local file rel target moved=0
+  while IFS= read -r -d '' file; do
+    rel="${file#"$src"/}"
+    target="$dst/$rel"
+    if [[ -e "$target" ]]; then
+      warn "target exists; leaving in place: $file -> $target"
+      continue
+    fi
+    mkdir -p "$(dirname "$target")"
+    if [[ "$IN_GIT" -eq 1 ]] && git ls-files --error-unmatch -- "$file" >/dev/null 2>&1; then
+      git mv -- "$file" "$target"
+    else
+      mv -- "$file" "$target"
+    fi
+    moved=$((moved + 1))
+  done < <(find "$src" -type f -print0)
+
+  [[ "$moved" -gt 0 ]] && note "moved $moved file(s): $src -> $dst"
+  find "$src" -type d -empty -delete 2>/dev/null || true
 }
 
 info "moving source directories..."
