@@ -13,10 +13,36 @@ A modern, production-ready Android template built with **Jetpack Compose**, **Na
 
 1. Click the **[Use this template](https://github.com/ashtanko/compose-android-template/generate)** button.
 2. Clone your new repository.
-3. Update project details in:
-   - `gradle/libs.versions.toml` - Update SDK and library versions (Source of truth).
-   - `app/src/main/AndroidManifest.xml` - Update package name and permissions.
-   - `app/build.gradle.kts` - Update `applicationId`.
+3. Run the rename script to replace template package names, applicationId, plugin aliases, folder structure, and (optionally) copyright headers with your own:
+
+   ```bash
+   # preview first
+   ./scripts/rename-template.sh \
+       --package com.example.myapp \
+       --name "My Awesome App" \
+       --author "Your Name" \
+       --dry-run
+
+   # apply
+   ./scripts/rename-template.sh \
+       --package com.example.myapp \
+       --name "My Awesome App" \
+       --author "Your Name"
+   ```
+
+   Or via Gradle (same flags, `-P`-style):
+
+   ```bash
+   ./gradlew renameProject \
+       -Ppackage=com.example.myapp \
+       -Pname="My Awesome App" \
+       -Pauthor="Your Name" \
+       -PdryRun=true   # drop this to apply
+   ```
+
+   After applying, run `./gradlew spotlessApply` then `./gradlew clean assembleDebug` to verify.
+
+4. Update SDK and library versions in `gradle/libs.versions.toml` as needed (single source of truth for dependencies and plugin versions).
 
 ### Building the Project
 
@@ -36,79 +62,106 @@ A modern, production-ready Android template built with **Jetpack Compose**, **Na
 
 ## 🏗️ Project Architecture
 
-The project follows a modular, clean architecture approach:
+The project follows a modular layout backed by Gradle convention plugins:
 
 ```
-├── app/                    # Main Android application module (Compose + Nav 3)
+├── app/                    # Main Android application (Compose + Navigation 3)
 ├── library-android/        # Android-specific library module
-├── library-kotlin/         # Pure Kotlin library module (Business logic)
-├── build-logic/            # Shared Gradle convention plugins
-├── gradle/                 # Version catalogs (libs.versions.toml)
-└── config/                 # Detekt, KtLint, and other tool configs
+├── library-kotlin/         # Pure Kotlin library module (business logic)
+├── benchmarks/             # Macrobenchmark + baseline profile generator
+├── build-logic/            # Shared Gradle convention plugins (includeBuild)
+├── buildSrc/               # Project-wide build configuration
+├── gradle/                 # Version catalog (libs.versions.toml)
+├── config/                 # Detekt / KtLint / static-analysis configs
+├── spotless/               # Spotless copyright header template
+└── scripts/                # Helper scripts (e.g. rename-template.sh)
 ```
+
+Convention plugins under `build-logic/convention` (e.g. `androidlab.android.application`, `androidlab.android.library.compose`, `androidlab.hilt`, `androidlab.android.room`, `androidlab.android.lint`) keep per-module `build.gradle.kts` files small and consistent.
 
 ## 🛠️ Technology Stack
 
 ### Core Technologies
-- **Kotlin 2.3.x** - With Strong Skipping mode support.
-- **Jetpack Compose** - Modern declarative UI.
-- **Material 3** - Adaptive design system.
-- **Navigation 3** - The latest evolution of Android Navigation.
-- **Android Gradle Plugin 9.1.x** - Latest build system features.
+- **Kotlin 2.3.21** — with Strong Skipping support.
+- **Android Gradle Plugin 9.2.1** — latest build system features.
+- **Jetpack Compose** — Compose BOM `2026.05.00`, Material 3, Material 3 Adaptive.
+- **Navigation 3** (`1.1.1`) alongside `androidx.navigation:navigation-compose` (`2.9.8`).
+- **Kotlin Coroutines 1.11.x** and **kotlinx.serialization 1.11.x**.
 
 ### Architecture & Dependencies
-- **Hilt** - Dependency injection.
-- **Room** - Local persistence with KSP.
-- **Retrofit + OkHttp** - Type-safe networking.
-- **Kotlinx Serialization** - JSON parsing.
-- **Paging 3** - Smooth list loading.
-- **Coil** - Image loading optimized for Compose.
+- **Hilt 2.59.2** — dependency injection (+ `hilt-navigation-compose`).
+- **Room 2.8.x** — local persistence (via KSP).
+- **Retrofit 3.0.0 + OkHttp 5.3.x** — type-safe networking with `kotlinx-serialization` converter.
+- **Sandwich 2.2.x** — Retrofit response wrapping.
+- **Paging 3** — smooth list loading.
+- **Coil 2.7** — image loading optimized for Compose.
+- **kotlinx-datetime** and **kotlinx.collections.immutable**.
 
 ### Testing & Quality
-- **JUnit 5** - Modern unit testing.
-- **Roborazzi** - Screen recording and screenshot testing.
-- **Compose Guard** - Monitoring Compose compiler stability.
-- **Kover & Jacoco** - Comprehensive code coverage reports.
-- **Detekt & Spotless** - Strict code style and static analysis.
+- **JUnit 5 (6.0.x)** — modern unit testing.
+- **Roborazzi 1.60.x** — screenshot / golden-image testing.
+- **Compose Guard** — Compose compiler stability metrics.
+- **Kover 0.9.x + JaCoCo 0.8.x** — coverage reports.
+- **Detekt 1.23.x + KtLint + Spotless 8.4.x** — static analysis & formatting.
+- **Dependency Guard** — transitive dependency change detection.
+- **MockK + Mockito + Turbine + Truth + AssertJ** — testing toolkit.
+- **Robolectric** & **Espresso** — JVM- and device-side instrumentation.
 
 ## 📱 Features
 
-- **Adaptive Layouts**: Support for Foldables and Tablets using Material 3 Adaptive.
-- **Edge-to-Edge**: Modern UI implementation by default.
-- **Baseline Profiles**: Optimized startup and frame rates.
-- **Screenshot Testing**: Automated UI regression testing with Roborazzi.
-- **Dependency Guard**: Monitoring transitive dependency changes.
+- **Adaptive Layouts** — foldables and tablets via Material 3 Adaptive.
+- **Edge-to-Edge** — modern UI implementation by default.
+- **Baseline Profiles** — generated via `:benchmarks` for faster startup and smoother frames.
+- **Screenshot Testing** — automated UI regression with Roborazzi + the Compose screenshot plugin.
+- **Dependency Guard** — locks transitive dependency surface across builds.
+- **Signing-ready** — release `signingConfig` resolves keystore credentials from env vars on CI (`SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS`, `SIGNING_KEY_PASSWORD`) or `secrets.defaults.properties` locally.
 
 ## 🧪 Testing
 
 ```bash
-# Run unit tests
+# Run unit tests (JUnit 5)
 ./gradlew test
 
-# Screenshot Tests (Roborazzi)
-./gradlew recordRoborazziDebug   # Record new baselines
-./gradlew verifyRoborazziDebug   # Compare against baselines
+# Screenshot tests (Roborazzi)
+./gradlew recordRoborazziDebug   # record new baselines
+./gradlew verifyRoborazziDebug   # compare against baselines
 
-# Coverage Report
+# Coverage
 ./gradlew koverHtmlReport
+
+# Instrumentation tests
+./gradlew :app:connectedDebugAndroidTest
+
+# Macrobenchmarks & baseline profile
+./gradlew :benchmarks:connectedDebugAndroidTest
+./gradlew :app:generateBaselineProfile
 ```
 
 ## 🚀 Available Commands (Makefile)
 
-The project includes a `Makefile` for developer convenience:
+The `Makefile` wraps common Gradle invocations:
 
-- `make default`: Full build, test, and lint cycle.
-- `make check`: Run Detekt and KtLint.
-- `make robo`: Run full Roborazzi screenshot suite (Record + Verify).
-- `make guard-baseline`: Update Dependency Guard baselines.
-- `make spotless`: Apply code formatting.
+- `make` / `make default` — `build`, `test`, `lint`, `detekt`, plus `updateDebugScreenshotTest` and `validateDebugScreenshotTest`.
+- `make check` — run Detekt.
+- `make ktlint` — run KtLint check.
+- `make spotless` — run Spotless apply + check.
+- `make test` — JVM unit tests.
+- `make android-test` — `:app:connectedDebugAndroidTest`.
+- `make screenshot` — update + validate screenshot tests.
+- `make robo` — clear → record → compare → verify Roborazzi screenshots.
+- `make kover` — generate Kover HTML coverage report.
+- `make jacoco` — copy the JaCoCo HTML report to `jacocoReport/`.
+- `make guard-baseline` — refresh Dependency Guard baselines.
+- `make benchmark` — run macrobenchmarks.
+- `make baseline-profile` — generate baseline profile for `:app`.
+- `make lines` / `make cloc` — Kotlin LoC stats.
 
 ## 📋 Requirements
 
-- **Android Studio** - Ladybug or newer.
-- **JDK 21** - Required for the build system.
-- **Android SDK** - Compile/Target: 37, Min: 24.
-- **Gradle** - 9.3+ (included via wrapper).
+- **Android Studio** — Ladybug or newer.
+- **JDK 21** — required for the build system (set as Kotlin/Java toolchain).
+- **Android SDK** — `compileSdk` / `targetSdk`: **37**, `minSdk`: **24**.
+- **Gradle** — uses the wrapper (`./gradlew`); AGP 9.2.x.
 
 ## 🤝 Contributing
 
@@ -119,4 +172,4 @@ The project includes a `Makefile` for developer convenience:
 
 ## 📄 License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License 2.0 — see the [LICENSE](LICENSE) file for details.

@@ -43,3 +43,42 @@ tasks.configureEach {
         enabled = false
     }
 }
+
+// Bootstraps a new project from this template by delegating to
+// scripts/rename-template.sh. Same flags, exposed as Gradle properties:
+//
+//   ./gradlew renameProject \
+//     -Ppackage=com.example.myapp \
+//     -Pname="My Awesome App" \
+//     [-PpluginAlias=myapp] \
+//     [-Pauthor="Jane Doe"] \
+//     [-PdryRun=true] \
+//     [-Pforce=true]
+tasks.register<Exec>("renameProject") {
+    group = "template"
+    description = "Rename packages, applicationId, plugin aliases, folders, and (optionally) author headers."
+
+    val newPackage  = providers.gradleProperty("package")
+    val newName     = providers.gradleProperty("name")
+    val pluginAlias = providers.gradleProperty("pluginAlias")
+    val author      = providers.gradleProperty("author")
+    val dryRun      = providers.gradleProperty("dryRun").map { it.toBoolean() }.orElse(false)
+    val force       = providers.gradleProperty("force").map { it.toBoolean() }.orElse(false)
+    val script      = layout.projectDirectory.file("scripts/rename-template.sh").asFile
+
+    doFirst {
+        check(newPackage.isPresent) { "missing -Ppackage=<com.example.app>" }
+        check(newName.isPresent)    { "missing -Pname=<\"My App\">" }
+        val cmd = mutableListOf("bash", script.absolutePath,
+            "--package", newPackage.get(),
+            "--name",    newName.get())
+        pluginAlias.orNull?.let { cmd += listOf("--plugin-alias", it) }
+        author.orNull?.let      { cmd += listOf("--author", it) }
+        if (dryRun.get()) cmd += "--dry-run"
+        if (force.get())  cmd += "--force"
+        commandLine(cmd)
+    }
+    // Placeholder commandLine; replaced in doFirst above. Gradle requires it
+    // be non-empty at configuration time.
+    commandLine("bash", "-c", "true")
+}
