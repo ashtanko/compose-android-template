@@ -30,3 +30,7 @@ include(":app")
 include(":library-kotlin")
 include(":library-android")
 include(":benchmarks")
+
+// region core
+include(":core:navigation")
+// endregion

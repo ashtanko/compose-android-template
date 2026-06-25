@@ -20,9 +20,3 @@ plugins {
 dependencies {
 
 }
-
-tasks {
-    withType<Test> {
-        useJUnitPlatform()
-    }
-}

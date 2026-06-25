@@ -22,6 +22,7 @@ plugins {
     alias(libs.plugins.roborazzi) apply false
     alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin) apply false
     alias(libs.plugins.dependencyGuard) apply false
+    alias(libs.plugins.spotless) apply false
 }
 
 // CI Task Exclusion Logic

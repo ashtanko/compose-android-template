@@ -2,6 +2,7 @@ import com.android.build.api.dsl.ApplicationExtension
 import dev.shtanko.androidlab.configureDetekt
 import dev.shtanko.androidlab.configureGradleManagedDevices
 import dev.shtanko.androidlab.configureKotlinAndroid
+import dev.shtanko.androidlab.configureSpotlessForAndroid
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -26,6 +27,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 defaultConfig.targetSdk = 37
                 testOptions.animationsDisabled = true
             }
+            configureSpotlessForAndroid()
         }
     }
 }

@@ -31,32 +31,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
-        testInstrumentationRunnerArguments["runnerBuilder"] = "de.mannodermaus.junit5.AndroidJUnit5Builder"
-    }
-
-    testOptions {
-        // Required for Robolectric
-        unitTests.isIncludeAndroidResources = true
-        unitTests.isReturnDefaultValues = true
-
-        unitTests.all {
-            it.useJUnitPlatform()
-            it.jvmArgs(
-                "--add-opens",
-                "java.base/java.util=ALL-UNNAMED",
-                "--add-opens",
-                "java.base/java.lang=ALL-UNNAMED",
-                "--add-opens",
-                "java.base/java.time=ALL-UNNAMED",
-                "-Xshare:off",
-            )
-        }
-    }
-}
-
-tasks {
-    withType<Test> {
-        useJUnitPlatform()
+        testInstrumentationRunnerArguments["runnerBuilder"] =
+            "de.mannodermaus.junit5.AndroidJUnit5Builder"
     }
 }
 

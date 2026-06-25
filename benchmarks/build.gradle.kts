@@ -21,12 +21,9 @@ plugins {
 
 android {
     namespace = "dev.shtanko.template.benchmarks"
-    targetProjectPath = ":app"
-    experimentalProperties["android.experimental.self-instrumenting"] = true
 
     defaultConfig {
         minSdk = 28
-        compileSdk = 37
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "APP_BUILD_TYPE_SUFFIX", "\"\"")
@@ -43,6 +40,9 @@ android {
             systemImageSource = "aosp"
         }
     }
+
+    targetProjectPath = ":app"
+    experimentalProperties["android.experimental.self-instrumenting"] = true
 }
 
 baselineProfile {
@@ -63,7 +63,5 @@ dependencies {
     implementation(libs.androidx.test.rules)
     implementation(libs.androidx.test.runner)
     implementation(libs.androidx.uiautomator)
-
     implementation(libs.androidx.junit)
-    implementation(libs.androidx.uiautomator)
 }

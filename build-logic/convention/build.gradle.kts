@@ -51,6 +51,14 @@ gradlePlugin {
             id = "androidlab.android.feature"
             implementationClass = "AndroidFeatureConventionPlugin"
         }
+        register("androidFeatureApi") {
+            id = libs.plugins.androidlab.android.feature.api.get().pluginId
+            implementationClass = "AndroidFeatureApiConventionPlugin"
+        }
+        register("androidFeatureImpl") {
+            id = libs.plugins.androidlab.android.feature.impl.get().pluginId
+            implementationClass = "AndroidFeatureImplConventionPlugin"
+        }
         register("hilt") {
             id = "androidlab.hilt"
             implementationClass = "HiltConventionPlugin"

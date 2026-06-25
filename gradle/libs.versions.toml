@@ -77,6 +77,7 @@ assertj = "3.27.7"
 android-junit5-plugin = "2.0.1"
 android-junit5-test = "2.0.1"
 navigation3 = "1.1.2"
+androidxLifecycleViewModelNavigation3 = "2.10.0"
 nav3Material = "1.3.0-rc01"
 lifecycleViewmodel = "2.11.0"
 androidxMacroBenchmark = "1.5.0-alpha06"
@@ -86,10 +87,14 @@ androidxTestRules = "1.7.0"
 androidxTestRunner = "1.7.0"
 androidxTracing = "1.3.0-alpha02"
 androidxEspresso = "3.6.1"
+androidxSavedStateCompose = "1.3.1"
 
 compileSdk = "37"
 minSdk = "24"
 targetSdk = "37"
+
+[bundles]
+androidx-compose-ui-test = ["androidx-compose-ui-test", "androidx-compose-ui-testManifest"]
 
 [libraries]
 
@@ -158,6 +163,10 @@ androidx-test-core = { group = "androidx.test", name = "core", version.ref = "an
 androidx-test-ext = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "androidxTestExt" }
 androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "androidxTestRules" }
 androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTestRunner" }
+androidx-savedstate-compose = { group = "androidx.savedstate", name = "savedstate-compose", version.ref = "androidxSavedStateCompose" }
+androidx-compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-compose-ui-testManifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-lifecycle-viewModel-testing = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-testing", version.ref = "lifecycleViewmodel" }
 # endregion
 
 google-play-review = { module = "com.google.android.play:review", version.ref = "googleReview" }
@@ -281,7 +290,7 @@ kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref =
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 sonarqube = { id = "org.sonarqube", version.ref = "sonarqube" }
 screenshot = { id = "com.android.compose.screenshot", version.ref = "screenshot" }
-baselineprofile = { id = "androidx.baselineprofile", version.ref = "androidx-baselineprofile" }
+baselineprofile = { id = "androidx.baselineprofile", version.ref = "androidxMacroBenchmark"}
 android-test = { id = "com.android.test", version.ref = "agp" }
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 google-android-libraries-mapsplatform-secrets-gradle-plugin = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "googleAndroidLibrariesMapsplatformSecretsGradlePlugin" }
@@ -301,3 +310,5 @@ androidlab-hilt = { id = "androidlab.hilt", version = "unspecified" }
 androidlab-hilt-android = { id = "androidlab.hilt.android", version = "unspecified" }
 androidlab-jvm-library = { id = "androidlab.jvm.library", version = "unspecified" }
 android-junit5 = { id = "de.mannodermaus.android-junit5", version.ref = "android-junit5-plugin" }
+androidlab-android-feature-impl = { id = "androidlab.android.feature.impl" }
+androidlab-android-feature-api = { id = "androidlab.android.feature.api" }
