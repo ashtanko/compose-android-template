@@ -15,6 +15,7 @@ coroutines = "1.11.0"                       # https://github.com/Kotlin/kotlinx.
 dokka = "2.2.0"                             # https://github.com/Kotlin/dokka
 spotless = "8.7.0"                          # https://github.com/diffplug/spotless
 ktlint = "14.2.0"                           # https://github.com/JLLeitschuh/ktlint-gradle
+ktlintCli = "1.4.0"                         # https://github.com/pinterest/ktlint
 serialization = "1.11.0"                    # https://github.com/Kotlin/kotlinx.serialization
 mockito = "5.23.0"                          # https://mvnrepository.com/artifact/org.mockito/mockito-core
 mockito_kotlin = "5.4.0"                    # https://github.com/mockito/mockito-kotlin
