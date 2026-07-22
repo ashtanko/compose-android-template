@@ -1,5 +1,6 @@
 import com.android.build.api.dsl.TestExtension
 import dev.shtanko.androidlab.configureKotlinAndroid
+import dev.shtanko.androidlab.configureSpotlessForAndroid
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
@@ -15,6 +16,7 @@ class AndroidTestConventionPlugin : Plugin<Project> {
                 configureKotlinAndroid(this)
                 defaultConfig.targetSdk = 37
             }
+            configureSpotlessForAndroid()
         }
     }
 }
