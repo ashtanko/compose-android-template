@@ -34,3 +34,7 @@ include(":benchmarks")
 // region core
 include(":core:navigation")
 // endregion
+
+// region feature
+include(":feature:database")
+// endregion
