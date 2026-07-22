@@ -1,0 +1,4 @@
+interface:
+  display_name: "Verify Android Change"
+  short_description: "Select focused checks for Android changes"
+  default_prompt: "Use $verify-android-change to validate this change with the smallest meaningful set of checks."

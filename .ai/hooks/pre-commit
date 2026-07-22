@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+needs_spotless=false
+
+while IFS= read -r -d '' path; do
+  case "$path" in
+    *.sh)
+      if git cat-file -e ":$path" 2>/dev/null; then
+        printf 'Checking shell syntax: %s\n' "$path"
+        if ! git show ":$path" | bash -n; then
+          printf 'Shell syntax check failed: %s\n' "$path" >&2
+          exit 1
+        fi
+      fi
+      ;;
+    *.kt|*.kts)
+      needs_spotless=true
+      ;;
+  esac
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+if [[ "$needs_spotless" == true ]]; then
+  printf 'Checking Kotlin formatting with Spotless...\n'
+  ./gradlew spotlessCheck
+fi

@@ -42,7 +42,7 @@ internal fun Project.configureSpotlessForRootProject() {
     extensions.configure<SpotlessExtension> {
         kotlin {
             target("build-logic/convention/src/**/*.kt")
-            ktlint(libs.findVersion("ktlint").get().requiredVersion).editorConfigOverride(
+            ktlint(libs.findVersion("ktlintCli").get().requiredVersion).editorConfigOverride(
                 mapOf("android" to "true"),
             )
             licenseHeaderFile(rootDir.resolve("spotless/copyright.kt"))
@@ -64,7 +64,7 @@ private fun Project.configureSpotlessCommon() {
     extensions.configure<SpotlessExtension> {
         kotlin {
             target("src/**/*.kt")
-            ktlint(libs.findVersion("ktlint").get().requiredVersion).editorConfigOverride(
+            ktlint(libs.findVersion("ktlintCli").get().requiredVersion).editorConfigOverride(
                 mapOf("android" to "true"),
             )
             licenseHeaderFile(rootDir.resolve("spotless/copyright.kt"))

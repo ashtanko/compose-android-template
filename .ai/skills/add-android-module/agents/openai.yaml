@@ -1,0 +1,4 @@
+interface:
+  display_name: "Add Android Module"
+  short_description: "Create a convention-based Gradle module"
+  default_prompt: "Use $add-android-module to add a new module that follows this repository’s conventions."
