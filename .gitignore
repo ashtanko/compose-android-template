@@ -144,3 +144,9 @@ build/
 !gradle-wrapper.jar
 .env
 reports
+
+# Shared agent guidance is intentionally versioned.
+!AGENTS.md
+!CLAUDE.md
+!.ai/
+!.ai/**

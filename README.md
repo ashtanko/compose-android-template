@@ -65,7 +65,11 @@ A modern, production-ready Android template built with **Jetpack Compose**, **Na
 The project follows a modular layout backed by Gradle convention plugins:
 
 ```
+├── .ai/                    # Shared coding-agent references, skills, and hooks
+├── AGENTS.md               # Canonical coding-agent instructions
 ├── app/                    # Main Android application (Compose + Navigation 3)
+├── core/                   # Shared application foundations, such as navigation
+├── feature/                # Feature-focused Android modules
 ├── library-android/        # Android-specific library module
 ├── library-kotlin/         # Pure Kotlin library module (business logic)
 ├── benchmarks/             # Macrobenchmark + baseline profile generator
@@ -82,10 +86,10 @@ Convention plugins under `build-logic/convention` (e.g. `androidlab.android.appl
 ## 🛠️ Technology Stack
 
 ### Core Technologies
-- **Kotlin 2.3.21** — with Strong Skipping support.
-- **Android Gradle Plugin 9.2.1** — latest build system features.
-- **Jetpack Compose** — Compose BOM `2026.05.00`, Material 3, Material 3 Adaptive.
-- **Navigation 3** (`1.1.1`) alongside `androidx.navigation:navigation-compose` (`2.9.8`).
+- **Kotlin 2.4.0** — configured through the version catalog.
+- **Android Gradle Plugin 9.2.1** — Android build configuration.
+- **Jetpack Compose** — Compose BOM `2026.05.01`, Material 3, Material 3 Adaptive.
+- **Navigation 3** (`1.1.2`) alongside `androidx.navigation:navigation-compose` (`2.9.8`).
 - **Kotlin Coroutines 1.11.x** and **kotlinx.serialization 1.11.x**.
 
 ### Architecture & Dependencies
@@ -99,10 +103,10 @@ Convention plugins under `build-logic/convention` (e.g. `androidlab.android.appl
 
 ### Testing & Quality
 - **JUnit 5 (6.0.x)** — modern unit testing.
-- **Roborazzi 1.60.x** — screenshot / golden-image testing.
+- **Roborazzi 1.64.x** — screenshot / golden-image testing.
 - **Compose Guard** — Compose compiler stability metrics.
 - **Kover 0.9.x + JaCoCo 0.8.x** — coverage reports.
-- **Detekt 1.23.x + KtLint + Spotless 8.4.x** — static analysis & formatting.
+- **Detekt 1.23.x + KtLint + Spotless 8.7.x** — static analysis & formatting.
 - **Dependency Guard** — transitive dependency change detection.
 - **MockK + Mockito + Turbine + Truth + AssertJ** — testing toolkit.
 - **Robolectric** & **Espresso** — JVM- and device-side instrumentation.
@@ -158,10 +162,14 @@ The `Makefile` wraps common Gradle invocations:
 
 ## 📋 Requirements
 
-- **Android Studio** — Ladybug or newer.
+- **Android Studio** — a release compatible with AGP 9.2 and Android SDK 37.
 - **JDK 21** — required for the build system (set as Kotlin/Java toolchain).
 - **Android SDK** — `compileSdk` / `targetSdk`: **37**, `minSdk`: **24**.
 - **Gradle** — uses the wrapper (`./gradlew`); AGP 9.2.x.
+
+## 🤖 AI-assisted development
+
+Coding agents should start with [`AGENTS.md`](AGENTS.md). The [`.ai` workspace](.ai/README.md) contains progressively loaded architecture and command references, reusable module/validation skills, and an optional pre-commit hook. `CLAUDE.md` is kept as a thin Claude Code adapter so repository guidance has one canonical source.
 
 ## 🤝 Contributing
 
