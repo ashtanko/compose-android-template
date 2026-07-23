@@ -196,12 +196,36 @@ check_verification_contract() {
     fi
 }
 
+check_pull_request_maintenance_contract() {
+    local required_prompt
+
+    for required_prompt in \
+        "module boundaries or public APIs" \
+        "which tests were selected and why" \
+        "Screenshot, dependency, lint, or baseline-profile changes are intentional" \
+        "security, privacy, performance, documentation, and agent-guidance impacts" \
+        "architectural decision record"; do
+        if ! rg --fixed-strings --ignore-case --quiet \
+            "$required_prompt" \
+            .github/PULL_REQUEST_TEMPLATE; then
+            fail "pull-request template is missing maintenance prompt: $required_prompt"
+        fi
+    done
+
+    if ! rg --fixed-strings --ignore-case --quiet \
+        "At least once per calendar quarter" \
+        .agents/README.md; then
+        fail "agent guidance must define a quarterly maintenance audit"
+    fi
+}
+
 check_canonical_agent_entrypoint
 check_local_markdown_links
 check_documented_make_targets
 check_documented_modules
 check_version_policy
 check_verification_contract
+check_pull_request_maintenance_contract
 
 if ((failures > 0)); then
     printf 'Documentation checks failed with %d error(s).\n' "$failures" >&2
