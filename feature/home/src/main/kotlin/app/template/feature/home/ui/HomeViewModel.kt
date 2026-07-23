@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-package app.template.feature.home
+package app.template.feature.home.ui
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import app.template.feature.home.ui.model.FactorialResult
+import app.template.feature.home.ui.model.HomeInputError
+import app.template.feature.home.ui.model.HomeUiState
 import app.template.library.FactorialCalculator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,16 +29,16 @@ import kotlinx.coroutines.flow.update
 
 internal const val MAX_FACTORIAL_INPUT = 20
 
-class HomeViewModel internal constructor(
+internal class HomeViewModel internal constructor(
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     private val mutableState = MutableStateFlow(
         HomeUiState(input = savedStateHandle[INPUT_KEY] ?: ""),
     )
-    val state: StateFlow<HomeUiState> = mutableState.asStateFlow()
+    internal val state: StateFlow<HomeUiState> = mutableState.asStateFlow()
 
-    fun onInputChanged(input: String) {
+    internal fun onInputChanged(input: String) {
         savedStateHandle[INPUT_KEY] = input
         mutableState.update { current ->
             current.copy(
@@ -46,7 +49,7 @@ class HomeViewModel internal constructor(
         }
     }
 
-    fun onCalculateClick() {
+    internal fun onCalculateClick() {
         val input = state.value.input
         val parsedInput = input.toIntOrNull()
         val inputError = when {
@@ -80,6 +83,6 @@ class HomeViewModel internal constructor(
     }
 
     private companion object {
-        const val INPUT_KEY = "factorial_input"
+        private const val INPUT_KEY = "factorial_input"
     }
 }

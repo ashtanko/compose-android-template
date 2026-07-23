@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package app.template.feature.home
+package app.template.feature.home.ui
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
@@ -22,17 +22,20 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import app.template.feature.home.ui.model.FactorialResult
+import app.template.feature.home.ui.model.HomeInputError
+import app.template.feature.home.ui.model.HomeUiState
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 
-class HomeScreenTest {
+public class HomeScreenTest {
 
     @get:Rule
-    val composeTestRule = createComposeRule()
+    public val composeTestRule = createComposeRule()
 
     @Test
-    fun inputAndActionsForwardUserIntent() {
+    public fun inputAndActionsForwardUserIntent() {
         var input = ""
         var calculateClicks = 0
         var navigationClicks = 0
@@ -57,7 +60,7 @@ class HomeScreenTest {
     }
 
     @Test
-    fun resultAndValidationErrorAreDisplayed() {
+    public fun resultAndValidationErrorAreDisplayed() {
         composeTestRule.setContent {
             MaterialTheme {
                 HomeScreen(

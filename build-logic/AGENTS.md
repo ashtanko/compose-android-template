@@ -10,6 +10,8 @@ The root [`AGENTS.md`](../AGENTS.md) applies. This file adds rules for the inclu
   the existing focused convention rather than creating an all-purpose plugin.
 - Do not place application or feature policy in a convention plugin.
 - Treat public plugin IDs and shared defaults as cross-module APIs.
+- Keep `androidlab.kotlin.explicit-visibility` opt-in. Enabling it for another module requires an
+  API-surface review and explicit modifiers based on actual usage.
 - Avoid eager project configuration and task realization; use Gradle providers and lazy task
   configuration.
 - Add functional coverage when behavior cannot be proven by compilation or static checks alone.

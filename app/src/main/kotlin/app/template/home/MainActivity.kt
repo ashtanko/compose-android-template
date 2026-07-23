@@ -23,7 +23,9 @@ import androidx.core.view.WindowCompat
 import app.template.home.navigation.MainNavigation
 import app.template.ui.setEdgeToEdgeConfig
 import app.template.ui.theme.TemplateTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

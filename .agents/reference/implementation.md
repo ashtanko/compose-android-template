@@ -13,7 +13,9 @@ section before making a non-trivial change in that area.
 
 - `app` owns the Android application, root dependency graph, top-level theme application, and root
   Navigation 3 composition.
-- `feature/*` owns feature UI, feature state holders, and feature-specific data orchestration.
+- `feature/*` owns feature UI, feature state holders, domain contracts, and feature-specific data
+  orchestration. See the posts modules in [`ARCHITECTURE.md`](../../ARCHITECTURE.md) when a feature
+  has enough asynchronous and data behavior to justify separate layers.
 - `core/designsystem` owns reusable visual tokens and Compose components, not product workflows.
 - `core/navigation` owns shared back-stack primitives and behavior, not feature UI.
 - Kotlin/JVM modules own platform-independent rules and models that do not need Android APIs.
@@ -28,16 +30,64 @@ section before making a non-trivial change in that area.
 Read [`architecture.md`](architecture.md) and [`decisions.md`](decisions.md) before changing these
 boundaries.
 
+## Explicit visibility
+
+Explicit visibility is mandatory in modules that apply
+`androidlab.kotlin.explicit-visibility`. The standard Detekt task checks every source set and fails
+when an eligible declaration relies on Kotlin's implicit `public` default.
+
+Choose the narrowest visibility that supports the real call sites:
+
+- `private` for file-local constants, mappers, previews, and class implementation details;
+- `internal` for DTOs, data sources, repository implementations, ViewModels, UI state, screens,
+  feature-local components, and other declarations shared only inside one Gradle module;
+- `public` for genuine cross-module contracts and entry points, such as domain models, repository
+  interfaces, use cases, and the route function called by `app`;
+- `protected` only for an intentional subclass extension point.
+
+An override may need to remain explicitly `public` to satisfy its inherited contract even when its
+owning implementation class is `internal`. A public declaration must not expose an internal type.
+Use a public wrapper around an internal overload when an app-facing Compose route needs an internal
+ViewModel.
+
+```kotlin
+private const val DEFAULT_PAGE_SIZE: Int = 20
+
+public interface PostsRepository {
+    public suspend fun getPosts(page: Int): DomainResult<PostsPage>
+}
+
+internal class PostsRepositoryImpl : PostsRepository {
+    public override suspend fun getPosts(page: Int): DomainResult<PostsPage> = TODO()
+}
+```
+
+See [`architecture.md`](architecture.md) for the current enforcement scope. Add the convention
+plugin only after assigning visibility from actual usages rather than defaulting every declaration
+to `public`.
+
 ## Screen structure
 
 For a stateful screen, separate state-holder wiring from plain UI rendering:
 
 ```kotlin
 @Composable
-fun ProfileRoute(
+public fun ProfileRoute(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ProfileViewModel = hiltViewModel(),
+) {
+    ProfileRoute(
+        onBackClick = onBackClick,
+        viewModel = hiltViewModel(),
+        modifier = modifier,
+    )
+}
+
+@Composable
+internal fun ProfileRoute(
+    onBackClick: () -> Unit,
+    viewModel: ProfileViewModel,
+    modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -50,7 +100,7 @@ fun ProfileRoute(
 }
 
 @Composable
-fun ProfileScreen(
+internal fun ProfileScreen(
     state: ProfileUiState,
     onRetryClick: () -> Unit,
     onBackClick: () -> Unit,
@@ -61,8 +111,9 @@ fun ProfileScreen(
 ```
 
 The compiled reference is
-[`HomeRoute.kt`](../../feature/home/src/main/kotlin/app/template/feature/home/HomeRoute.kt) with
-[`HomeScreen.kt`](../../feature/home/src/main/kotlin/app/template/feature/home/HomeScreen.kt).
+[`PostsRoute.kt`](../../feature/posts/presentation/src/main/kotlin/app/template/feature/posts/presentation/ui/PostsRoute.kt)
+with
+[`PostsScreen.kt`](../../feature/posts/presentation/src/main/kotlin/app/template/feature/posts/presentation/ui/PostsScreen.kt).
 Keep this shape aligned with that feature as the template evolves.
 
 - The route/state-holder composable may obtain injected objects, collect lifecycle-aware state, and
@@ -74,6 +125,8 @@ Keep this shape aligned with that feature as the template evolves.
 - Do not create both functions when the screen is static or the split adds no isolation.
 - Do not pass a ViewModel, component, repository, or navigator through the child composable tree.
 - Keep previews and most Compose tests on the plain UI function.
+- Keep route, screen, UI state, and ViewModel files in the feature's `ui` package. Put display-only
+  models in `ui/model` and extracted feature-local composables in `ui/components`.
 
 Follow
 [`compose-state-holder-ui-split`](../skills/compose-state-holder-ui-split/SKILL.md) and

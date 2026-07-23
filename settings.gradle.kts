@@ -39,4 +39,7 @@ include(":core:designsystem")
 // region feature
 include(":feature:database")
 include(":feature:home")
+include(":feature:posts:domain")
+include(":feature:posts:data")
+include(":feature:posts:presentation")
 // endregion

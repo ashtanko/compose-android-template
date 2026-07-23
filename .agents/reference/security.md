@@ -55,8 +55,7 @@ activity, service, receiver, or provider requires an explicit use case and secur
 - Never commit `local.properties`, production keystores, signing passwords, tokens, or environment
   files.
 - Values placed in resources, assets, native code, or `BuildConfig` can be recovered from an APK.
-  The `TMDB_API_KEY` wiring in [`app/build.gradle.kts`](../../app/build.gradle.kts) is configuration,
-  not secure secret storage.
+  Treat every client-side value as configuration, not secure secret storage.
 - Keep privileged API credentials and authorization enforcement on a trusted backend.
 - Preserve the documented CI environment-variable contract for release signing.
 - Use the repository's template debug keystore only for local/template purposes.

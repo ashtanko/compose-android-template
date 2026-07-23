@@ -19,9 +19,9 @@ package app.template.feature.database
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class DatabaseTest {
+internal class DatabaseTest {
     @Test
-    fun testGreet() {
+    internal fun testGreet() {
         val module = Database()
         assertEquals("Hello from database!", module.greet())
     }

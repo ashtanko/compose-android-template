@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import java.util.Properties
 
 val isCiBuild = providers.environmentVariable("CI").map(String::toBoolean).getOrElse(false)
@@ -65,10 +64,6 @@ android {
         applicationId = "dev.shtanko.template"
         versionCode = 1
         versionName = "1.0"
-
-        // Client-side configuration only: BuildConfig values are recoverable from APKs.
-        val apiKey = gradleLocalProperties(rootDir, providers).getProperty("TMDB_API_KEY") ?: ""
-        buildConfigField("String", "TMDB_API_KEY", "\"$apiKey\"")
     }
 
     signingConfigs {
@@ -108,9 +103,6 @@ android {
         }
     }
 
-    buildFeatures {
-        buildConfig = true
-    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -177,6 +169,8 @@ tasks {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":feature:home"))
+    implementation(project(":feature:posts:data"))
+    implementation(project(":feature:posts:presentation"))
 
     libs.apply {
         androidx.apply {

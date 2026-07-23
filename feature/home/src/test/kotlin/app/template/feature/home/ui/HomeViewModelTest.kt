@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-package app.template.feature.home
+package app.template.feature.home.ui
 
 import androidx.lifecycle.SavedStateHandle
+import app.template.feature.home.ui.model.FactorialResult
+import app.template.feature.home.ui.model.HomeInputError
+import app.template.feature.home.ui.model.HomeUiState
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-class HomeViewModelTest {
+internal class HomeViewModelTest {
 
     @Test
-    fun `calculate valid input updates result`() {
+    internal fun `calculate valid input updates result`() {
         val viewModel = HomeViewModel(SavedStateHandle())
 
         viewModel.onInputChanged("5")
@@ -38,7 +41,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `calculate blank input reports required error`() {
+    internal fun `calculate blank input reports required error`() {
         val viewModel = HomeViewModel(SavedStateHandle())
 
         viewModel.onCalculateClick()
@@ -47,7 +50,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `calculate non numeric input reports invalid number error`() {
+    internal fun `calculate non numeric input reports invalid number error`() {
         val viewModel = HomeViewModel(SavedStateHandle())
 
         viewModel.onInputChanged("not a number")
@@ -57,7 +60,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `calculate input above safe long range reports range error`() {
+    internal fun `calculate input above safe long range reports range error`() {
         val viewModel = HomeViewModel(SavedStateHandle())
 
         viewModel.onInputChanged("21")
@@ -67,7 +70,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `editing input clears prior result and persists the input`() {
+    internal fun `editing input clears prior result and persists the input`() {
         val savedStateHandle = SavedStateHandle()
         val viewModel = HomeViewModel(savedStateHandle)
         viewModel.onInputChanged("5")

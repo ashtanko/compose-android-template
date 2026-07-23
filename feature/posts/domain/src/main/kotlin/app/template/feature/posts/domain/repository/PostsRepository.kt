@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-package app.template.feature.home
+package app.template.feature.posts.domain.repository
 
-data class HomeUiState(
-    val input: String = "",
-    val result: FactorialResult? = null,
-    val inputError: HomeInputError? = null,
-)
+import app.template.feature.posts.domain.model.PostsPage
+import app.template.feature.posts.domain.result.DomainResult
 
-data class FactorialResult(
-    val input: Int,
-    val value: Long,
-)
-
-enum class HomeInputError {
-    Required,
-    InvalidNumber,
-    OutOfRange,
+public interface PostsRepository {
+    public suspend fun getPosts(
+        page: Int,
+        pageSize: Int,
+    ): DomainResult<PostsPage>
 }

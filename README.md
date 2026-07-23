@@ -71,16 +71,6 @@ make verify
 
 ### Local configuration
 
-`TMDB_API_KEY` can be set in the untracked `local.properties` file for the demo integration:
-
-```properties
-TMDB_API_KEY=your-development-key
-```
-
-The value is compiled into `BuildConfig` and can be recovered from an APK. Treat it as client
-configuration, not as a secret; privileged credentials and authorization checks belong on a
-trusted backend.
-
 For local release signing, use an untracked `key.properties` file with `storeFile`,
 `storePassword`, `keyAlias`, and `keyPassword`. CI keeps the existing
 `SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS`, and `SIGNING_KEY_PASSWORD` environment-variable
@@ -90,12 +80,19 @@ contract.
 
 The project follows a modular layout backed by Gradle convention plugins:
 
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for layer responsibilities, dependency direction, UI-state
+rules, and the complete posts demo walkthrough.
+
 ```
 ├── .agents/                # Shared coding-agent references, skills, and hooks
 ├── AGENTS.md               # Canonical coding-agent instructions
 ├── app/                    # Main Android application (Compose + Navigation 3)
 ├── core/                   # Shared application foundations, such as navigation
-├── feature/                # Feature-focused Android modules
+├── feature/                # Feature-focused modules
+│   └── posts/              # Clean Architecture demo
+│       ├── domain/         # model/, repository/, result/, usecase/
+│       ├── data/           # di/, local/, remote/, mapper/, repository/
+│       └── presentation/   # di/, ui/, ui/model/, ui/components/
 ├── library-android/        # Android-specific library module
 ├── library-kotlin/         # Pure Kotlin library module (business logic)
 ├── benchmarks/             # Macrobenchmark + baseline profile generator
@@ -107,7 +104,10 @@ The project follows a modular layout backed by Gradle convention plugins:
 └── scripts/                # Helper scripts (e.g. rename-template.sh)
 ```
 
-Convention plugins under `build-logic/convention` (e.g. `androidlab.android.application.compose`, `androidlab.android.library.compose`, `androidlab.android.feature`, `androidlab.android.junit5`, `androidlab.android.compose.screenshot`, `androidlab.android.roborazzi`, `androidlab.android.benchmark`, `androidlab.hilt`, `androidlab.android.room`, and `androidlab.android.lint`) keep per-module `build.gradle.kts` files small and consistent.
+Convention plugins under `build-logic/convention` (e.g. `androidlab.android.application.compose`, `androidlab.android.library.compose`, `androidlab.android.feature`, `androidlab.android.junit5`, `androidlab.android.compose.screenshot`, `androidlab.android.roborazzi`, `androidlab.android.benchmark`, `androidlab.hilt`, `androidlab.android.room`, `androidlab.android.lint`, and the selective `androidlab.kotlin.explicit-visibility`) keep per-module `build.gradle.kts` files small and consistent.
+
+Kotlin packages mirror these directories. Single-module UI features use `ui`, `ui/model`, and
+`ui/components`; reusable components shared by unrelated features live in `core/designsystem`.
 
 ### Adding modules
 
@@ -137,19 +137,24 @@ those values; the summary below intentionally avoids copying fast-changing versi
 - **Paging 3** — smooth list loading.
 - **Coil** — image loading optimized for Compose.
 - **kotlinx-datetime** and **kotlinx.collections.immutable**.
+- **Clean Architecture + MVVM** — an end-to-end paginated posts feature with enforced domain,
+  data, and presentation module boundaries.
 
 ### Testing & Quality
 - **JUnit 5** — modern unit testing.
 - **Roborazzi** — screenshot / golden-image testing.
 - **Compose Guard** — Compose compiler stability metrics.
 - **Kover + JaCoCo** — coverage reports.
-- **Detekt + Compose Rules + KtLint + Spotless** — Kotlin and Compose-specific static analysis and formatting.
+- **Detekt + Compose Rules + KtLint + Spotless** — Kotlin and Compose-specific static analysis,
+  selective explicit-visibility enforcement for feature/layer modules, and formatting.
 - **Dependency Guard** — transitive dependency change detection.
 - **MockK + Mockito + Turbine + Truth + AssertJ** — testing toolkit.
 - **Robolectric** & **Espresso** — JVM- and device-side instrumentation.
 
 ## 📱 Features
 
+- **Posts architecture demo** — Retrofit pagination, in-memory cache fallback, DTO/domain/UI
+  mapping, Hilt, sealed UI state, retry, and incremental loading.
 - **Adaptive Layouts** — foldables and tablets via Material 3 Adaptive.
 - **Edge-to-Edge** — modern UI implementation by default.
 - **Baseline Profiles** — generated via `:benchmarks` for faster startup and smoother frames.

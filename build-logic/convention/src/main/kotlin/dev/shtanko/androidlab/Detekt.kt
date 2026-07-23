@@ -1,5 +1,5 @@
 package dev.shtanko.androidlab
-
+import dev.shtanko.androidlab.detekt.DetektRulesClasspathMarker
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 import org.gradle.api.Project
@@ -59,6 +59,10 @@ internal fun Project.configureDetekt() {
     }
 
     dependencies {
+        val architectureRules = files(
+            DetektRulesClasspathMarker::class.java.protectionDomain.codeSource.location,
+        )
+        "detektPlugins"(architectureRules)
         "detektPlugins"(libs.findLibrary("detekt-formatting").get())
         "detektPlugins"(libs.findLibrary("detekt-rules").get())
     }

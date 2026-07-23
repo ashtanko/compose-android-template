@@ -151,6 +151,68 @@ SARIF.
 **Review when:** A required host check cannot run reliably on developer machines, the managed-device
 boundary changes, or GitHub's SARIF upload permission model changes.
 
+### AD-007: Stateful data features use inward dependencies
+
+**Status:** Accepted
+
+**Context:** A network-backed feature needs independently testable business rules, transport
+mapping, cache/error policy, lifecycle-aware state production, and Compose rendering. Keeping those
+concerns in one Android module makes framework independence a convention rather than an enforced
+boundary.
+
+**Decision:** When a feature has enough real behavior to justify the split, use sibling `domain`,
+`data`, and `presentation` modules under the feature. Domain is Kotlin/JVM and owns models, use
+cases, failures, and repository interfaces. Data and presentation both depend inward on domain and
+never on each other. The app is the composition root and depends on both implementation sides so
+Hilt can complete the graph. Small or static features remain single modules until these boundaries
+provide value. Within each module, source directories mirror responsibility-based packages:
+`model`, `repository`, `result`, and `usecase` in domain; `di`, source, transport, mapper, and
+repository packages in data; and `di`, `ui`, `ui/model`, and `ui/components` in presentation.
+Single-module features use the same `ui` convention without inventing empty layer modules.
+
+**Alternatives:** A package-only split inside one Android module was rejected for data-backed
+reference features because Android and infrastructure dependencies remain available to every
+package. A global `domain` or `data` catch-all was rejected because it erases feature ownership.
+Requiring three modules for every screen was rejected because static UI does not earn that
+complexity.
+
+**Consequences:** Domain behavior is framework-independent and fast to test, DTOs cannot leak into
+presentation through Gradle dependencies, and the app has an explicit composition role. Layered
+features add module and DI wiring that must be maintained and verified.
+
+**Review when:** Most features remain too small to benefit, the project adopts multiplatform source
+sets that need different boundaries, or build measurements show the module shape creates material
+cost without isolation value.
+
+### AD-008: Feature boundaries require explicit Kotlin visibility
+
+**Status:** Accepted
+
+**Context:** Kotlin declarations are public by default. In feature and layered modules, an omitted
+modifier can accidentally expand the module API and obscure which declarations are contracts versus
+implementation details.
+
+**Decision:** Modules with intentional feature or layer boundaries opt in to
+`androidlab.kotlin.explicit-visibility`. Its custom Detekt rule checks non-local classes, objects,
+named functions, properties, and primary-constructor properties in every source set. The initial
+scope is `feature/database`, `feature/home`, and all three `feature/posts` layer modules. Visibility
+is assigned from actual usage: file/class details are `private`, module implementation is
+`internal`, and only genuine module contracts or app-facing entry points are `public`.
+
+**Alternatives:** A repository-wide compiler flag was rejected because host, shared-library,
+benchmark, and build-logic APIs have different compatibility needs and require a separate surface
+review. Relying on review alone was rejected because Kotlin's implicit public default is easy to
+miss and cannot protect future changes.
+
+**Consequences:** Standard Detekt, `make verify`, and pull-request CI fail when opted-in modules omit
+visibility. Enabling the plugin in another module requires a deliberate API review and an initial
+visibility cleanup. The custom rule and convention plugin are part of the build-logic contract and
+need focused tests.
+
+**Review when:** Kotlin or Detekt provides an equivalent selective compiler-backed check, the
+enforcement scope expands beyond feature boundaries, or maintaining the custom PSI rule becomes
+more costly than its API-safety benefit.
+
 ## New decision template
 
 ```markdown

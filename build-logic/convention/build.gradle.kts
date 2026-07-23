@@ -62,6 +62,7 @@ dependencies {
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.ksp.gradlePlugin)
     compileOnly(libs.room.gradlePlugin)
+    compileOnly(libs.detekt.api)
     compileOnly(libs.detekt.gradle)
     compileOnly(libs.spotless.gradlePlugin)
     compileOnly(libs.compose.guardPlugin)
@@ -74,6 +75,16 @@ dependencies {
 
     detektPlugins(libs.detekt.formatting)
     detektPlugins(libs.detekt.rules)
+
+    testImplementation(libs.detekt.api)
+    testImplementation(libs.detekt.test)
+    testImplementation(libs.junit5.api)
+    testRuntimeOnly(libs.junit5.jupiterEngine)
+    testRuntimeOnly(libs.junit5.platformLauncher)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 gradlePlugin {
@@ -155,6 +166,11 @@ gradlePlugin {
         register("jvmLibrary") {
             id = "androidlab.jvm.library"
             implementationClass = "dev.shtanko.androidlab.convention.JvmLibraryConventionPlugin"
+        }
+        register("kotlinExplicitVisibility") {
+            id = "androidlab.kotlin.explicit-visibility"
+            implementationClass =
+                "dev.shtanko.androidlab.convention.ExplicitVisibilityConventionPlugin"
         }
         register("room") {
             id = "androidlab.android.room"

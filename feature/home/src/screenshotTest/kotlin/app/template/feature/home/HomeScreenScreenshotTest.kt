@@ -21,6 +21,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import app.template.feature.home.ui.HomeScreen
+import app.template.feature.home.ui.model.FactorialResult
+import app.template.feature.home.ui.model.HomeUiState
 import com.android.tools.screenshot.PreviewTest
 
 @PreviewTest
@@ -34,7 +37,7 @@ import com.android.tools.screenshot.PreviewTest
     showBackground = true,
 )
 @Composable
-fun HomeScreenCalculatedResultPreview() {
+public fun HomeScreenCalculatedResultPreview() {
     MaterialTheme(colorScheme = lightColorScheme()) {
         HomeScreen(
             state = HomeUiState(

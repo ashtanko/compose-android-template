@@ -19,8 +19,8 @@ package app.template.feature.database
 /**
  * Placeholder class for the database module.
  */
-class Database(
+internal class Database(
     private val moduleName: String = "database",
 ) {
-    fun greet(): String = "Hello from $moduleName!"
+    internal fun greet(): String = "Hello from $moduleName!"
 }

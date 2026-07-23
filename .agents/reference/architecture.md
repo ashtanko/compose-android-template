@@ -10,11 +10,32 @@ project-wide constraints.
 - `core/navigation` contains shared navigation state and navigator behavior.
 - `library-kotlin` contains pure Kotlin/JVM logic and must not depend on Android APIs.
 - `library-android` contains reusable Android-specific code and resources.
-- `feature/*` contains feature-focused Android modules as the application grows.
+- `feature/*` contains feature-focused modules as the application grows. A stateful feature may use
+  nested `domain`, `data`, and `presentation` modules when the boundaries carry real behavior.
+- `feature/posts/domain` is the framework-independent posts contract and use-case module.
+- `feature/posts/data` implements the posts repository, remote/local sources, DTO mapping, caching,
+  and data-layer Hilt bindings.
+- `feature/posts/presentation` owns the posts ViewModel, sealed UI state, route, and Compose screen.
 - `benchmarks` contains macrobenchmarks and the baseline-profile generator targeting `app`.
 - `build-logic` is an included build containing convention plugins; `buildSrc` contains shared build implementation.
 
 `settings.gradle.kts` is the authoritative module list. Inspect it before assuming a module exists because template users can add, remove, or rename modules.
+
+## Package and directory conventions
+
+Directories must mirror Kotlin packages. Keep layer roots organized by responsibility:
+
+- Domain: `model`, `repository`, `result`, and `usecase`.
+- Data: `di`, `local`, `mapper`, `model`, `remote/api`, `remote/dto`, and `repository`.
+- Presentation: `di` and `ui`; within `ui`, use `model` for display models and `components` for
+  feature-local reusable composables.
+- Single-module features such as `feature/home` place `HomeRoute`, `HomeScreen`, and
+  `HomeViewModel` in `ui`, display models in `ui/model`, and extracted composables in
+  `ui/components`.
+
+Do not create empty directory ceremony. Add one of these subpackages when the corresponding
+responsibility exists. Cross-feature reusable visual primitives belong in `core/designsystem`;
+feature-specific components remain with their owning feature.
 
 ## Build boundaries
 
@@ -24,6 +45,8 @@ project-wide constraints.
 - Inspect both the convention plugin implementation and a working neighboring module before selecting a plugin. Some convention plugins may encode module dependencies or assumptions that are not appropriate everywhere.
 - Avoid broad `api` dependencies. Expose a dependency only when its types intentionally form part of the module's public API.
 - Keep feature internals behind module boundaries; place genuinely shared, platform-neutral behavior in an appropriate core or Kotlin module.
+- For a layered feature, both `data` and `presentation` may depend on `domain`; they must not depend
+  on each other. The `app` composition root depends on both and completes dependency injection.
 
 The current intentional `api` dependencies are:
 
@@ -32,6 +55,28 @@ The current intentional `api` dependencies are:
 
 All other external dependencies should default to `implementation`. Re-run this audit whenever a
 public signature or module boundary changes.
+
+### Explicit Kotlin visibility
+
+Modules with meaningful feature or layer boundaries apply
+`androidlab.kotlin.explicit-visibility`. The initial enforcement scope is:
+
+- `feature/database`;
+- `feature/home`;
+- `feature/posts/domain`;
+- `feature/posts/data`;
+- `feature/posts/presentation`.
+
+The convention enables the custom Detekt `architecture:ExplicitVisibility` rule for the standard
+Detekt task. It requires an explicit `public`, `internal`, `private`, or `protected` modifier on
+non-local classes and objects, named functions, properties, and primary-constructor properties.
+Tests are checked too. A finding fails `./gradlew detekt` and therefore `make verify` and pull-request
+CI.
+
+Keep this opt-in selective. Add it when a module has an intentional API or layer boundary and review
+that module's existing declarations before enabling it. Do not use it as a mechanical repository-wide
+rewrite for host, shared-library, benchmark, or build-logic modules; those surfaces need their own
+API review first.
 
 ## Android and Compose conventions
 

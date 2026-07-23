@@ -25,7 +25,9 @@ Replace `:module` with the actual Gradle path, for example `:core:navigation`. U
 `make docs-check` validates local Markdown links, documented Make targets, module references,
 the canonical agent entrypoint, and version-policy consistency without starting Gradle.
 
-`./gradlew detekt` runs the standard and Compose rule sets across all Kotlin sources.
+`./gradlew detekt` runs the standard and Compose rule sets across all Kotlin sources. In modules
+that apply `androidlab.kotlin.explicit-visibility`, it also fails on eligible declarations without
+an explicit visibility modifier.
 `./gradlew detektCompose` is the faster production-source check for Compose rules only.
 `./gradlew detektAutoCorrect` applies fixes only for rules that explicitly support auto-correction;
 Compose API findings such as parameter order still require a code change.

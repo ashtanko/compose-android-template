@@ -66,14 +66,18 @@ Compose test patterns.
 
 - Pure Kotlin behavior:
   [`FactorialCalculatorTest.kt`](../../library-kotlin/src/test/java/app/template/library/FactorialCalculatorTest.kt)
+- Domain use-case behavior:
+  [`GetPostsPageUseCaseTest.kt`](../../feature/posts/domain/src/test/kotlin/app/template/feature/posts/domain/usecase/GetPostsPageUseCaseTest.kt)
+- Repository mapping, cache, failure, and cancellation behavior:
+  [`PostsRepositoryImplTest.kt`](../../feature/posts/data/src/test/kotlin/app/template/feature/posts/data/repository/PostsRepositoryImplTest.kt)
 - Navigation state:
   [`NavigatorTest.kt`](../../core/navigation/src/test/kotlin/app/template/core/navigation/NavigatorTest.kt)
 - Design-system semantics and callbacks:
   [`TemplateComponentsTest.kt`](../../core/designsystem/src/androidTest/kotlin/app/template/core/designsystem/component/TemplateComponentsTest.kt)
 - State-holder behavior:
-  [`HomeViewModelTest.kt`](../../feature/home/src/test/kotlin/app/template/feature/home/HomeViewModelTest.kt)
+  [`PostsViewModelTest.kt`](../../feature/posts/presentation/src/test/kotlin/app/template/feature/posts/presentation/ui/PostsViewModelTest.kt)
 - Plain feature UI behavior:
-  [`HomeScreenTest.kt`](../../feature/home/src/androidTest/kotlin/app/template/feature/home/HomeScreenTest.kt)
+  [`PostsScreenTest.kt`](../../feature/posts/presentation/src/androidTest/kotlin/app/template/feature/posts/presentation/ui/PostsScreenTest.kt)
 - Deterministic feature screenshot:
   [`HomeScreenScreenshotTest.kt`](../../feature/home/src/screenshotTest/kotlin/app/template/feature/home/HomeScreenScreenshotTest.kt)
 - Application navigation integration:

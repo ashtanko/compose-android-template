@@ -26,8 +26,6 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavBackStack
@@ -35,9 +33,9 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import app.template.feature.home.HomeRoute
+import app.template.feature.home.ui.HomeRoute
+import app.template.feature.posts.presentation.ui.PostsRoute
 import app.template.home.ContentGreen
-import app.template.home.ContentMauve
 
 private const val TRANSITION_DURATION_MS = 1000
 
@@ -45,19 +43,26 @@ private const val TRANSITION_DURATION_MS = 1000
 fun MainNavigation(
     modifier: Modifier = Modifier,
     backStack: NavBackStack<NavKey> = rememberNavBackStack(Screen.ScreenA),
+    postsContent: @Composable (Modifier) -> Unit = { PostsRoute(modifier = it) },
 ) {
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
         modifier = modifier,
-        entryProvider = mainEntryProvider(backStack),
+        entryProvider = mainEntryProvider(
+            backStack = backStack,
+            postsContent = postsContent,
+        ),
         transitionSpec = { horizontalSlideTransition(isPop = false) },
         popTransitionSpec = { horizontalSlideTransition(isPop = true) },
         predictivePopTransitionSpec = { horizontalSlideTransition(isPop = true) },
     )
 }
 
-private fun mainEntryProvider(backStack: NavBackStack<NavKey>) = entryProvider {
+private fun mainEntryProvider(
+    backStack: NavBackStack<NavKey>,
+    postsContent: @Composable (Modifier) -> Unit,
+) = entryProvider {
     entry<Screen.ScreenA> {
         HomeRoute(
             onExploreNavigationClick = { backStack.add(Screen.ScreenB) },
@@ -65,9 +70,7 @@ private fun mainEntryProvider(backStack: NavBackStack<NavKey>) = entryProvider {
         )
     }
     entry<Screen.ScreenB> {
-        ContentMauve("This is Screen B") {
-            Button(onClick = { backStack.add(Screen.ScreenC) }) { Text("Go to Screen C") }
-        }
+        postsContent(Modifier.fillMaxSize())
     }
     entry<Screen.ScreenC>(metadata = verticalSlideTransitionSpec()) {
         ContentGreen("This is Screen C")

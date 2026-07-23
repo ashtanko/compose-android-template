@@ -202,6 +202,7 @@ kotlin-metadata = { module = "org.jetbrains.kotlin:kotlin-metadata-jvm", version
 # region junit
 junit5-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit5" }
 junit5-jupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit5" }
+junit5-platformLauncher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit5" }
 junit5-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit5" }
 junit5-vintageEngine = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "junit5" }
 jacoco-core = { module = "org.jacoco:org.jacoco.core", version.ref = "jacoco" }
@@ -260,6 +261,8 @@ hilt-ext-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hi
 # endregion
 
 # region code style
+detekt-api = { module = "io.gitlab.arturbosch.detekt:detekt-api", version.ref = "detekt" }
+detekt-test = { module = "io.gitlab.arturbosch.detekt:detekt-test", version.ref = "detekt" }
 detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "formattingDetekt" }
 detekt-rules = { module = "io.nlopez.compose.rules:detekt", version.ref = "composeDetekt" }
 detekt-gradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
@@ -326,4 +329,5 @@ androidlab-android-room = { id = "androidlab.android.room", version = "unspecifi
 androidlab-android-test = { id = "androidlab.android.test", version = "unspecified" }
 androidlab-hilt = { id = "androidlab.hilt", version = "unspecified" }
 androidlab-jvm-library = { id = "androidlab.jvm.library", version = "unspecified" }
+androidlab-kotlin-explicit-visibility = { id = "androidlab.kotlin.explicit-visibility", version = "unspecified" }
 android-junit5 = { id = "de.mannodermaus.android-junit5", version.ref = "android-junit5-plugin" }

@@ -14,30 +14,40 @@
  * limitations under the License.
  */
 
-package app.template.feature.home
+package app.template.feature.posts.presentation.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun HomeRoute(
-    onExploreNavigationClick: () -> Unit,
+public fun PostsRoute(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = viewModel {
-        HomeViewModel(createSavedStateHandle())
-    },
+) {
+    PostsRoute(
+        viewModel = viewModel(),
+        modifier = modifier,
+    )
+}
+
+@Composable
+internal fun PostsRoute(
+    viewModel: PostsViewModel,
+    modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    HomeScreen(
+    LaunchedEffect(viewModel) {
+        viewModel.onStart()
+    }
+
+    PostsScreen(
         state = state,
-        onInputChanged = viewModel::onInputChanged,
-        onCalculateClick = viewModel::onCalculateClick,
-        onExploreNavigationClick = onExploreNavigationClick,
+        onRetryClick = viewModel::onRetryClick,
+        onLoadMoreClick = viewModel::onLoadMoreClick,
         modifier = modifier,
     )
 }

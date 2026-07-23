@@ -18,6 +18,7 @@ plugins {
     alias(libs.plugins.androidlab.android.compose.screenshot)
     alias(libs.plugins.androidlab.android.library.jacoco)
     alias(libs.plugins.androidlab.android.junit5)
+    alias(libs.plugins.androidlab.kotlin.explicit.visibility)
 }
 
 android {
