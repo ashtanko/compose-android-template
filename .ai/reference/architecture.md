@@ -3,6 +3,7 @@
 ## Project shape
 
 - `app` is the Android application, Hilt entry point, Compose UI host, and Navigation 3 integration point.
+- `core/designsystem` contains reusable Compose components and shared visual tokens.
 - `core/navigation` contains shared navigation state and navigator behavior.
 - `library-kotlin` contains pure Kotlin/JVM logic and must not depend on Android APIs.
 - `library-android` contains reusable Android-specific code and resources.

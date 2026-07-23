@@ -33,6 +33,7 @@ include(":benchmarks")
 
 // region core
 include(":core:navigation")
+include(":core:designsystem")
 // endregion
 
 // region feature

@@ -311,7 +311,7 @@ kotlin {
 //}
 
 dependencies {
-    // implementation(projects.core.designsystem)
+    implementation(project(":core:designsystem"))
 
     libs.apply {
         androidx.apply {
