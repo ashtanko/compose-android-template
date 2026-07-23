@@ -1,0 +1,42 @@
+name: Documentation checks
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*.md'
+      - '.github/workflows/docs.yml'
+      - 'gradle/libs.versions.toml'
+      - 'Makefile'
+      - 'scripts/check-docs.sh'
+      - 'settings.gradle.kts'
+  pull_request:
+    paths:
+      - '**/*.md'
+      - '.github/workflows/docs.yml'
+      - 'gradle/libs.versions.toml'
+      - 'Makefile'
+      - 'scripts/check-docs.sh'
+      - 'settings.gradle.kts'
+
+concurrency:
+  group: documentation-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  documentation:
+    name: Validate documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Check documentation
+        run: make docs-check

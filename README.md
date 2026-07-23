@@ -85,28 +85,32 @@ Convention plugins under `build-logic/convention` (e.g. `androidlab.android.appl
 
 ## 🛠️ Technology Stack
 
+Library, Android build-plugin, and Android SDK versions are defined in
+[`gradle/libs.versions.toml`](gradle/libs.versions.toml). The catalog is the source of truth for
+those values; the summary below intentionally avoids copying fast-changing version numbers.
+
 ### Core Technologies
-- **Kotlin 2.4.0** — configured through the version catalog.
-- **Android Gradle Plugin 9.2.1** — Android build configuration.
-- **Jetpack Compose** — Compose BOM `2026.05.01`, Material 3, Material 3 Adaptive.
-- **Navigation 3** (`1.1.2`) alongside `androidx.navigation:navigation-compose` (`2.9.8`).
-- **Kotlin Coroutines 1.11.x** and **kotlinx.serialization 1.11.x**.
+- **Kotlin** — configured through the version catalog and shared toolchains.
+- **Android Gradle Plugin** — Android build configuration.
+- **Jetpack Compose** — Compose BOM, Material 3, and Material 3 Adaptive.
+- **Navigation 3** alongside `androidx.navigation:navigation-compose`.
+- **Kotlin Coroutines** and **kotlinx.serialization**.
 
 ### Architecture & Dependencies
-- **Hilt 2.59.2** — dependency injection (+ `hilt-navigation-compose`).
-- **Room 2.8.x** — local persistence (via KSP).
-- **Retrofit 3.0.0 + OkHttp 5.3.x** — type-safe networking with `kotlinx-serialization` converter.
-- **Sandwich 2.2.x** — Retrofit response wrapping.
+- **Hilt** — dependency injection (+ `hilt-navigation-compose`).
+- **Room** — local persistence (via KSP).
+- **Retrofit + OkHttp** — type-safe networking with a `kotlinx-serialization` converter.
+- **Sandwich** — Retrofit response wrapping.
 - **Paging 3** — smooth list loading.
-- **Coil 2.7** — image loading optimized for Compose.
+- **Coil** — image loading optimized for Compose.
 - **kotlinx-datetime** and **kotlinx.collections.immutable**.
 
 ### Testing & Quality
-- **JUnit 5 (6.0.x)** — modern unit testing.
-- **Roborazzi 1.64.x** — screenshot / golden-image testing.
+- **JUnit 5** — modern unit testing.
+- **Roborazzi** — screenshot / golden-image testing.
 - **Compose Guard** — Compose compiler stability metrics.
-- **Kover 0.9.x + JaCoCo 0.8.x** — coverage reports.
-- **Detekt 1.23.x + KtLint + Spotless 8.7.x** — static analysis & formatting.
+- **Kover + JaCoCo** — coverage reports.
+- **Detekt + KtLint + Spotless** — static analysis & formatting.
 - **Dependency Guard** — transitive dependency change detection.
 - **MockK + Mockito + Turbine + Truth + AssertJ** — testing toolkit.
 - **Robolectric** & **Espresso** — JVM- and device-side instrumentation.
@@ -146,6 +150,7 @@ Convention plugins under `build-logic/convention` (e.g. `androidlab.android.appl
 The `Makefile` wraps common Gradle invocations:
 
 - `make` / `make help` — list available targets without changing the project.
+- `make docs-check` — validate documentation links and project facts.
 - `make build` / `make install` — assemble or install the debug app.
 - `make test` — run unit tests.
 - `make check` — run lint, Detekt, Spotless, and Dependency Guard checks.
@@ -167,10 +172,11 @@ make verify GRADLE_ARGS="--no-daemon --stacktrace"
 
 ## 📋 Requirements
 
-- **Android Studio** — a release compatible with AGP 9.2 and Android SDK 37.
+- **Android Studio** — a release compatible with the AGP and SDK levels configured in
+  [`gradle/libs.versions.toml`](gradle/libs.versions.toml).
 - **JDK 21** — required for the build system (set as Kotlin/Java toolchain).
-- **Android SDK** — `compileSdk` / `targetSdk`: **37**, `minSdk`: **24**.
-- **Gradle** — uses the wrapper (`./gradlew`); AGP 9.2.x.
+- **Android SDK** — install the compile SDK declared in the version catalog.
+- **Gradle** — use the checked-in wrapper (`./gradlew`).
 
 ## 🤖 AI-assisted development
 

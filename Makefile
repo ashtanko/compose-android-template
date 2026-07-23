@@ -5,6 +5,7 @@ GRADLE_ARGS ?=
 
 .PHONY: \
 	help \
+	docs-check \
 	build \
 	install \
 	test \
@@ -31,6 +32,7 @@ help:
 	@echo "Usage: make <target> [GRADLE_ARGS=\"...\"]"
 	@echo
 	@echo "Build and verification:"
+	@echo "  docs-check                  Validate documentation links and project facts"
 	@echo "  build                       Assemble debug artifacts"
 	@echo "  install                     Install the app's debug build"
 	@echo "  test                        Run unit tests"
@@ -56,6 +58,9 @@ help:
 	@echo "  baseline-profile            Generate the app baseline profile"
 	@echo "  tasks                       List available Gradle tasks"
 	@echo "  gradle-version              Print Gradle, Kotlin, and JVM versions"
+
+docs-check:
+	bash scripts/check-docs.sh
 
 build:
 	$(GRADLE) assembleDebug $(GRADLE_ARGS)

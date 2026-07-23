@@ -6,7 +6,7 @@ Run commands from the repository root with the Gradle wrapper. JDK 21 is require
 
 | Change | Start with |
 | --- | --- |
-| Documentation only | Check links and examples; no Gradle task is required by default |
+| Documentation only | `make docs-check` |
 | Shell script | `bash -n path/to/script.sh` plus a safe dry run when supported |
 | Pure Kotlin module | `./gradlew :module:test` |
 | Android module | `./gradlew :module:testDebugUnitTest` |
@@ -19,6 +19,9 @@ Run commands from the repository root with the Gradle wrapper. JDK 21 is require
 | Macrobenchmark | `./gradlew :benchmarks:connectedBenchmarkReleaseAndroidTest` |
 
 Replace `:module` with the actual Gradle path, for example `:core:navigation`. Use `--tests "fully.qualified.ClassName"` to narrow a unit-test task when iterating.
+
+`make docs-check` validates local Markdown links, documented Make targets, module references,
+the canonical agent entrypoint, and version-policy consistency without starting Gradle.
 
 ## Broader verification
 

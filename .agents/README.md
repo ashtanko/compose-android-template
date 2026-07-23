@@ -37,3 +37,4 @@ This replaces any existing `core.hooksPath`. If one is already configured, invok
 - Keep fast-changing dependency versions in `gradle/libs.versions.toml` and link to it instead of copying values into agent docs.
 - Update a skill when the corresponding workflow changes, especially `scripts/add-module.sh` or the validation tasks.
 - Keep vendor adapters thin so the same rules apply to Claude, Codex, Copilot, and other agents.
+- Run `make docs-check` after changing Markdown, module declarations, documented commands, or agent entrypoints.
