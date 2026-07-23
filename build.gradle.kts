@@ -29,20 +29,6 @@ plugins {
     alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin) apply false
 }
 
-// CI Task Exclusion Logic
-val isCI = System.getenv("CI") == "true" || System.getenv("GITHUB_ACTIONS") == "true"
-
-val excludedTasks = setOf(
-    "testDebugScreenshotTest",
-    "testReleaseScreenshotTest",
-    "testBenchmarkReleaseScreenshotTest",
-    "testBenchmarkScreenshotTest",
-    "testNonMinifiedReleaseScreenshotTest",
-    "testBenchmarkUnitTest",
-    "testReleaseUnitTest",
-    "finalizeTestRoborazziRelease"
-)
-
 tasks.register("spotlessCheck") {
     group = "verification"
     description = "Checks formatting in the included build logic."
@@ -63,12 +49,6 @@ tasks.register("detektCompose") {
 tasks.register("detektAutoCorrect") {
     group = "formatting"
     description = "Runs Detekt auto-correction in every module."
-}
-
-tasks.configureEach {
-    if (name in excludedTasks && isCI) {
-        enabled = false
-    }
 }
 
 // Bootstraps a new project from this template by delegating to

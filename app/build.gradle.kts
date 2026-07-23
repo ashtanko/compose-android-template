@@ -16,13 +16,31 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import java.util.Properties
 
-val isGithubActions = System.getenv("GITHUB_ACTIONS")?.toBoolean() == true
-val isCI = providers.environmentVariable("CI").isPresent
+val isCiBuild = providers.environmentVariable("CI").map(String::toBoolean).getOrElse(false)
 
 private val storePasswordKey = "storePassword"
 private val keyPasswordKey = "keyPassword"
 private val keyAliasKey = "keyAlias"
 private val storeFileKey = "storeFile"
+private val releaseSigningPropertyKeys = listOf(
+    storePasswordKey,
+    keyPasswordKey,
+    keyAliasKey,
+    storeFileKey,
+)
+
+val releaseSigningPropertiesFile = rootProject.file("key.properties")
+val releaseSigningProperties = Properties().apply {
+    if (releaseSigningPropertiesFile.isFile) {
+        releaseSigningPropertiesFile.inputStream().use(::load)
+    }
+}
+val releaseSigningStoreFile = releaseSigningProperties
+    .getProperty(storeFileKey)
+    ?.let(rootProject::file)
+val hasValidLocalReleaseSigningConfig =
+    releaseSigningPropertyKeys.all(releaseSigningProperties::containsKey) &&
+        releaseSigningStoreFile?.isFile == true
 
 plugins {
     alias(libs.plugins.androidlab.android.application.compose)
@@ -47,6 +65,10 @@ android {
         applicationId = "dev.shtanko.template"
         versionCode = 1
         versionName = "1.0"
+
+        // Client-side configuration only: BuildConfig values are recoverable from APKs.
+        val apiKey = gradleLocalProperties(rootDir, providers).getProperty("TMDB_API_KEY") ?: ""
+        buildConfigField("String", "TMDB_API_KEY", "\"$apiKey\"")
     }
 
     signingConfigs {
@@ -54,45 +76,28 @@ android {
             enableV1Signing = true
             enableV2Signing = true
 
-            if (isCI) {
+            if (isCiBuild) {
                 storeFile = file("keystore.jks")
-                storePassword = System.getenv("SIGNING_STORE_PASSWORD")
-                keyAlias = System.getenv("SIGNING_KEY_ALIAS")
-                keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
-            } else if (isGithubActions) {
-                storeFile = file("keystore.jks")
-                storePassword = System.getenv("SIGNING_STORE_PASSWORD")
-                keyAlias = System.getenv("SIGNING_KEY_ALIAS")
-                keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
-            } else {
-                if (isPropertiesValid()) {
-                    storeFile = getReleaseValue(storeFileKey)?.let { file(it) }
-                    keyAlias = getReleaseValue(keyAliasKey)
-                    keyPassword = getReleaseValue(keyPasswordKey)
-                    storePassword = getReleaseValue(storePasswordKey)
-                }
+                storePassword = providers.environmentVariable("SIGNING_STORE_PASSWORD").orNull
+                keyAlias = providers.environmentVariable("SIGNING_KEY_ALIAS").orNull
+                keyPassword = providers.environmentVariable("SIGNING_KEY_PASSWORD").orNull
+            } else if (hasValidLocalReleaseSigningConfig) {
+                storeFile = releaseSigningStoreFile
+                keyAlias = releaseSigningProperties.getProperty(keyAliasKey)
+                keyPassword = releaseSigningProperties.getProperty(keyPasswordKey)
+                storePassword = releaseSigningProperties.getProperty(storePasswordKey)
             }
         }
     }
 
     buildTypes {
-        debug {
-            val apiKey: String =
-                gradleLocalProperties(rootDir, providers).getProperty("TMDB_API_KEY") ?: ""
-            buildConfigField("String", "TMDB_API_KEY", "\"$apiKey\"")
-        }
         release {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
             signingConfig = signingConfigs.getByName("release")
-
-            val apiKey: String =
-                gradleLocalProperties(rootDir, providers).getProperty("TMDB_API_KEY") ?: ""
-            buildConfigField("String", "TMDB_API_KEY", "\"$apiKey\"")
         }
 
         create("benchmark") {
@@ -109,64 +114,14 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
             merges += "META-INF/LICENSE.md"
             merges += "META-INF/LICENSE-notice.md"
         }
     }
 }
 
-fun isPropertiesValid(configFileName: String = "key.properties"): Boolean {
-    val propsFile = rootProject.file(configFileName)
-    if (!propsFile.exists()) return false
-
-    val properties = Properties().apply {
-        propsFile.inputStream().use { load(it) }
-    }
-
-    val requiredKeys = listOf(
-        storePasswordKey,
-        keyPasswordKey,
-        keyAliasKey,
-        storeFileKey,
-    )
-
-    // 1. Check if all required keys exist in the file
-    val hasAllKeys = properties.keys.map { it.toString() }.containsAll(requiredKeys)
-    if (!hasAllKeys) return false
-
-    // 2. Check if the store file defined INSIDE the properties exists
-    val storeFilePath = properties.getProperty(storeFileKey)
-    val storeFileExists = storeFilePath?.let { rootProject.file(it).exists() } ?: false
-
-    return storeFileExists
-}
-
-fun getReleaseValue(key: String): String? {
-    return getValueFromConfig(key, false, configFile = "key.properties")
-}
-
-fun getValueFromConfig(
-    key: String,
-    quot: Boolean,
-    configFile: String = "local.properties",
-): String? {
-    val properties = Properties()
-    properties.load(project.rootProject.file(configFile).inputStream())
-    var value = if (properties.containsKey(key)) {
-        properties[key].toString()
-    } else {
-        ""
-    }
-    if (quot) {
-        value = "\"" + value + "\""
-    }
-    return value.takeIf { it.isNotEmpty() }
-}
-
 tasks {
     getByName("check") {
-        // Add detekt with type resolution to check
         dependsOn("detekt")
     }
 
@@ -218,28 +173,6 @@ tasks {
         }
     }
 }
-
-//detekt {
-//    config.setFrom("${project.rootDir}/config/detekt/detekt.yml")
-//
-//    val projectDir = projectDir
-//    val kotlinExtension = project.extensions.getByType(KotlinSourceSetContainer::class.java)
-//
-//    source.setFrom(
-//        provider {
-//            kotlinExtension.sourceSets
-//                .flatMap { sourceSet ->
-//                    sourceSet.kotlin.srcDirs.filter {
-//                        it.relativeTo(projectDir).startsWith("src")
-//                    }
-//                }
-//        },
-//    )
-//}
-
-//configure<DetektExtension> {
-//    config.from("${project.rootDir}/config/detekt/detekt-compose.yml")
-//}
 
 dependencies {
     implementation(project(":core:designsystem"))
@@ -304,11 +237,6 @@ dependencies {
             testImplementation(coroutines.test)
             testImplementation(coroutines.debug)
         }
-
-//        detekt.apply {
-//            detektPlugins(rules)
-//            detektPlugins(formatting)
-//        }
 
         coil.apply {
             implementation(kt)

@@ -29,6 +29,12 @@ dependencies {
 
     libs.apply {
         androidx.apply {
+            implementation(material3)
+            compose.apply {
+                implementation(foundation)
+                implementation(foundation.layout)
+            }
+
             androidTestImplementation(test.ext)
 
             ui.apply {

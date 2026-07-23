@@ -69,6 +69,23 @@ make verify
 ./gradlew spotlessApply
 ```
 
+### Local configuration
+
+`TMDB_API_KEY` can be set in the untracked `local.properties` file for the demo integration:
+
+```properties
+TMDB_API_KEY=your-development-key
+```
+
+The value is compiled into `BuildConfig` and can be recovered from an APK. Treat it as client
+configuration, not as a secret; privileged credentials and authorization checks belong on a
+trusted backend.
+
+For local release signing, use an untracked `key.properties` file with `storeFile`,
+`storePassword`, `keyAlias`, and `keyPassword`. CI keeps the existing
+`SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS`, and `SIGNING_KEY_PASSWORD` environment-variable
+contract.
+
 ## 🏗️ Project Architecture
 
 The project follows a modular layout backed by Gradle convention plugins:
@@ -131,7 +148,7 @@ those values; the summary below intentionally avoids copying fast-changing versi
 - **Baseline Profiles** — generated via `:benchmarks` for faster startup and smoother frames.
 - **Screenshot Testing** — automated UI regression with Roborazzi + the Compose screenshot plugin.
 - **Dependency Guard** — locks transitive dependency surface across builds.
-- **Signing-ready** — release `signingConfig` resolves keystore credentials from env vars on CI (`SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS`, `SIGNING_KEY_PASSWORD`) or `secrets.defaults.properties` locally.
+- **Signing-ready** — release `signingConfig` resolves keystore credentials from env vars on CI (`SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS`, `SIGNING_KEY_PASSWORD`) or an untracked `key.properties` file locally.
 
 ## 🧪 Testing
 

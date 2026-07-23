@@ -26,9 +26,9 @@ android {
 dependencies {
     libs.apply {
         androidx.apply {
-            api(material3)
+            implementation(material3)
             compose.apply {
-                api(foundation)
+                implementation(foundation)
                 api(foundation.layout)
             }
 

@@ -25,6 +25,14 @@ project-wide constraints.
 - Avoid broad `api` dependencies. Expose a dependency only when its types intentionally form part of the module's public API.
 - Keep feature internals behind module boundaries; place genuinely shared, platform-neutral behavior in an appropriate core or Kotlin module.
 
+The current intentional `api` dependencies are:
+
+- `core/navigation` exposes Navigation 3 runtime types such as `NavKey` and `NavBackStack`.
+- `core/designsystem` exposes Foundation Layout scopes such as `BoxScope` and `RowScope`.
+
+All other external dependencies should default to `implementation`. Re-run this audit whenever a
+public signature or module boundary changes.
+
 ## Android and Compose conventions
 
 - Follow [`implementation.md`](implementation.md) for the project-wide screen, state, Flow,
