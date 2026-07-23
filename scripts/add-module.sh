@@ -279,8 +279,10 @@ package $PACKAGE
 /**
  * Placeholder class for the $NAME module.
  */
-class ${CLASS_NAME} {
-    fun greet(): String = "Hello from $NAME!"
+class ${CLASS_NAME}(
+    private val moduleName: String = "$NAME",
+) {
+    fun greet(): String = "Hello from \$moduleName!"
 }
 EOF
 

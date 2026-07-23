@@ -8,21 +8,17 @@ import org.gradle.kotlin.dsl.named
 
 internal fun Project.configureDetekt(extension: DetektExtension) = extension.apply {
     tasks.named<Detekt>("detekt") {
-        description = "Runs over whole code base without the starting overhead for each module."
+        description = "Runs Detekt analysis for this module."
         parallel = true
         baseline.set(file("$rootDir/config/detekt/detekt-baseline.xml"))
-        config.from(file("$rootDir/config/detekt/detekt.yml"))
+        config.from(
+            file("$rootDir/config/detekt/detekt.yml"),
+            file("$rootDir/config/detekt/detekt-compose.yml"),
+        )
 
-        setSource(files("src/main/kotlin", "src/test/kotlin"))
-        setOf(
-            "**/*.kt",
-            "**/*.kts",
-            ".*/resources/.*",
-            ".*/build/.*",
-            "/versions.gradle.kts",
-        ).forEach {
-            include(it)
-        }
+        setSource(files("src"))
+        include("**/*.kt", "**/*.kts")
+        exclude("**/resources/**")
 
         reports {
             reports.apply {

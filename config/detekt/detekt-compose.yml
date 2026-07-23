@@ -3,7 +3,7 @@ Compose:
     active: true
   ContentEmitterReturningValues:
     active: true
-  ModifierComposable:
+  ModifierComposed:
     active: true
   ModifierMissing:
     active: true

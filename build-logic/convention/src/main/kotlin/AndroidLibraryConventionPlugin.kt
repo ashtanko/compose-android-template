@@ -1,13 +1,16 @@
 import com.android.build.api.dsl.LibraryExtension
+import dev.shtanko.androidlab.configureDetekt
 import dev.shtanko.androidlab.configureKotlinAndroid
 import dev.shtanko.androidlab.configureSpotlessForAndroid
 import dev.shtanko.androidlab.libs
+import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.invoke
 import org.gradle.kotlin.dsl.withType
 
@@ -16,6 +19,9 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
         with(target) {
             apply(plugin = "com.android.library")
             apply(plugin = "androidlab.android.lint")
+            apply(plugin = "io.gitlab.arturbosch.detekt")
+
+            configureDetekt(extensions.getByType<DetektExtension>())
 
             extensions.configure<LibraryExtension> {
                 configureKotlinAndroid(this)
