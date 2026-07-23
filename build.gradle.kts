@@ -55,6 +55,16 @@ tasks.register("detekt") {
     dependsOn(gradle.includedBuild("build-logic").task(":convention:detekt"))
 }
 
+tasks.register("detektCompose") {
+    group = "verification"
+    description = "Runs Compose-specific Detekt rules in every module."
+}
+
+tasks.register("detektAutoCorrect") {
+    group = "formatting"
+    description = "Runs Detekt auto-correction in every module."
+}
+
 tasks.configureEach {
     if (name in excludedTasks && isCI) {
         enabled = false

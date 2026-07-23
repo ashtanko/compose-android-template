@@ -60,8 +60,10 @@ fun ProfileScreen(
 }
 ```
 
-The names are illustrative. Keep this shape aligned with the repository's compiled reference
-feature as the template evolves.
+The compiled reference is
+[`HomeRoute.kt`](../../feature/home/src/main/kotlin/app/template/feature/home/HomeRoute.kt) with
+[`HomeScreen.kt`](../../feature/home/src/main/kotlin/app/template/feature/home/HomeScreen.kt).
+Keep this shape aligned with that feature as the template evolves.
 
 - The route/state-holder composable may obtain injected objects, collect lifecycle-aware state, and
   handle imperative effects.

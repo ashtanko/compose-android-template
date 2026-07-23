@@ -56,6 +56,12 @@ A modern, production-ready Android template built with **Jetpack Compose**, **Na
 # Run linting and static analysis
 ./gradlew detekt
 
+# Run only Compose-specific static analysis
+./gradlew detektCompose
+
+# Apply fixes exposed as safe Detekt auto-corrections
+./gradlew detektAutoCorrect
+
 # Format code
 ./gradlew spotlessApply
 ```
@@ -110,7 +116,7 @@ those values; the summary below intentionally avoids copying fast-changing versi
 - **Roborazzi** — screenshot / golden-image testing.
 - **Compose Guard** — Compose compiler stability metrics.
 - **Kover + JaCoCo** — coverage reports.
-- **Detekt + KtLint + Spotless** — static analysis & formatting.
+- **Detekt + Compose Rules + KtLint + Spotless** — Kotlin and Compose-specific static analysis and formatting.
 - **Dependency Guard** — transitive dependency change detection.
 - **MockK + Mockito + Turbine + Truth + AssertJ** — testing toolkit.
 - **Robolectric** & **Espresso** — JVM- and device-side instrumentation.

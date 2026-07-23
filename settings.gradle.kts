@@ -38,4 +38,5 @@ include(":core:designsystem")
 
 // region feature
 include(":feature:database")
+include(":feature:home")
 // endregion

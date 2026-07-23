@@ -38,15 +38,15 @@ class MainNavigationTest {
             MainNavigation()
         }
 
-        // 1. Verify we start on Screen A
-        composeTestRule.onNodeWithText("This is Screen A").assertIsDisplayed()
+        // 1. Verify we start on the home feature
+        composeTestRule.onNodeWithText("Compose Android Template").assertIsDisplayed()
 
         // 2. Navigate to Screen B
-        composeTestRule.onNodeWithText("Go to Screen B").performClick()
+        composeTestRule.onNodeWithText("Explore navigation").performClick()
 
         // Wait for transition and verify Screen B
         composeTestRule.onNodeWithText("This is Screen B").assertIsDisplayed()
-        composeTestRule.onNodeWithText("This is Screen A").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Compose Android Template").assertDoesNotExist()
 
         // 3. Navigate to Screen C
         composeTestRule.onNodeWithText("Go to Screen C").performClick()
@@ -62,14 +62,14 @@ class MainNavigationTest {
         }
 
         // Navigate to Screen B
-        composeTestRule.onNodeWithText("Go to Screen B").performClick()
+        composeTestRule.onNodeWithText("Explore navigation").performClick()
         composeTestRule.onNodeWithText("This is Screen B").assertIsDisplayed()
 
         // Trigger system back (Navigation3 handles this via the onBack lambda)
         Espresso.pressBack()
 
-        // Verify we are back on Screen A
-        composeTestRule.onNodeWithText("This is Screen A").assertIsDisplayed()
+        // Verify we are back on the home feature
+        composeTestRule.onNodeWithText("Compose Android Template").assertIsDisplayed()
         composeTestRule.onNodeWithText("This is Screen B").assertDoesNotExist()
     }
 

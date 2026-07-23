@@ -70,6 +70,10 @@ Compose test patterns.
   [`NavigatorTest.kt`](../../core/navigation/src/test/kotlin/app/template/core/navigation/NavigatorTest.kt)
 - Design-system semantics and callbacks:
   [`TemplateComponentsTest.kt`](../../core/designsystem/src/androidTest/kotlin/app/template/core/designsystem/component/TemplateComponentsTest.kt)
+- State-holder behavior:
+  [`HomeViewModelTest.kt`](../../feature/home/src/test/kotlin/app/template/feature/home/HomeViewModelTest.kt)
+- Plain feature UI behavior:
+  [`HomeScreenTest.kt`](../../feature/home/src/androidTest/kotlin/app/template/feature/home/HomeScreenTest.kt)
 - Application navigation integration:
   [`MainNavigationTest.kt`](../../app/src/androidTest/kotlin/app/template/MainNavigationTest.kt)
 - Startup measurement:

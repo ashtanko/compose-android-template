@@ -13,6 +13,8 @@ GRADLE_ARGS ?=
 	verify \
 	lint \
 	detekt \
+	detekt-compose \
+	detekt-fix \
 	format-check \
 	format \
 	device-test \
@@ -40,6 +42,8 @@ help:
 	@echo "  verify                      Assemble debug, test, and run routine checks"
 	@echo "  lint                        Run Android lint"
 	@echo "  detekt                      Run Detekt in every module"
+	@echo "  detekt-compose              Run Compose-specific Detekt rules"
+	@echo "  detekt-fix                  Apply safe Detekt auto-corrections"
 	@echo "  format-check                Check formatting"
 	@echo "  format                      Apply formatting changes"
 	@echo
@@ -82,6 +86,12 @@ lint:
 
 detekt:
 	$(GRADLE) detekt $(GRADLE_ARGS)
+
+detekt-compose:
+	$(GRADLE) detektCompose $(GRADLE_ARGS)
+
+detekt-fix:
+	$(GRADLE) detektAutoCorrect $(GRADLE_ARGS)
 
 format-check:
 	$(GRADLE) spotlessCheck $(GRADLE_ARGS)

@@ -59,6 +59,9 @@ jobs:
       - name: Check spotless
         run: ./gradlew spotlessCheck --init-script gradle/init.gradle.kts --no-configuration-cache
 
+      - name: Check Detekt and Compose rules
+        run: ./gradlew detekt
+
       - name: Check Dependency Guard
         id: dependencyguard_verify
         continue-on-error: true
@@ -167,4 +170,3 @@ jobs:
         with:
           name: instrumented-test-results
           path: '**/build/reports/androidTests/managedDevice/**'
-

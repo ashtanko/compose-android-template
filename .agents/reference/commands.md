@@ -13,6 +13,7 @@ Run commands from the repository root with the Gradle wrapper. JDK 21 is require
 | App unit behavior | `./gradlew :app:testDebugUnitTest` |
 | Formatting | `./gradlew spotlessCheck` |
 | Static analysis | `./gradlew detekt` |
+| Compose-specific static analysis | `./gradlew detektCompose` |
 | Android lint | `./gradlew lint` or `./gradlew :module:lintDebug` |
 | Screenshot verification | `./gradlew validateDebugScreenshotTest` and/or `./gradlew verifyRoborazziDebug` |
 | Instrumentation | `./gradlew :app:connectedDebugAndroidTest` with a device or emulator available |
@@ -22,6 +23,11 @@ Replace `:module` with the actual Gradle path, for example `:core:navigation`. U
 
 `make docs-check` validates local Markdown links, documented Make targets, module references,
 the canonical agent entrypoint, and version-policy consistency without starting Gradle.
+
+`./gradlew detekt` runs the standard and Compose rule sets across all Kotlin sources.
+`./gradlew detektCompose` is the faster production-source check for Compose rules only.
+`./gradlew detektAutoCorrect` applies fixes only for rules that explicitly support auto-correction;
+Compose API findings such as parameter order still require a code change.
 
 ## Broader verification
 

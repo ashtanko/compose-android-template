@@ -25,27 +25,31 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import app.template.feature.home.HomeRoute
 import app.template.home.ContentGreen
 import app.template.home.ContentMauve
-import app.template.home.ContentOrange
 
 private const val TRANSITION_DURATION_MS = 1000
 
 @Composable
 fun MainNavigation(
+    modifier: Modifier = Modifier,
     backStack: NavBackStack<NavKey> = rememberNavBackStack(Screen.ScreenA),
 ) {
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
+        modifier = modifier,
         entryProvider = mainEntryProvider(backStack),
         transitionSpec = { horizontalSlideTransition(isPop = false) },
         popTransitionSpec = { horizontalSlideTransition(isPop = true) },
@@ -55,9 +59,10 @@ fun MainNavigation(
 
 private fun mainEntryProvider(backStack: NavBackStack<NavKey>) = entryProvider {
     entry<Screen.ScreenA> {
-        ContentOrange("This is Screen A") {
-            Button(onClick = { backStack.add(Screen.ScreenB) }) { Text("Go to Screen B") }
-        }
+        HomeRoute(
+            onExploreNavigationClick = { backStack.add(Screen.ScreenB) },
+            modifier = Modifier.fillMaxSize(),
+        )
     }
     entry<Screen.ScreenB> {
         ContentMauve("This is Screen B") {

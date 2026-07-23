@@ -12,20 +12,46 @@ internal fun Project.configureDetekt() {
         parallel = true
         jvmTarget = libs.findVersion("jvmTarget").get().requiredVersion
         baseline.set(file("$rootDir/config/detekt/detekt-baseline.xml"))
-        config.from(
-            file("$rootDir/config/detekt/detekt.yml"),
-            file("$rootDir/config/detekt/detekt-compose.yml"),
-        )
 
-        setSource(files("src"))
+        if (name == "detektCompose") {
+            config.setFrom(file("$rootDir/config/detekt/detekt-compose.yml"))
+            setSource(files("src/main"))
+        } else {
+            config.setFrom(
+                file("$rootDir/config/detekt/detekt.yml"),
+                file("$rootDir/config/detekt/detekt-compose.yml"),
+            )
+            setSource(files("src"))
+        }
         include("**/*.kt", "**/*.kts")
         exclude("**/resources/**")
 
+        val taskName = name
         reports {
             listOf(xml, html, txt, md, sarif).forEach {
                 it.required.set(true)
             }
+            if (taskName == "detektCompose" || taskName == "detektAutoCorrect") {
+                xml.outputLocation.set(layout.buildDirectory.file("reports/detekt/$taskName.xml"))
+                html.outputLocation.set(layout.buildDirectory.file("reports/detekt/$taskName.html"))
+                txt.outputLocation.set(layout.buildDirectory.file("reports/detekt/$taskName.txt"))
+                md.outputLocation.set(layout.buildDirectory.file("reports/detekt/$taskName.md"))
+                sarif.outputLocation.set(
+                    layout.buildDirectory.file("reports/detekt/$taskName.sarif"),
+                )
+            }
         }
+    }
+
+    tasks.register("detektCompose", Detekt::class.java) {
+        group = "verification"
+        description = "Runs Compose-specific Detekt rules against production Kotlin sources."
+    }
+
+    tasks.register("detektAutoCorrect", Detekt::class.java) {
+        group = "formatting"
+        description = "Runs Detekt with auto-correction for rules that provide a safe fix."
+        autoCorrect = true
     }
 
     tasks.withType<DetektCreateBaselineTask>().configureEach {

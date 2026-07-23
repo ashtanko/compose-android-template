@@ -1,14 +1,32 @@
 Compose:
+  ComposableAnnotationNaming:
+    active: true
+  ComposableNaming:
+    active: true
+  # Compose Rules calls the "Modifier first optional parameter" check ComposableParamOrder.
+  ComposableParamOrder:
+    active: true
   CompositionLocalAllowlist:
     active: true
+    allowedCompositionLocals: LocalContext,LocalSoftwareKeyboardController
+  CompositionLocalNaming:
+    active: true
   ContentEmitterReturningValues:
+    active: true
+  ModifierClickableOrder:
     active: true
   ModifierComposed:
     active: true
   ModifierMissing:
     active: true
+    checkModifiersForVisibility: public_and_internal
     ignoreAnnotated:
       - NavigatableScreen
+      - Preview
+  ModifierNaming:
+    active: true
+  ModifierNotUsedAtRoot:
+    active: true
   ModifierReused:
     active: true
   ModifierWithoutDefault:
@@ -16,10 +34,6 @@ Compose:
   MultipleEmitters:
     active: true
   MutableParams:
-    active: true
-  ComposableNaming:
-    active: true
-  ComposableParamOrder:
     active: true
   PreviewNaming:
     active: true

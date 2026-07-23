@@ -50,8 +50,6 @@ class AndroidJUnit5ConventionPlugin : Plugin<Project> {
 
                 "androidTestImplementation"(libs.findLibrary("junit5-api").get())
                 "androidTestImplementation"(libs.findLibrary("junit5-params").get())
-                "androidTestImplementation"(libs.findLibrary("android-junit5-test-core").get())
-                "androidTestRuntimeOnly"(libs.findLibrary("android-junit5-test-runner").get())
             }
         }
     }

@@ -243,6 +243,7 @@ tasks {
 
 dependencies {
     implementation(project(":core:designsystem"))
+    implementation(project(":feature:home"))
 
     libs.apply {
         androidx.apply {
