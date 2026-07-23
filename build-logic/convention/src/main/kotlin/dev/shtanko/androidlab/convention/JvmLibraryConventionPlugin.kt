@@ -1,14 +1,13 @@
+package dev.shtanko.androidlab.convention
+
 import dev.shtanko.androidlab.configureDetekt
 import dev.shtanko.androidlab.configureKotlinJvm
-import dev.shtanko.androidlab.configureSpotlessForJvm
 import dev.shtanko.androidlab.libs
-import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.invoke
 import org.gradle.kotlin.dsl.withType
 
@@ -18,14 +17,11 @@ class JvmLibraryConventionPlugin : Plugin<Project> {
             with(pluginManager) {
                 apply(plugin = "org.jetbrains.kotlin.jvm")
                 apply(plugin = "androidlab.android.lint")
-
-                apply(
-                    libs.findLibrary("detekt-gradle").get().get().group
-                )
+                apply(plugin = "androidlab.spotless")
+                apply(plugin = "io.gitlab.arturbosch.detekt")
             }
             configureKotlinJvm()
-            configureSpotlessForJvm()
-            configureDetekt(extensions.getByType<DetektExtension>())
+            configureDetekt()
             tasks {
                 withType<Test> {
                     useJUnitPlatform()

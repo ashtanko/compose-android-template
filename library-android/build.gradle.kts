@@ -14,25 +14,17 @@
  * limitations under the License.
  */
 plugins {
-    alias(libs.plugins.androidlab.android.library)
     alias(libs.plugins.androidlab.android.library.compose)
     alias(libs.plugins.androidlab.android.library.jacoco)
-    alias(libs.plugins.android.junit5)
-    alias(libs.plugins.roborazzi)
+    alias(libs.plugins.androidlab.android.junit5)
+    alias(libs.plugins.androidlab.android.roborazzi)
 }
 
 android {
     namespace = "app.template.library.android"
 
-    compileSdk = libs.versions.compileSdk.get().toInt()
-
     defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInt()
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
-        testInstrumentationRunnerArguments["runnerBuilder"] =
-            "de.mannodermaus.junit5.AndroidJUnit5Builder"
     }
 }
 
@@ -54,18 +46,6 @@ dependencies {
                 debugApi(test.manifest)
             }
         }
-
-        junit5.apply {
-            testImplementation(api)
-            testImplementation(params)
-
-            testRuntimeOnly(jupiterEngine)
-            testRuntimeOnly(vintageEngine)
-        }
-
-        androidTestImplementation(libs.junit5.api)
-        androidTestImplementation(libs.android.junit5.test.core)
-        androidTestRuntimeOnly(libs.android.junit5.test.runner)
 
         testImplementation(assertj.core)
     }

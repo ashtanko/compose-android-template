@@ -15,8 +15,6 @@
  */
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import java.util.Properties
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 val isGithubActions = System.getenv("GITHUB_ACTIONS")?.toBoolean() == true
 val isCI = providers.environmentVariable("CI").isPresent
@@ -27,33 +25,28 @@ private val keyAliasKey = "keyAlias"
 private val storeFileKey = "storeFile"
 
 plugins {
-    alias(libs.plugins.androidlab.android.application)
     alias(libs.plugins.androidlab.android.application.compose)
+    alias(libs.plugins.androidlab.android.application.baselineprofile)
     alias(libs.plugins.androidlab.android.application.jacoco)
+    alias(libs.plugins.androidlab.android.compose.screenshot)
+    alias(libs.plugins.androidlab.android.junit5)
+    alias(libs.plugins.androidlab.android.roborazzi)
+    alias(libs.plugins.androidlab.android.room)
     alias(libs.plugins.androidlab.hilt)
-    alias(libs.plugins.compose.guard)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.serialization)
     alias(libs.plugins.kover)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.sonarqube)
-    alias(libs.plugins.screenshot)
-    alias(libs.plugins.baselineprofile)
-    alias(libs.plugins.roborazzi)
     jacoco
 }
 
 android {
     namespace = "dev.shtanko.template"
-    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
         applicationId = "dev.shtanko.template"
-        minSdk = libs.versions.minSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
@@ -110,13 +103,8 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility(libs.versions.jvmTarget.get())
-        targetCompatibility(libs.versions.jvmTarget.get())
-    }
     buildFeatures {
         buildConfig = true
-        compose = true
     }
     packaging {
         resources {
@@ -125,38 +113,6 @@ android {
             merges += "META-INF/LICENSE.md"
             merges += "META-INF/LICENSE-notice.md"
         }
-    }
-    testOptions {
-        // Required for Robolectric
-        unitTests.isIncludeAndroidResources = true
-        unitTests.isReturnDefaultValues = true
-
-        unitTests.all {
-            it.useJUnitPlatform()
-            it.jvmArgs(
-                "--add-opens",
-                "java.base/java.util=ALL-UNNAMED",
-                "--add-opens",
-                "java.base/java.lang=ALL-UNNAMED",
-                "--add-opens",
-                "java.base/java.time=ALL-UNNAMED",
-                "-Xshare:off",
-            )
-        }
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
-    experimentalProperties["android.experimental.enableScreenshotTest"] = true
-
-    ksp {
-        arg("room.schemaLocation", "$projectDir/schemas")
-    }
-}
-
-tasks.withType<KotlinJvmCompile>().configureEach {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmTarget.get()))
     }
 }
 
@@ -218,20 +174,11 @@ tasks {
         dependsOn("check")
     }
 
-    withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
-        jvmTarget = libs.versions.jvmTarget.get()
-    }
-
-    withType<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>().configureEach {
-        jvmTarget = libs.versions.jvmTarget.get()
-    }
-
     withType<Test> {
         useJUnitPlatform()
         maxHeapSize = "2g"
         maxParallelForks = Runtime.getRuntime().availableProcessors()
         jvmArgs = jvmArgs.orEmpty() + "-XX:+UseParallelGC"
-        android.sourceSets["main"].res.srcDirs("src/test/res")
         jvmArgs(
             "--add-opens",
             "java.base/java.util=ALL-UNNAMED",
@@ -269,22 +216,6 @@ tasks {
             listOf(xml, html).map { it.required }.forEach { it.set(true) }
             xml.outputLocation.set(file("$projectBuildDirectory/reports/jacoco/report.xml"))
         }
-    }
-}
-
-composeGuardCheck {
-    errorOnNewDynamicProperties = false
-    errorOnNewUnstableClasses = false
-    reportAllOnMissingBaseline = true
-}
-
-composeGuard {
-    configureKotlinTasks = false
-}
-
-kotlin {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmTarget.get()))
     }
 }
 
@@ -354,10 +285,9 @@ dependencies {
             }
 
             androidTestImplementation(arch.core.test)
-            screenshotTestImplementation(compose.ui.tooling)
         }
 
-        implementation(profileinstaller)
+        baselineProfile(project(":benchmarks"))
 
         implementation(paging.runtime)
         implementation(paging.compose)
@@ -386,14 +316,10 @@ dependencies {
         }
 
         hilt.apply {
-            implementation(android)
-            ksp(compiler)
             kspTest(compiler)
             kspAndroidTest(compiler)
             testImplementation(android.testing)
         }
-
-        implementation(profileinstaller)
 
         implementation(accompanist.adaptive)
         implementation(accompanist.permissions)
@@ -401,10 +327,7 @@ dependencies {
         implementation(libs.androidx.window)
         implementation(libs.androidx.window.core)
 
-        implementation(room.runtime)
-        implementation(room.ktx)
         implementation(room.paging)
-        ksp(room.compiler)
 
         implementation(jacoco.core)
 
@@ -422,20 +345,7 @@ dependencies {
         androidTestImplementation(mockk.android)
 
         testImplementation(robolectric.robolectric)
-        testImplementation(roborazzi)
-        testImplementation(roborazzi.accessibility.check)
         testImplementation(androidx.activity.compose)
-
-        junit5.apply {
-            testImplementation(api)
-            testImplementation(params)
-
-            androidTestImplementation(api)
-            androidTestImplementation(params)
-
-            testRuntimeOnly(jupiterEngine)
-            testRuntimeOnly(vintageEngine)
-        }
 
         androidTestImplementation(libs.androidx.junit)
         androidTestImplementation(libs.androidx.espresso.core)

@@ -15,8 +15,7 @@
  */
 
 plugins {
-    alias(libs.plugins.baselineprofile)
-    alias(libs.plugins.androidlab.android.test)
+    alias(libs.plugins.androidlab.android.benchmark)
 }
 
 android {
@@ -53,15 +52,4 @@ baselineProfile {
     // Don't use a connected device but rely on a GMD for consistency between local and CI builds.
     useConnectedDevices = false
 
-}
-
-dependencies {
-    implementation(libs.androidx.benchmark.macro)
-    implementation(libs.androidx.test.core)
-    implementation(libs.androidx.espresso.core)
-    implementation(libs.androidx.test.ext)
-    implementation(libs.androidx.test.rules)
-    implementation(libs.androidx.test.runner)
-    implementation(libs.androidx.uiautomator)
-    implementation(libs.androidx.junit)
 }

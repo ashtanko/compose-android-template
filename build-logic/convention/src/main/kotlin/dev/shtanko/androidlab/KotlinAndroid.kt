@@ -4,14 +4,12 @@ import com.android.build.api.dsl.CommonExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 /**
  * Configure base Kotlin with Android options
@@ -19,18 +17,18 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 internal fun Project.configureKotlinAndroid(
     commonExtension: CommonExtension,
 ) {
+    val javaVersion = JavaVersion.toVersion(libs.findVersion("jvmTarget").get().requiredVersion)
+
     commonExtension.apply {
-        compileSdk = 37
+        compileSdk = libs.findVersion("compileSdk").get().requiredVersion.toInt()
 
         defaultConfig.apply {
-            minSdk = 24
+            minSdk = libs.findVersion("minSdk").get().requiredVersion.toInt()
         }
 
         compileOptions.apply {
-            // Up to Java 11 APIs are available through desugaring
-            // https://developer.android.com/studio/write/java11-minimal-support-table
-            sourceCompatibility = JavaVersion.VERSION_21
-            targetCompatibility = JavaVersion.VERSION_21
+            sourceCompatibility = javaVersion
+            targetCompatibility = javaVersion
             isCoreLibraryDesugaringEnabled = true
         }
     }
@@ -46,11 +44,11 @@ internal fun Project.configureKotlinAndroid(
  * Configure base Kotlin options for JVM (non-Android)
  */
 internal fun Project.configureKotlinJvm() {
+    val javaVersion = JavaVersion.toVersion(libs.findVersion("jvmTarget").get().requiredVersion)
+
     extensions.configure<JavaPluginExtension> {
-        // Up to Java 11 APIs are available through desugaring
-        // https://developer.android.com/studio/write/java11-minimal-support-table
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
     }
 
     configureKotlin<KotlinJvmProjectExtension>()
@@ -65,33 +63,16 @@ private inline fun <reified T : KotlinBaseExtension> Project.configureKotlin() =
     val warningsAsErrors = providers.gradleProperty("warningsAsErrors").map {
         it.toBoolean()
     }.orElse(false)
+    val configuredJvmTarget = JvmTarget.fromTarget(
+        libs.findVersion("jvmTarget").get().requiredVersion,
+    )
+
     when (this) {
         is KotlinAndroidProjectExtension -> compilerOptions
         is KotlinJvmProjectExtension -> compilerOptions
         else -> TODO("Unsupported project extension $this ${T::class}")
     }.apply {
-        // TODO: move remove languageVersion and coreLibrariesVersion after upgrading to AGP 9.0
-        languageVersion.set(KotlinVersion.KOTLIN_2_3)
-        coreLibrariesVersion = "2.2.21"
-        jvmTarget = JvmTarget.JVM_21
-        allWarningsAsErrors = warningsAsErrors
-        freeCompilerArgs.add(
-            // Enable experimental coroutines APIs, including Flow
-            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-        )
-        freeCompilerArgs.add(
-            /**
-             * Remove this args after Phase 3.
-             * https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-consistent-copy-visibility/#deprecation-timeline
-             *
-             * Deprecation timeline
-             * Phase 3. (Supposedly Kotlin 2.2 or Kotlin 2.3).
-             * The default changes.
-             * Unless ExposedCopyVisibility is used, the generated 'copy' method has the same visibility as the primary constructor.
-             * The binary signature changes. The error on the declaration is no longer reported.
-             * '-Xconsistent-data-class-copy-visibility' compiler flag and ConsistentCopyVisibility annotation are now unnecessary.
-             */
-            "-Xconsistent-data-class-copy-visibility"
-        )
+        jvmTarget.set(configuredJvmTarget)
+        allWarningsAsErrors.set(warningsAsErrors)
     }
 }

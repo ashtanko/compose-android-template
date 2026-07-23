@@ -1,15 +1,16 @@
 package dev.shtanko.androidlab
 
-import com.android.build.api.dsl.LibraryExtension
-import org.gradle.api.Project
+import com.android.build.api.dsl.Lint
 
-fun LibraryExtension.configureLint(project: Project) {
-    lint {
-        abortOnError = true
-        warningsAsErrors = true
-        checkAllWarnings = true
-        checkReleaseBuilds = false // run on CI instead, speeds up release builds
-        baseline = project.file("lint-baseline.xml")
-        disable.addAll(setOf("GradleDependency", "NewerVersionAvailable"))
+internal fun configureLint(
+    lint: Lint,
+    checkDependencies: Boolean,
+) {
+    lint.apply {
+        this.checkDependencies = checkDependencies
+        disable += setOf(
+            "GradleDependency",
+            "NewerVersionAvailable",
+        )
     }
 }

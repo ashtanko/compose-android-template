@@ -166,6 +166,12 @@ BUILD_GRADLE="${MODULE_DIR}/build.gradle.kts"
 if [[ "$TYPE" == "android" ]]; then
   mkdir -p "${MODULE_DIR}/src/androidTest/kotlin/${PKG_PATH}"
 
+  if [[ "$PARENT" == "feature" ]]; then
+    ANDROID_CONVENTION_PLUGINS='    alias(libs.plugins.androidlab.android.feature)'
+  else
+    ANDROID_CONVENTION_PLUGINS='    alias(libs.plugins.androidlab.android.library.compose)'
+  fi
+
   cat <<EOF > "$BUILD_GRADLE"
 /*
  * Designed and developed by 2026 ashtanko (Oleksii Shtanko)
@@ -183,10 +189,9 @@ if [[ "$TYPE" == "android" ]]; then
  * limitations under the License.
  */
 plugins {
-    alias(libs.plugins.androidlab.android.library)
-    alias(libs.plugins.androidlab.android.library.compose)
+${ANDROID_CONVENTION_PLUGINS}
     alias(libs.plugins.androidlab.android.library.jacoco)
-    alias(libs.plugins.android.junit5)
+    alias(libs.plugins.androidlab.android.junit5)
 }
 
 android {
@@ -201,13 +206,6 @@ dependencies {
                 api(foundation)
                 api(foundation.layout)
             }
-        }
-
-        junit5.apply {
-            testImplementation(api)
-            testImplementation(params)
-
-            testRuntimeOnly(jupiterEngine)
         }
     }
 }

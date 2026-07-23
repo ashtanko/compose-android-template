@@ -1,15 +1,16 @@
 package dev.shtanko.androidlab
 
 import io.gitlab.arturbosch.detekt.Detekt
-import io.gitlab.arturbosch.detekt.extensions.DetektExtension
+import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.named
+import org.gradle.kotlin.dsl.withType
 
-internal fun Project.configureDetekt(extension: DetektExtension) = extension.apply {
-    tasks.named<Detekt>("detekt") {
+internal fun Project.configureDetekt() {
+    tasks.withType<Detekt>().configureEach {
         description = "Runs Detekt analysis for this module."
         parallel = true
+        jvmTarget = libs.findVersion("jvmTarget").get().requiredVersion
         baseline.set(file("$rootDir/config/detekt/detekt-baseline.xml"))
         config.from(
             file("$rootDir/config/detekt/detekt.yml"),
@@ -21,13 +22,16 @@ internal fun Project.configureDetekt(extension: DetektExtension) = extension.app
         exclude("**/resources/**")
 
         reports {
-            reports.apply {
-                listOf(xml, html, txt, md).map { it.required }.forEach {
-                    it.set(true)
-                }
+            listOf(xml, html, txt, md, sarif).forEach {
+                it.required.set(true)
             }
         }
     }
+
+    tasks.withType<DetektCreateBaselineTask>().configureEach {
+        jvmTarget = libs.findVersion("jvmTarget").get().requiredVersion
+    }
+
     dependencies {
         "detektPlugins"(libs.findLibrary("detekt-formatting").get())
         "detektPlugins"(libs.findLibrary("detekt-rules").get())

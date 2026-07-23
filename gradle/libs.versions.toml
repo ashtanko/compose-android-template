@@ -134,6 +134,10 @@ accompanist-permissions = { module = "com.google.accompanist:accompanist-permiss
 # region androidx
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeKtx" }
+androidx-lifecycle-runtime-testing = { group = "androidx.lifecycle", name = "lifecycle-runtime-testing", version.ref = "lifecycleRuntimeKtx" }
+androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodel" }
+androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-espresso-contrib = { group = "androidx.test.espresso", name = "espresso-contrib", version.ref = "espressoCore" }
@@ -264,18 +268,24 @@ androidx-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomato
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
-android-tools-common = { group = "com.android.tools", name = "common", version.ref = "androidTools" }
 compose-gradlePlugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 room-gradlePlugin = { group = "androidx.room", name = "room-gradle-plugin", version.ref = "room" }
 spotless-gradlePlugin = { group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version.ref = "spotless" }
 compose-guardPlugin = { group = "com.joetr.compose.guard", name = "com.joetr.compose.guard.gradle.plugin", version.ref = "composeGuard" }
+dependencyGuard-gradlePlugin = { group = "com.dropbox.dependency-guard", name = "dependency-guard", version.ref = "dependencyGuard" }
+hilt-gradlePlugin = { group = "com.google.dagger", name = "hilt-android-gradle-plugin", version.ref = "hilt" }
+android-junit5-gradlePlugin = { group = "de.mannodermaus.gradle.plugins", name = "android-junit5", version.ref = "android-junit5-plugin" }
+screenshot-gradlePlugin = { group = "com.android.compose.screenshot", name = "screenshot-test-gradle-plugin", version.ref = "screenshot" }
+baselineprofile-gradlePlugin = { group = "androidx.benchmark", name = "benchmark-baseline-profile-gradle-plugin", version.ref = "androidxMacroBenchmark" }
+roborazzi-gradlePlugin = { group = "io.github.takahirom.roborazzi", name = "roborazzi-gradle-plugin", version.ref = "roborazzi" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 compose-guard = { id = "com.joetr.compose.guard", version.ref = "composeGuard" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
@@ -286,6 +296,7 @@ kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 diktat = { id = "com.saveourtool.diktat", version.ref = "diktat" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+room = { id = "androidx.room", version.ref = "room" }
 dependencyGuard = { id = "com.dropbox.dependency-guard", version.ref = "dependencyGuard" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
@@ -298,18 +309,20 @@ google-android-libraries-mapsplatform-secrets-gradle-plugin = { id = "com.google
 
 # Plugins defined by this project
 androidlab-android-application = { id = "androidlab.android.application", version = "unspecified" }
+androidlab-android-application-baselineprofile = { id = "androidlab.android.application.baselineprofile", version = "unspecified" }
 androidlab-android-application-compose = { id = "androidlab.android.application.compose", version = "unspecified" }
 androidlab-android-application-jacoco = { id = "androidlab.android.application.jacoco", version = "unspecified" }
+androidlab-android-benchmark = { id = "androidlab.android.benchmark", version = "unspecified" }
+androidlab-android-compose-screenshot = { id = "androidlab.android.compose.screenshot", version = "unspecified" }
 androidlab-android-feature = { id = "androidlab.android.feature", version = "unspecified" }
 androidlab-android-library = { id = "androidlab.android.library", version = "unspecified" }
 androidlab-android-library-compose = { id = "androidlab.android.library.compose", version = "unspecified" }
 androidlab-android-library-jacoco = { id = "androidlab.android.library.jacoco", version = "unspecified" }
+androidlab-android-junit5 = { id = "androidlab.android.junit5", version = "unspecified" }
 androidlab-android-lint = { id = "androidlab.android.lint", version = "unspecified" }
+androidlab-android-roborazzi = { id = "androidlab.android.roborazzi", version = "unspecified" }
 androidlab-android-room = { id = "androidlab.android.room", version = "unspecified" }
 androidlab-android-test = { id = "androidlab.android.test", version = "unspecified" }
 androidlab-hilt = { id = "androidlab.hilt", version = "unspecified" }
-androidlab-hilt-android = { id = "androidlab.hilt.android", version = "unspecified" }
 androidlab-jvm-library = { id = "androidlab.jvm.library", version = "unspecified" }
 android-junit5 = { id = "de.mannodermaus.android-junit5", version.ref = "android-junit5-plugin" }
-androidlab-android-feature-impl = { id = "androidlab.android.feature.impl" }
-androidlab-android-feature-api = { id = "androidlab.android.feature.api" }

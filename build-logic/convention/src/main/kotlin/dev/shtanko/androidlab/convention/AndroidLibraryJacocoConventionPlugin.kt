@@ -1,3 +1,5 @@
+package dev.shtanko.androidlab.convention
+
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import dev.shtanko.androidlab.configureJacoco

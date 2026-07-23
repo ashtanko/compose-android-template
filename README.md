@@ -81,7 +81,7 @@ The project follows a modular layout backed by Gradle convention plugins:
 └── scripts/                # Helper scripts (e.g. rename-template.sh)
 ```
 
-Convention plugins under `build-logic/convention` (e.g. `androidlab.android.application`, `androidlab.android.library.compose`, `androidlab.hilt`, `androidlab.android.room`, `androidlab.android.lint`) keep per-module `build.gradle.kts` files small and consistent.
+Convention plugins under `build-logic/convention` (e.g. `androidlab.android.application.compose`, `androidlab.android.library.compose`, `androidlab.android.feature`, `androidlab.android.junit5`, `androidlab.android.compose.screenshot`, `androidlab.android.roborazzi`, `androidlab.android.benchmark`, `androidlab.hilt`, `androidlab.android.room`, and `androidlab.android.lint`) keep per-module `build.gradle.kts` files small and consistent.
 
 ## 🛠️ Technology Stack
 

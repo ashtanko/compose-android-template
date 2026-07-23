@@ -1,7 +1,10 @@
+import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     `kotlin-dsl`
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.spotless)
 }
 
 group = "dev.shtanko.androidlab.buildlogic"
@@ -17,9 +20,44 @@ kotlin {
     }
 }
 
+spotless {
+    kotlin {
+        target("src/**/*.kt")
+        ktlint(libs.versions.ktlintCli.get()).editorConfigOverride(
+            mapOf("android" to "true"),
+        )
+        endWithNewline()
+    }
+    kotlinGradle {
+        target("*.gradle.kts")
+        ktlint(libs.versions.ktlintCli.get()).editorConfigOverride(
+            mapOf("android" to "true"),
+        )
+        endWithNewline()
+    }
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    baseline = rootProject.file("../config/detekt/detekt-baseline.xml")
+    config.setFrom(
+        rootProject.file("../config/detekt/detekt.yml"),
+        rootProject.file("../config/detekt/detekt-compose.yml"),
+    )
+    source.setFrom(files("src"))
+}
+
+tasks.withType<Detekt>().configureEach {
+    jvmTarget = libs.versions.jvmTarget.get()
+    reports {
+        listOf(xml, html, txt, md, sarif).forEach {
+            it.required.set(true)
+        }
+    }
+}
+
 dependencies {
     compileOnly(libs.android.gradlePlugin)
-    compileOnly(libs.android.tools.common)
     compileOnly(libs.compose.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.ksp.gradlePlugin)
@@ -27,73 +65,100 @@ dependencies {
     compileOnly(libs.detekt.gradle)
     compileOnly(libs.spotless.gradlePlugin)
     compileOnly(libs.compose.guardPlugin)
+    compileOnly(libs.dependencyGuard.gradlePlugin)
+    compileOnly(libs.hilt.gradlePlugin)
+    compileOnly(libs.android.junit5.gradlePlugin)
+    compileOnly(libs.screenshot.gradlePlugin)
+    compileOnly(libs.baselineprofile.gradlePlugin)
+    compileOnly(libs.roborazzi.gradlePlugin)
+
+    detektPlugins(libs.detekt.formatting)
+    detektPlugins(libs.detekt.rules)
 }
 
 gradlePlugin {
     plugins {
         register("androidApplicationCompose") {
             id = "androidlab.android.application.compose"
-            implementationClass = "AndroidApplicationComposeConventionPlugin"
+            implementationClass =
+                "dev.shtanko.androidlab.convention.AndroidApplicationComposeConventionPlugin"
         }
         register("androidApplication") {
             id = "androidlab.android.application"
-            implementationClass = "AndroidApplicationConventionPlugin"
+            implementationClass =
+                "dev.shtanko.androidlab.convention.AndroidApplicationConventionPlugin"
         }
         register("androidLibraryCompose") {
             id = "androidlab.android.library.compose"
-            implementationClass = "AndroidLibraryComposeConventionPlugin"
+            implementationClass =
+                "dev.shtanko.androidlab.convention.AndroidLibraryComposeConventionPlugin"
         }
         register("androidLibrary") {
             id = "androidlab.android.library"
-            implementationClass = "AndroidLibraryConventionPlugin"
+            implementationClass =
+                "dev.shtanko.androidlab.convention.AndroidLibraryConventionPlugin"
         }
         register("androidFeature") {
             id = "androidlab.android.feature"
-            implementationClass = "AndroidFeatureConventionPlugin"
-        }
-        register("androidFeatureApi") {
-            id = libs.plugins.androidlab.android.feature.api.get().pluginId
-            implementationClass = "AndroidFeatureApiConventionPlugin"
-        }
-        register("androidFeatureImpl") {
-            id = libs.plugins.androidlab.android.feature.impl.get().pluginId
-            implementationClass = "AndroidFeatureImplConventionPlugin"
+            implementationClass =
+                "dev.shtanko.androidlab.convention.AndroidFeatureConventionPlugin"
         }
         register("hilt") {
             id = "androidlab.hilt"
-            implementationClass = "HiltConventionPlugin"
-        }
-        register("androidHilt") {
-            id = "androidlab.hilt.android"
-            implementationClass = "AndroidHiltConventionPlugin"
+            implementationClass = "dev.shtanko.androidlab.convention.HiltConventionPlugin"
         }
         register("spotless") {
             id = "androidlab.spotless"
-            implementationClass = "SpotlessConventionPlugin"
+            implementationClass = "dev.shtanko.androidlab.convention.SpotlessConventionPlugin"
         }
         register("androidLint") {
             id = "androidlab.android.lint"
-            implementationClass = "AndroidLintConventionPlugin"
+            implementationClass = "dev.shtanko.androidlab.convention.AndroidLintConventionPlugin"
         }
         register("androidApplicationJacoco") {
             id = "androidlab.android.application.jacoco"
-            implementationClass = "AndroidApplicationJacocoConventionPlugin"
+            implementationClass =
+                "dev.shtanko.androidlab.convention.AndroidApplicationJacocoConventionPlugin"
+        }
+        register("androidApplicationBaselineProfile") {
+            id = "androidlab.android.application.baselineprofile"
+            implementationClass =
+                "dev.shtanko.androidlab.convention.AndroidApplicationBaselineProfileConventionPlugin"
+        }
+        register("androidBenchmark") {
+            id = "androidlab.android.benchmark"
+            implementationClass = "dev.shtanko.androidlab.convention.AndroidBenchmarkConventionPlugin"
+        }
+        register("androidComposeScreenshot") {
+            id = "androidlab.android.compose.screenshot"
+            implementationClass =
+                "dev.shtanko.androidlab.convention.AndroidComposeScreenshotConventionPlugin"
+        }
+        register("androidJUnit5") {
+            id = "androidlab.android.junit5"
+            implementationClass = "dev.shtanko.androidlab.convention.AndroidJUnit5ConventionPlugin"
+        }
+        register("androidRoborazzi") {
+            id = "androidlab.android.roborazzi"
+            implementationClass =
+                "dev.shtanko.androidlab.convention.AndroidRoborazziConventionPlugin"
         }
         register("androidTest") {
             id = "androidlab.android.test"
-            implementationClass = "AndroidTestConventionPlugin"
+            implementationClass = "dev.shtanko.androidlab.convention.AndroidTestConventionPlugin"
         }
         register("androidLibraryJacoco") {
             id = "androidlab.android.library.jacoco"
-            implementationClass = "AndroidLibraryJacocoConventionPlugin"
+            implementationClass =
+                "dev.shtanko.androidlab.convention.AndroidLibraryJacocoConventionPlugin"
         }
         register("jvmLibrary") {
             id = "androidlab.jvm.library"
-            implementationClass = "JvmLibraryConventionPlugin"
+            implementationClass = "dev.shtanko.androidlab.convention.JvmLibraryConventionPlugin"
         }
         register("room") {
             id = "androidlab.android.room"
-            implementationClass = "AndroidRoomConventionPlugin"
+            implementationClass = "dev.shtanko.androidlab.convention.AndroidRoomConventionPlugin"
         }
     }
 }

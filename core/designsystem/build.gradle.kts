@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 plugins {
-    alias(libs.plugins.androidlab.android.library)
     alias(libs.plugins.androidlab.android.library.compose)
     alias(libs.plugins.androidlab.android.library.jacoco)
-    alias(libs.plugins.android.junit5)
+    alias(libs.plugins.androidlab.android.junit5)
 }
 
 android {
@@ -39,13 +38,6 @@ dependencies {
                 androidTestImplementation(test.junit4)
                 debugImplementation(test.manifest)
             }
-        }
-
-        junit5.apply {
-            testImplementation(api)
-            testImplementation(params)
-
-            testRuntimeOnly(jupiterEngine)
         }
     }
 }

@@ -8,21 +8,25 @@ buildscript {
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
-    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.android.test) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.compose.guard) apply false
     alias(libs.plugins.detekt) apply false
-    alias(libs.plugins.sonarqube) apply false
     alias(libs.plugins.ksp) apply false
-    alias(libs.plugins.kover) apply false
-    alias(libs.plugins.kotlin.parcelize) apply false
+    alias(libs.plugins.room) apply false
     alias(libs.plugins.hilt) apply false
-    alias(libs.plugins.android.test) apply false
+    alias(libs.plugins.android.junit5) apply false
+    alias(libs.plugins.screenshot) apply false
     alias(libs.plugins.baselineprofile) apply false
     alias(libs.plugins.roborazzi) apply false
-    alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin) apply false
     alias(libs.plugins.dependencyGuard) apply false
     alias(libs.plugins.spotless) apply false
+    alias(libs.plugins.sonarqube) apply false
+    alias(libs.plugins.kover) apply false
+    alias(libs.plugins.kotlin.parcelize) apply false
+    alias(libs.plugins.serialization) apply false
+    alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin) apply false
 }
 
 // CI Task Exclusion Logic
@@ -38,6 +42,18 @@ val excludedTasks = setOf(
     "testReleaseUnitTest",
     "finalizeTestRoborazziRelease"
 )
+
+tasks.register("spotlessCheck") {
+    group = "verification"
+    description = "Checks formatting in the included build logic."
+    dependsOn(gradle.includedBuild("build-logic").task(":convention:spotlessCheck"))
+}
+
+tasks.register("detekt") {
+    group = "verification"
+    description = "Runs Detekt in the included build logic."
+    dependsOn(gradle.includedBuild("build-logic").task(":convention:detekt"))
+}
 
 tasks.configureEach {
     if (name in excludedTasks && isCI) {
