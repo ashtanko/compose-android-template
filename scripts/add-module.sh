@@ -197,18 +197,6 @@ ${ANDROID_CONVENTION_PLUGINS}
 android {
     namespace = "$PACKAGE"
 }
-
-dependencies {
-    libs.apply {
-        androidx.apply {
-            api(material3)
-            compose.apply {
-                api(foundation)
-                api(foundation.layout)
-            }
-        }
-    }
-}
 EOF
 
   # AndroidManifest.xml

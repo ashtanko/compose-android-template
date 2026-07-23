@@ -109,6 +109,13 @@ The project follows a modular layout backed by Gradle convention plugins:
 
 Convention plugins under `build-logic/convention` (e.g. `androidlab.android.application.compose`, `androidlab.android.library.compose`, `androidlab.android.feature`, `androidlab.android.junit5`, `androidlab.android.compose.screenshot`, `androidlab.android.roborazzi`, `androidlab.android.benchmark`, `androidlab.hilt`, `androidlab.android.room`, and `androidlab.android.lint`) keep per-module `build.gradle.kts` files small and consistent.
 
+### Adding modules
+
+Use `scripts/add-module.sh` to create and register feature, core, Android library, or Kotlin/JVM
+modules. Generated Android modules intentionally start without explicit library dependencies. Add
+only dependencies required by the implementation, prefer `implementation`, and use `api` only when
+a dependency type is intentionally part of the module's public contract.
+
 ## 🛠️ Technology Stack
 
 Library, Android build-plugin, and Android SDK versions are defined in

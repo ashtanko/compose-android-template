@@ -27,7 +27,10 @@ Create a module with explicit, repeatable inputs, then replace or remove generat
    ```
 
 5. Review every generated file. Replace the placeholder greeting class and test with the requested implementation, or remove them if the task only calls for an empty module.
-6. Adjust the generated plugins and dependencies to match a working neighboring module. Use catalog aliases and existing convention plugins; do not hardcode versions.
+6. Generated Android modules intentionally start without explicit library dependencies. Add only
+   the direct dependencies required by the implementation, default to `implementation`, and use
+   `api` only when a dependency type intentionally appears in the module's public contract. Use
+   catalog aliases and existing convention plugins; do not hardcode versions.
 7. Confirm that the module appears exactly once in `settings.gradle.kts` and that its namespace and package path agree.
 8. Run `./gradlew spotlessApply`, inspect the formatting diff, then run the module's unit-test task and `./gradlew spotlessCheck`.
 
@@ -36,5 +39,6 @@ Create a module with explicit, repeatable inputs, then replace or remove generat
 - Do not run the generator interactively from an unattended agent session.
 - Do not overwrite an existing module or discard concurrent changes to `settings.gradle.kts`.
 - Do not assume every feature needs Compose, Hilt, Room, or navigation. Add only what its implementation requires.
+- Do not add convenience `api` dependencies to make libraries available transitively to consumers.
 - Do not retain sample code merely to make an empty module compile; use a minimal real contract or no source file.
 - Report all created files and the exact validation tasks run.

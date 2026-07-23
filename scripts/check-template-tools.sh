@@ -49,6 +49,14 @@ assert_contains() {
         || fail "expected '$expected' in $file_path"
 }
 
+assert_not_contains() {
+    local file_path="$1"
+    local unexpected="$2"
+    if grep -Fq -- "$unexpected" "$file_path"; then
+        fail "did not expect '$unexpected' in $file_path"
+    fi
+}
+
 assert_occurrences() {
     local file_path="$1"
     local expected="$2"
@@ -105,6 +113,11 @@ check_generated_module_structure() {
             --parent feature \
             --package app.template.feature.modulecheck
         bash scripts/add-module.sh \
+            --type android \
+            --name androidcheck \
+            --parent core \
+            --package app.template.core.androidcheck
+        bash scripts/add-module.sh \
             --type kotlin \
             --name logiccheck \
             --parent core \
@@ -126,6 +139,28 @@ check_generated_module_structure() {
     assert_contains \
         "$fixture_root/feature/modulecheck/build.gradle.kts" \
         'namespace = "app.template.feature.modulecheck"'
+    assert_not_contains \
+        "$fixture_root/feature/modulecheck/build.gradle.kts" \
+        "dependencies {"
+
+    assert_file "$fixture_root/core/androidcheck/build.gradle.kts"
+    assert_file "$fixture_root/core/androidcheck/consumer-rules.pro"
+    assert_file "$fixture_root/core/androidcheck/proguard-rules.pro"
+    assert_file "$fixture_root/core/androidcheck/src/main/AndroidManifest.xml"
+    assert_directory "$fixture_root/core/androidcheck/src/androidTest/kotlin"
+    assert_file \
+        "$fixture_root/core/androidcheck/src/main/kotlin/app/template/core/androidcheck/Androidcheck.kt"
+    assert_file \
+        "$fixture_root/core/androidcheck/src/test/kotlin/app/template/core/androidcheck/AndroidcheckTest.kt"
+    assert_contains \
+        "$fixture_root/core/androidcheck/build.gradle.kts" \
+        "alias(libs.plugins.androidlab.android.library.compose)"
+    assert_contains \
+        "$fixture_root/core/androidcheck/build.gradle.kts" \
+        'namespace = "app.template.core.androidcheck"'
+    assert_not_contains \
+        "$fixture_root/core/androidcheck/build.gradle.kts" \
+        "dependencies {"
 
     assert_file "$fixture_root/core/logiccheck/build.gradle.kts"
     assert_file \
@@ -139,6 +174,10 @@ check_generated_module_structure() {
     assert_occurrences \
         "$fixture_root/settings.gradle.kts" \
         'include(":feature:modulecheck")' \
+        1
+    assert_occurrences \
+        "$fixture_root/settings.gradle.kts" \
+        'include(":core:androidcheck")' \
         1
     assert_occurrences \
         "$fixture_root/settings.gradle.kts" \
