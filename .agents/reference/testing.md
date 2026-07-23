@@ -74,6 +74,8 @@ Compose test patterns.
   [`HomeViewModelTest.kt`](../../feature/home/src/test/kotlin/app/template/feature/home/HomeViewModelTest.kt)
 - Plain feature UI behavior:
   [`HomeScreenTest.kt`](../../feature/home/src/androidTest/kotlin/app/template/feature/home/HomeScreenTest.kt)
+- Deterministic feature screenshot:
+  [`HomeScreenScreenshotTest.kt`](../../feature/home/src/screenshotTest/kotlin/app/template/feature/home/HomeScreenScreenshotTest.kt)
 - Application navigation integration:
   [`MainNavigationTest.kt`](../../app/src/androidTest/kotlin/app/template/MainNavigationTest.kt)
 - Startup measurement:
@@ -96,6 +98,10 @@ project pattern changes.
 
 Do not regenerate screenshot, dependency, lint, or baseline-profile artifacts merely to make a
 verification task pass.
+
+Compose screenshot previews live in `src/screenshotTest`; approved images live in
+`src/screenshotTestDebug/reference`. `make verify` and `make screenshot-test` compare against those
+images. Only `make screenshot-record` updates them, and every update requires visual review.
 
 ## Definition of done
 

@@ -149,11 +149,59 @@ check_version_policy() {
     done
 }
 
+check_verification_contract() {
+    local verify_recipe
+    local required_task
+
+    if ! rg --fixed-strings --quiet "run: make verify" .github/workflows/ci.yml; then
+        fail "CI host verification must invoke the canonical make verify target"
+    fi
+
+    if rg --quiet \
+        'dependencyGuardBaseline|update[A-Za-z]+ScreenshotTest|recordRoborazzi|git-auto-commit-action' \
+        .github/workflows/ci.yml; then
+        fail "CI verification must not update or commit dependency or screenshot baselines"
+    fi
+
+    if rg --quiet 'contents: write|pull-requests: write' .github/workflows/ci.yml; then
+        fail "CI verification must not receive broad repository write permissions"
+    fi
+
+    verify_recipe="$(
+        awk '
+            /^verify:/ { in_verify = 1; next }
+            in_verify && /^[[:alnum:]_-]+:/ { exit }
+            in_verify { print }
+        ' Makefile
+    )"
+
+    for required_task in \
+        assembleDebug \
+        test \
+        lint \
+        detekt \
+        spotlessCheck \
+        dependencyGuard \
+        validateDebugScreenshotTest \
+        verifyRoborazziDebug; do
+        if ! grep -Fq -- "$required_task" <<<"$verify_recipe"; then
+            fail "make verify must include $required_task"
+        fi
+    done
+
+    if grep -Eq \
+        'Baseline|update[A-Za-z]+ScreenshotTest|recordRoborazzi' \
+        <<<"$verify_recipe"; then
+        fail "make verify must not contain baseline-update tasks"
+    fi
+}
+
 check_canonical_agent_entrypoint
 check_local_markdown_links
 check_documented_make_targets
 check_documented_modules
 check_version_policy
+check_verification_contract
 
 if ((failures > 0)); then
     printf 'Documentation checks failed with %d error(s).\n' "$failures" >&2

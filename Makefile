@@ -6,6 +6,7 @@ GRADLE_ARGS ?=
 .PHONY: \
 	help \
 	docs-check \
+	template-check \
 	build \
 	install \
 	test \
@@ -35,6 +36,7 @@ help:
 	@echo
 	@echo "Build and verification:"
 	@echo "  docs-check                  Validate documentation links and project facts"
+	@echo "  template-check              Validate rename dry run and module generation"
 	@echo "  build                       Assemble debug artifacts"
 	@echo "  install                     Install the app's debug build"
 	@echo "  test                        Run unit tests"
@@ -66,6 +68,9 @@ help:
 docs-check:
 	bash scripts/check-docs.sh
 
+template-check:
+	bash scripts/check-template-tools.sh
+
 build:
 	$(GRADLE) assembleDebug $(GRADLE_ARGS)
 
@@ -78,8 +83,8 @@ test:
 check:
 	$(GRADLE) lint detekt spotlessCheck dependencyGuard $(GRADLE_ARGS)
 
-verify:
-	$(GRADLE) assembleDebug test lint detekt spotlessCheck dependencyGuard $(GRADLE_ARGS)
+verify: docs-check template-check
+	$(GRADLE) :build-logic:convention:check assembleDebug test lint detekt spotlessCheck dependencyGuard validateDebugScreenshotTest verifyRoborazziDebug $(GRADLE_ARGS)
 
 lint:
 	$(GRADLE) lint $(GRADLE_ARGS)

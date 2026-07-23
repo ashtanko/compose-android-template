@@ -7,6 +7,7 @@ Run commands from the repository root with the Gradle wrapper. JDK 21 is require
 | Change | Start with |
 | --- | --- |
 | Documentation only | `make docs-check` |
+| Template tooling | `make template-check` |
 | Shell script | `bash -n path/to/script.sh` plus a safe dry run when supported |
 | Pure Kotlin module | `./gradlew :module:test` |
 | Android module | `./gradlew :module:testDebugUnitTest` |
@@ -31,15 +32,20 @@ Compose API findings such as parameter order still require a code change.
 
 ## Broader verification
 
-For a cross-module or pre-PR change, use the non-mutating verification target:
+For a cross-module or pre-PR change, use the canonical non-mutating verification target:
 
 ```bash
 make verify
 ```
 
-It assembles debug artifacts and runs unit tests, lint, Detekt, Spotless, and Dependency Guard without requiring release signing.
+It validates documentation and template tools, checks build logic, assembles debug artifacts, and
+runs unit tests, lint, Detekt, Spotless, Dependency Guard, Compose screenshot validation, and
+Roborazzi verification without requiring release signing. The host-side pull-request job invokes
+this exact target; managed-device tests remain a separate environment-dependent CI job.
 
-Add screenshot verification when UI output changed. Routine Make targets are non-mutating; use `make screenshot-record` or `make roborazzi-record` only when updating visual baselines is intentional.
+Routine verification never records baselines. Use `make screenshot-record`,
+`make roborazzi-record`, or `make dependency-guard-baseline` only when the corresponding change is
+intentional, then review every generated diff.
 
 ## Mutating commands
 
@@ -51,3 +57,7 @@ Add screenshot verification when UI output changed. Routine Make targets are non
 ## Module generation
 
 Use `bash scripts/add-module.sh` with explicit flags for repeatable, non-interactive module creation. Follow [the module skill](../skills/add-android-module/SKILL.md) and inspect all generated files before keeping them.
+
+`make template-check` proves that the rename script's dry-run is non-mutating and that both Android
+and Kotlin module generation produce the expected source layout, convention plugins, namespace,
+and single Gradle registration.

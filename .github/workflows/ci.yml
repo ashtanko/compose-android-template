@@ -20,15 +20,16 @@ env:
   JAVA_VERSION: 21
   JAVA_VENDOR: 'zulu'
 
+permissions:
+  contents: read
+
 jobs:
   test_and_apk:
-    name: "Local tests and APKs"
+    name: "Host verification (make verify)"
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write
-      pull-requests: write
-      security-events: write
+      contents: read
 
     timeout-minutes: 60
 
@@ -53,48 +54,8 @@ jobs:
           build-scan-terms-of-use-url: "https://gradle.com/terms-of-service"
           build-scan-terms-of-use-agree: "yes"
 
-      - name: Check build-logic
-        run: ./gradlew :build-logic:convention:check
-
-      - name: Check spotless
-        run: ./gradlew spotlessCheck --init-script gradle/init.gradle.kts --no-configuration-cache
-
-      - name: Check Detekt and Compose rules
-        run: ./gradlew detekt
-
-      - name: Check Dependency Guard
-        id: dependencyguard_verify
-        continue-on-error: true
-        run: ./gradlew dependencyGuard
-
-      - name: Prevent updating Dependency Guard baselines if this is a fork
-        id: checkfork_dependencyguard
-        continue-on-error: false
-        if: steps.dependencyguard_verify.outcome == 'failure' && github.event.pull_request.head.repo.full_name != github.repository
-        run: |
-          echo "::error::Dependency Guard failed, please update baselines with: ./gradlew dependencyGuardBaseline" && exit 1
-
-        # Runs if previous job failed
-      - name: Generate new Dependency Guard baselines if verification failed and it's a PR
-        id: dependencyguard_baseline
-        if: steps.dependencyguard_verify.outcome == 'failure' && github.event_name == 'pull_request'
-        run: |
-          ./gradlew dependencyGuardBaseline
-
-      - name: Push new Dependency Guard baselines if available
-        uses: stefanzweifel/git-auto-commit-action@v7
-        if: steps.dependencyguard_baseline.outcome == 'success'
-        with:
-          file_pattern: '**/dependencies/*.txt'
-          disable_globbing: true
-          commit_message: "🤖 Updates baselines for Dependency Guard"
-
-      # Run local tests after screenshot tests to avoid wrong UP-TO-DATE. TODO: Ignore screenshots.
-      - name: Run local tests
-        run: ./gradlew testDebugUnitTest
-
-      - name: Build
-        run: ./gradlew :app:assembleDebug -PminifyWithR8=false
+      - name: Verify
+        run: make verify
 
       - name: Upload build outputs (APKs)
         uses: actions/upload-artifact@v7
@@ -109,9 +70,6 @@ jobs:
           name: local-test-results
           path: '**/build/test-results/test*UnitTest/**.xml'
 
-      - name: Check lint
-        run: ./gradlew :app:lintDebug
-
       - name: Upload lint reports (HTML)
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
@@ -119,12 +77,46 @@ jobs:
           name: lint-reports
           path: '**/build/reports/lint-results-*.html'
 
-      - name: Upload lint reports (SARIF) for app module
-        if: ${{ !cancelled() && hashFiles('app/**/*.sarif') != '' }}
+      - name: Upload static-analysis reports (SARIF)
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: static-analysis-sarif
+          path: '**/build/reports/**/*.sarif'
+          if-no-files-found: ignore
+
+      - name: Upload screenshot reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshot-reports
+          path: '**/build/reports/screenshotTest/**'
+          if-no-files-found: ignore
+
+  upload_sarif:
+    name: "Upload SARIF"
+    needs: test_and_apk
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    timeout-minutes: 5
+
+    steps:
+      - name: Download SARIF reports
+        uses: actions/download-artifact@v8
+        with:
+          name: static-analysis-sarif
+          path: sarif
+
+      - name: Upload SARIF reports
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: './app/'
-          category: app
+          sarif_file: sarif
 
   instrumented_tests:
     name: "Instrumented tests"

@@ -15,6 +15,7 @@
  */
 plugins {
     alias(libs.plugins.androidlab.android.feature)
+    alias(libs.plugins.androidlab.android.compose.screenshot)
     alias(libs.plugins.androidlab.android.library.jacoco)
     alias(libs.plugins.androidlab.android.junit5)
 }

@@ -53,6 +53,9 @@ A modern, production-ready Android template built with **Jetpack Compose**, **Na
 # Run unit tests
 ./gradlew test
 
+# Run the same host-side verification used by pull requests
+make verify
+
 # Run linting and static analysis
 ./gradlew detekt
 
@@ -136,6 +139,10 @@ those values; the summary below intentionally avoids copying fast-changing versi
 # Run unit tests (JUnit 5)
 ./gradlew test
 
+# Compose Preview screenshot tests
+./gradlew validateDebugScreenshotTest  # compare against approved references
+./gradlew updateDebugScreenshotTest    # intentionally update references
+
 # Screenshot tests (Roborazzi)
 ./gradlew recordRoborazziDebug   # record new baselines
 ./gradlew verifyRoborazziDebug   # compare against baselines
@@ -160,7 +167,8 @@ The `Makefile` wraps common Gradle invocations:
 - `make build` / `make install` — assemble or install the debug app.
 - `make test` — run unit tests.
 - `make check` — run lint, Detekt, Spotless, and Dependency Guard checks.
-- `make verify` — assemble debug artifacts, run unit tests, and run routine checks.
+- `make verify` — run the canonical non-mutating host checks used by pull requests.
+- `make template-check` — validate the rename dry run and generated module structure.
 - `make format-check` / `make format` — check or apply formatting.
 - `make device-test` — run debug instrumentation tests on connected devices.
 - `make screenshot-test` / `make screenshot-record` — verify or update Compose screenshot baselines.

@@ -183,6 +183,7 @@ truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 robolectric-robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 roborazzi = { group = "io.github.takahirom.roborazzi", name = "roborazzi", version.ref = "roborazzi" }
 roborazzi-accessibility-check = { group = "io.github.takahirom.roborazzi", name = "roborazzi-accessibility-check", version.ref = "roborazzi" }
+screenshot-validation-api = { group = "com.android.tools.screenshot", name = "screenshot-validation-api", version.ref = "screenshot" }
 # endregion
 
 # region kotlinx

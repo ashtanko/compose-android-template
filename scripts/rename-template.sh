@@ -141,12 +141,12 @@ replace_in "dev.shtanko.androidlab" "$NEW_BUILDLOGIC" \
 # 2) dev.shtanko.template -> <new>
 replace_in "dev.shtanko.template" "$NEW_PACKAGE" \
   . -type f \( -name '*.kt' -o -name '*.kts' -o -name 'AndroidManifest.xml' -o -name '*.pro' \) \
-  -not -path './build/*' -not -path './*/build/*' -not -path './.git/*' -not -path './scripts/*'
+  -not -path '*/build/*' -not -path '*/.git/*' -not -path './scripts/*'
 
 # 3) app.template -> <new>
 replace_in "app.template" "$NEW_PACKAGE" \
   . -type f \( -name '*.kt' -o -name '*.kts' -o -name 'AndroidManifest.xml' \) \
-  -not -path './build/*' -not -path './*/build/*' -not -path './.git/*' -not -path './scripts/*'
+  -not -path '*/build/*' -not -path '*/.git/*' -not -path './scripts/*'
 
 # 4) androidlab plugin alias -> <plugin-alias>
 #    Scoped to: version catalog, every build.gradle.kts, AND build-logic .kt files
@@ -158,7 +158,7 @@ replace_in "androidlab" "$PLUGIN_ALIAS" \
 
 replace_in "androidlab" "$PLUGIN_ALIAS" \
   . -type f -name 'build.gradle.kts' \
-  -not -path './build/*' -not -path './*/build/*' -not -path './.git/*'
+  -not -path '*/build/*' -not -path '*/.git/*'
 
 replace_in "androidlab" "$PLUGIN_ALIAS" \
   build-logic -type f -name '*.kt'
@@ -186,7 +186,7 @@ if [[ -n "$AUTHOR" ]]; then
   info "rewriting author/copyright headers..."
   replace_in "ashtanko (Oleksii Shtanko)" "$AUTHOR" \
     . -type f \( -name '*.kt' -o -name '*.kts' -o -name '*.xml' \) \
-    -not -path './build/*' -not -path './*/build/*' -not -path './.git/*'
+    -not -path '*/build/*' -not -path '*/.git/*'
 fi
 
 # ------------------------------ directory moves -------------------------------

@@ -125,6 +125,32 @@ when a screen becomes stateful.
 **Review when:** A supported UI platform cannot use the split effectively, or repeated state-holder
 wrappers provide no testability or ownership benefit.
 
+### AD-006: Local and pull-request verification share one host-side contract
+
+**Status:** Accepted
+
+**Context:** Separately maintained local and CI command lists drift, narrow checks miss affected
+modules, and automatically recording dependency or screenshot baselines can hide meaningful
+changes.
+
+**Decision:** `make verify` is the canonical host-side verification contract and the pull-request
+workflow invokes it directly. It runs project-wide lint and Detekt plus deterministic screenshot,
+dependency, build, test, formatting, documentation, template-tool, and build-logic checks.
+Verification tasks never update baselines. Device tests remain a separate CI job because they
+require managed Android infrastructure.
+
+**Alternatives:** Duplicating individual commands in CI was rejected because local and pull-request
+behavior can diverge. Automatically committing generated baselines was rejected because dependency
+and visual changes require explicit human review.
+
+**Consequences:** A local `make verify` pass exercises the same host checks as a pull request.
+Baseline update targets remain available as explicit maintenance commands. CI verification jobs use
+read-only repository permissions, with `security-events: write` scoped only to the job that uploads
+SARIF.
+
+**Review when:** A required host check cannot run reliably on developer machines, the managed-device
+boundary changes, or GitHub's SARIF upload permission model changes.
+
 ## New decision template
 
 ```markdown
