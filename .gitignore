@@ -148,5 +148,5 @@ reports
 # Shared agent guidance is intentionally versioned.
 !AGENTS.md
 !CLAUDE.md
-!.ai/
-!.ai/**
+!.agents/
+!.agents/**

@@ -4,7 +4,7 @@ This file is the canonical entry point for coding agents working in this reposit
 
 ## Start here
 
-- Read [`.ai/README.md`](.ai/README.md) for the task-specific context map.
+- Read [`.agents/README.md`](.agents/README.md) for the task-specific context map.
 - Load only the relevant reference or skill; do not pull every AI document into context.
 - Treat [`README.md`](README.md) as the human-facing product overview, not as the source of agent workflow rules.
 
@@ -24,12 +24,12 @@ This file is the canonical entry point for coding agents working in this reposit
 1. Inspect the target module, neighboring implementations, its `build.gradle.kts`, and the current diff.
 2. Make the smallest coherent change that follows existing package and module boundaries.
 3. Add or update tests with behavior changes. Use previews or screenshot tests for meaningful visual state changes where the module already supports them.
-4. Run the narrowest useful checks first, then broaden checks in proportion to the change. See [`.ai/reference/commands.md`](.ai/reference/commands.md).
+4. Run the narrowest useful checks first, then broaden checks in proportion to the change. See [`.agents/reference/commands.md`](.agents/reference/commands.md).
 5. Report changed files, checks run, and anything not verified. Never claim a check passed if it was not run.
 
 ## Task-specific guidance
 
-- Architecture and module placement: [`.ai/reference/architecture.md`](.ai/reference/architecture.md)
-- Commands and validation matrix: [`.ai/reference/commands.md`](.ai/reference/commands.md)
-- Creating a module: [`.ai/skills/add-android-module/SKILL.md`](.ai/skills/add-android-module/SKILL.md)
-- Selecting checks for a change: [`.ai/skills/verify-android-change/SKILL.md`](.ai/skills/verify-android-change/SKILL.md)
+- Architecture and module placement: [`.agents/reference/architecture.md`](.agents/reference/architecture.md)
+- Commands and validation matrix: [`.agents/reference/commands.md`](.agents/reference/commands.md)
+- Creating a module: [`.agents/skills/add-android-module/SKILL.md`](.agents/skills/add-android-module/SKILL.md)
+- Selecting checks for a change: [`.agents/skills/verify-android-change/SKILL.md`](.agents/skills/verify-android-change/SKILL.md)

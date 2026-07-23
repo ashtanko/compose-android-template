@@ -1,17 +1,18 @@
-# AI workspace
+# Agent workspace
 
 This directory contains shared, vendor-neutral context for coding agents. [`../AGENTS.md`](../AGENTS.md) is the canonical contract; vendor files such as `CLAUDE.md` should only adapt or point to it.
 
 ## Layout
 
 ```text
-.ai/
+.agents/
 ├── reference/                 # Project facts loaded only when relevant
 │   ├── architecture.md
 │   └── commands.md
 ├── skills/                    # Reusable task workflows
 │   ├── add-android-module/
-│   └── verify-android-change/
+│   ├── verify-android-change/
+│   └── …                     # Kotlin, Compose, and issue workflows
 └── hooks/
     └── pre-commit             # Optional staged-file checks
 ```
@@ -25,10 +26,10 @@ The skills use the portable `SKILL.md` format. Agents without automatic skill di
 The hook syntax-checks staged shell scripts and runs `spotlessCheck` when staged Kotlin or Gradle Kotlin DSL files are present. Enable it for this clone with:
 
 ```bash
-git config core.hooksPath .ai/hooks
+git config core.hooksPath .agents/hooks
 ```
 
-This replaces any existing `core.hooksPath`. If one is already configured, invoke `.ai/hooks/pre-commit` from the existing hook instead.
+This replaces any existing `core.hooksPath`. If one is already configured, invoke `.agents/hooks/pre-commit` from the existing hook instead.
 
 ## Maintenance
 

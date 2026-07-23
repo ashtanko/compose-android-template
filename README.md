@@ -65,7 +65,7 @@ A modern, production-ready Android template built with **Jetpack Compose**, **Na
 The project follows a modular layout backed by Gradle convention plugins:
 
 ```
-├── .ai/                    # Shared coding-agent references, skills, and hooks
+├── .agents/                # Shared coding-agent references, skills, and hooks
 ├── AGENTS.md               # Canonical coding-agent instructions
 ├── app/                    # Main Android application (Compose + Navigation 3)
 ├── core/                   # Shared application foundations, such as navigation
@@ -174,7 +174,7 @@ make verify GRADLE_ARGS="--no-daemon --stacktrace"
 
 ## 🤖 AI-assisted development
 
-Coding agents should start with [`AGENTS.md`](AGENTS.md). The [`.ai` workspace](.ai/README.md) contains progressively loaded architecture and command references, reusable module/validation skills, and an optional pre-commit hook. `CLAUDE.md` is kept as a thin Claude Code adapter so repository guidance has one canonical source.
+Coding agents should start with [`AGENTS.md`](AGENTS.md). The [`.agents` workspace](.agents/README.md) contains progressively loaded architecture and command references, reusable module/validation skills, and an optional pre-commit hook. `CLAUDE.md` is kept as a thin Claude Code adapter so repository guidance has one canonical source.
 
 ## 🤝 Contributing
 
