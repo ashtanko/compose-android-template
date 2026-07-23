@@ -16,19 +16,21 @@ Run commands from the repository root with the Gradle wrapper. JDK 21 is require
 | Android lint | `./gradlew lint` or `./gradlew :module:lintDebug` |
 | Screenshot verification | `./gradlew validateDebugScreenshotTest` and/or `./gradlew verifyRoborazziDebug` |
 | Instrumentation | `./gradlew :app:connectedDebugAndroidTest` with a device or emulator available |
-| Macrobenchmark | `./gradlew :benchmarks:connectedDebugAndroidTest` |
+| Macrobenchmark | `./gradlew :benchmarks:connectedBenchmarkReleaseAndroidTest` |
 
 Replace `:module` with the actual Gradle path, for example `:core:navigation`. Use `--tests "fully.qualified.ClassName"` to narrow a unit-test task when iterating.
 
 ## Broader verification
 
-For a cross-module or pre-PR change, use a non-mutating sequence such as:
+For a cross-module or pre-PR change, use the non-mutating verification target:
 
 ```bash
-./gradlew build lint detekt spotlessCheck
+make verify
 ```
 
-Add screenshot verification when UI output changed. `make default`, `make screenshot`, and `make robo` include baseline-update or recording tasks, so run them only when updating visual artifacts is intentional.
+It assembles debug artifacts and runs unit tests, lint, Detekt, Spotless, and Dependency Guard without requiring release signing.
+
+Add screenshot verification when UI output changed. Routine Make targets are non-mutating; use `make screenshot-record` or `make roborazzi-record` only when updating visual baselines is intentional.
 
 ## Mutating commands
 

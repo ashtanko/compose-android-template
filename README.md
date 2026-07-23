@@ -131,13 +131,13 @@ Convention plugins under `build-logic/convention` (e.g. `androidlab.android.appl
 ./gradlew verifyRoborazziDebug   # compare against baselines
 
 # Coverage
-./gradlew koverHtmlReport
+./gradlew :app:koverHtmlReport
 
 # Instrumentation tests
 ./gradlew :app:connectedDebugAndroidTest
 
 # Macrobenchmarks & baseline profile
-./gradlew :benchmarks:connectedDebugAndroidTest
+./gradlew :benchmarks:connectedBenchmarkReleaseAndroidTest
 ./gradlew :app:generateBaselineProfile
 ```
 
@@ -145,20 +145,25 @@ Convention plugins under `build-logic/convention` (e.g. `androidlab.android.appl
 
 The `Makefile` wraps common Gradle invocations:
 
-- `make` / `make default` — `build`, `test`, `lint`, `detekt`, plus `updateDebugScreenshotTest` and `validateDebugScreenshotTest`.
-- `make check` — run Detekt.
-- `make ktlint` — run KtLint check.
-- `make spotless` — run Spotless apply + check.
-- `make test` — JVM unit tests.
-- `make android-test` — `:app:connectedDebugAndroidTest`.
-- `make screenshot` — update + validate screenshot tests.
-- `make robo` — clear → record → compare → verify Roborazzi screenshots.
-- `make kover` — generate Kover HTML coverage report.
-- `make jacoco` — copy the JaCoCo HTML report to `jacocoReport/`.
-- `make guard-baseline` — refresh Dependency Guard baselines.
-- `make benchmark` — run macrobenchmarks.
-- `make baseline-profile` — generate baseline profile for `:app`.
-- `make lines` / `make cloc` — Kotlin LoC stats.
+- `make` / `make help` — list available targets without changing the project.
+- `make build` / `make install` — assemble or install the debug app.
+- `make test` — run unit tests.
+- `make check` — run lint, Detekt, Spotless, and Dependency Guard checks.
+- `make verify` — assemble debug artifacts, run unit tests, and run routine checks.
+- `make format-check` / `make format` — check or apply formatting.
+- `make device-test` — run debug instrumentation tests on connected devices.
+- `make screenshot-test` / `make screenshot-record` — verify or update Compose screenshot baselines.
+- `make roborazzi-test` / `make roborazzi-record` — verify or update Roborazzi baselines.
+- `make coverage` — generate the app Kover HTML coverage report.
+- `make dependency-guard` / `make dependency-guard-baseline` — verify or update dependency baselines.
+- `make benchmark` — run `benchmarkRelease` macrobenchmarks.
+- `make baseline-profile` — generate the app baseline profile.
+
+Pass additional Gradle options with `GRADLE_ARGS`, for example:
+
+```bash
+make verify GRADLE_ARGS="--no-daemon --stacktrace"
+```
 
 ## 📋 Requirements
 

@@ -18,7 +18,7 @@ Validate the behavior that changed first, then expand only as risk and scope jus
    - Android logic or Compose state: the owning module's `testDebugUnitTest` task;
    - resources, manifest, or Android configuration: the owning module's `lintDebug` or assemble task.
 4. Run `./gradlew spotlessCheck` for Kotlin or Gradle Kotlin DSL changes. Run Detekt and Android lint when production code or build configuration changed.
-5. Broaden to `./gradlew build lint detekt spotlessCheck` for shared build logic, dependency changes, public API changes, or pre-PR verification.
+5. Broaden to `make verify` for shared build logic, dependency changes, public API changes, or pre-PR verification.
 6. Recheck the diff after any formatter, generator, baseline task, or build that may produce tracked files.
 7. Report the exact commands and outcomes. Explain skipped device, screenshot, benchmark, or environment-dependent checks.
 

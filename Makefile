@@ -1,58 +1,121 @@
-.PHONY: check run test lines md default jacoco spotless kover diktat cloc jar repo screenshot robo android-test guard-baseline benchmark baseline-profile
+GRADLE := ./gradlew
+GRADLE_ARGS ?=
 
-# Run detekt + ktlint
-check:
-	./gradlew detekt --profile --daemon
+.DEFAULT_GOAL := help
 
-# Run spotless, more info: https://github.com/diffplug/spotless
-spotless:
-	./gradlew spotlessApply spotlessCheck spotlessKotlin
+.PHONY: \
+	help \
+	build \
+	install \
+	test \
+	check \
+	verify \
+	lint \
+	detekt \
+	format-check \
+	format \
+	device-test \
+	benchmark \
+	screenshot-test \
+	screenshot-record \
+	roborazzi-test \
+	roborazzi-record \
+	coverage \
+	dependency-guard \
+	dependency-guard-baseline \
+	baseline-profile \
+	tasks \
+	gradle-version
 
-# Copy jacoco report
-jacoco:
-	cp -r build/reports/jacoco/test/html jacocoReport
+help:
+	@echo "Usage: make <target> [GRADLE_ARGS=\"...\"]"
+	@echo
+	@echo "Build and verification:"
+	@echo "  build                       Assemble debug artifacts"
+	@echo "  install                     Install the app's debug build"
+	@echo "  test                        Run unit tests"
+	@echo "  check                       Run routine static checks"
+	@echo "  verify                      Assemble debug, test, and run routine checks"
+	@echo "  lint                        Run Android lint"
+	@echo "  detekt                      Run Detekt in every module"
+	@echo "  format-check                Check formatting"
+	@echo "  format                      Apply formatting changes"
+	@echo
+	@echo "Device and visual tests:"
+	@echo "  device-test                 Run debug instrumentation tests"
+	@echo "  benchmark                   Run benchmarkRelease macrobenchmarks"
+	@echo "  screenshot-test             Verify Compose screenshot baselines"
+	@echo "  screenshot-record           Update Compose screenshot baselines"
+	@echo "  roborazzi-test              Verify Roborazzi baselines"
+	@echo "  roborazzi-record            Update Roborazzi baselines"
+	@echo
+	@echo "Reports and maintenance:"
+	@echo "  coverage                    Generate the app Kover HTML report"
+	@echo "  dependency-guard            Check dependency baselines"
+	@echo "  dependency-guard-baseline   Update the app dependency baseline"
+	@echo "  baseline-profile            Generate the app baseline profile"
+	@echo "  tasks                       List available Gradle tasks"
+	@echo "  gradle-version              Print Gradle, Kotlin, and JVM versions"
 
-# Run code style check + update the README.md file in accordance with the detekt report
-default:
-	./gradlew build && ./gradlew test && ./gradlew lint && ./gradlew detekt && ./gradlew updateDebugScreenshotTest && ./gradlew validateDebugScreenshotTest
+build:
+	$(GRADLE) assembleDebug $(GRADLE_ARGS)
 
-# Build the project
-run:
-	./gradlew build
+install:
+	$(GRADLE) :app:installDebug $(GRADLE_ARGS)
 
-# Run tests
 test:
-	./gradlew test
+	$(GRADLE) test $(GRADLE_ARGS)
 
-android-test:
-	./gradlew :app:connectedDebugAndroidTest
+check:
+	$(GRADLE) lint detekt spotlessCheck dependencyGuard $(GRADLE_ARGS)
 
-guard-baseline:
-	./gradlew :app:dependencyGuardBaseline
+verify:
+	$(GRADLE) assembleDebug test lint detekt spotlessCheck dependencyGuard $(GRADLE_ARGS)
 
-# Print Kotlin lines count
-lines:
-	find . -name '*.kt' | xargs wc -l
+lint:
+	$(GRADLE) lint $(GRADLE_ARGS)
 
-cloc:
-	cloc --include-lang=kotlin src/main
+detekt:
+	$(GRADLE) detekt $(GRADLE_ARGS)
 
-kover:
-	./gradlew koverHtmlReport
+format-check:
+	$(GRADLE) spotlessCheck $(GRADLE_ARGS)
 
-repo:
-	./gradlew detektReportToMdTask
+format:
+	$(GRADLE) spotlessApply $(GRADLE_ARGS)
 
-screenshot:
-	./gradlew updateDebugScreenshotTest && ./gradlew validateDebugScreenshotTest
-
-robo:
-	 ./gradlew clearRoborazziDebug && ./gradlew recordRoborazziDebug && ./gradlew compareRoborazziDebug && ./gradlew verifyRoborazziDebug
+device-test:
+	$(GRADLE) connectedDebugAndroidTest $(GRADLE_ARGS)
 
 benchmark:
-	./gradlew :benchmarks:connectedDebugAndroidTest
+	$(GRADLE) :benchmarks:connectedBenchmarkReleaseAndroidTest $(GRADLE_ARGS)
+
+screenshot-test:
+	$(GRADLE) validateDebugScreenshotTest $(GRADLE_ARGS)
+
+screenshot-record:
+	$(GRADLE) updateDebugScreenshotTest $(GRADLE_ARGS)
+
+roborazzi-test:
+	$(GRADLE) verifyRoborazziDebug $(GRADLE_ARGS)
+
+roborazzi-record:
+	$(GRADLE) recordRoborazziDebug $(GRADLE_ARGS)
+
+coverage:
+	$(GRADLE) :app:koverHtmlReport $(GRADLE_ARGS)
+
+dependency-guard:
+	$(GRADLE) dependencyGuard $(GRADLE_ARGS)
+
+dependency-guard-baseline:
+	$(GRADLE) :app:dependencyGuardBaseline $(GRADLE_ARGS)
 
 baseline-profile:
-	./gradlew :app:generateBaselineProfile
+	$(GRADLE) :app:generateBaselineProfile $(GRADLE_ARGS)
 
-.DEFAULT_GOAL := default
+tasks:
+	$(GRADLE) tasks $(GRADLE_ARGS)
+
+gradle-version:
+	$(GRADLE) --version
