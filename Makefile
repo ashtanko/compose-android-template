@@ -4,9 +4,6 @@
 check:
 	./gradlew detekt --profile --daemon
 
-ktlint:
-	./gradlew ktlintCheck
-
 # Run spotless, more info: https://github.com/diffplug/spotless
 spotless:
 	./gradlew spotlessApply spotlessCheck spotlessKotlin
@@ -42,12 +39,6 @@ cloc:
 
 kover:
 	./gradlew koverHtmlReport
-
-diktat:
-	./gradlew diktatCheck
-
-jar:
-	./gradlew shadowJar && mv ./build/libs/*.jar config/
 
 repo:
 	./gradlew detektReportToMdTask
