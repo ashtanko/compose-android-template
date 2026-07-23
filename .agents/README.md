@@ -8,7 +8,11 @@ This directory contains shared, vendor-neutral context for coding agents. [`../A
 .agents/
 ├── reference/                 # Project facts loaded only when relevant
 │   ├── architecture.md
-│   └── commands.md
+│   ├── commands.md
+│   ├── decisions.md
+│   ├── performance.md
+│   ├── security.md
+│   └── testing.md
 ├── skills/                    # Reusable task workflows
 │   ├── add-android-module/
 │   ├── verify-android-change/
@@ -17,7 +21,17 @@ This directory contains shared, vendor-neutral context for coding agents. [`../A
     └── pre-commit             # Optional staged-file checks
 ```
 
-Load `reference/architecture.md` before changing module boundaries, dependencies, navigation, or build logic. Load `reference/commands.md` when choosing validation. Use a matching skill when its frontmatter description fits the task.
+## Context map
+
+| Task | Load first | Add when relevant |
+| --- | --- | --- |
+| Module boundaries, dependencies, navigation, or build logic | [`reference/architecture.md`](reference/architecture.md) | [`reference/decisions.md`](reference/decisions.md) |
+| Selecting or reviewing tests | [`reference/testing.md`](reference/testing.md) | [`reference/commands.md`](reference/commands.md) and a focused testing skill |
+| Components, intents, permissions, secrets, data, or CI trust | [`reference/security.md`](reference/security.md) | The affected manifests and build files |
+| Startup, runtime, Compose, size, database, or network performance | [`reference/performance.md`](reference/performance.md) | A focused performance skill and [`benchmarks/AGENTS.md`](../benchmarks/AGENTS.md) |
+| Creating a module | [`skills/add-android-module/SKILL.md`](skills/add-android-module/SKILL.md) | Architecture and testing references |
+| Choosing validation | [`reference/commands.md`](reference/commands.md) | [`skills/verify-android-change/SKILL.md`](skills/verify-android-change/SKILL.md) |
+| Focused Kotlin or Compose work | The matching file under [`skills`](skills) | Architecture, testing, security, or performance only as needed |
 
 The skills use the portable `SKILL.md` format. Agents without automatic skill discovery can follow the linked file directly; product-specific metadata lives beside each skill under `agents/`.
 

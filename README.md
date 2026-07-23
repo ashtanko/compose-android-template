@@ -180,7 +180,10 @@ make verify GRADLE_ARGS="--no-daemon --stacktrace"
 
 ## 🤖 AI-assisted development
 
-Coding agents should start with [`AGENTS.md`](AGENTS.md). The [`.agents` workspace](.agents/README.md) contains progressively loaded architecture and command references, reusable module/validation skills, and an optional pre-commit hook. `CLAUDE.md` is kept as a thin Claude Code adapter so repository guidance has one canonical source.
+Coding agents should start with [`AGENTS.md`](AGENTS.md). The [`.agents` workspace](.agents/README.md)
+contains progressively loaded architecture, decision, testing, security, performance, and validation
+references, reusable task skills, and an optional pre-commit hook. `CLAUDE.md` remains a thin Claude
+Code adapter so repository guidance has one canonical source.
 
 ## 🤝 Contributing
 

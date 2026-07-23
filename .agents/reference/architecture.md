@@ -1,5 +1,8 @@
 # Architecture reference
 
+See [`decisions.md`](decisions.md) for the rationale, consequences, and review triggers behind
+project-wide constraints.
+
 ## Project shape
 
 - `app` is the Android application, Hilt entry point, Compose UI host, and Navigation 3 integration point.
@@ -37,6 +40,12 @@
 - Use screenshot tests for visual behavior when the affected module already owns screenshot infrastructure; update goldens only when the visual change is intentional.
 - Use `benchmarks` for performance and baseline-profile work rather than placing benchmark code in application source sets.
 
+Use [`testing.md`](testing.md) for test-layer selection and [`performance.md`](performance.md) for
+measurement methodology.
+
 ## Files to treat as generated or sensitive
 
 Do not edit build outputs, reports, IDE state, generated sources, dependency-guard snapshots, screenshot goldens, lint baselines, or benchmark profiles unless the requested task owns that artifact. Do not expose values from `local.properties`, keystores, environment files, or signing configuration.
+
+Use [`security.md`](security.md) when a change affects components, intents, permissions, user data,
+networking, secrets, signing, dependencies, or CI trust.
