@@ -10,6 +10,7 @@ This directory contains shared, vendor-neutral context for coding agents. [`../A
 │   ├── architecture.md
 │   ├── commands.md
 │   ├── decisions.md
+│   ├── implementation.md
 │   ├── performance.md
 │   ├── security.md
 │   └── testing.md
@@ -26,6 +27,7 @@ This directory contains shared, vendor-neutral context for coding agents. [`../A
 | Task | Load first | Add when relevant |
 | --- | --- | --- |
 | Module boundaries, dependencies, navigation, or build logic | [`reference/architecture.md`](reference/architecture.md) | [`reference/decisions.md`](reference/decisions.md) |
+| Implementing Android, Kotlin, or Compose behavior | [`reference/implementation.md`](reference/implementation.md) | Architecture, testing, security, performance, and focused skills as needed |
 | Selecting or reviewing tests | [`reference/testing.md`](reference/testing.md) | [`reference/commands.md`](reference/commands.md) and a focused testing skill |
 | Components, intents, permissions, secrets, data, or CI trust | [`reference/security.md`](reference/security.md) | The affected manifests and build files |
 | Startup, runtime, Compose, size, database, or network performance | [`reference/performance.md`](reference/performance.md) | A focused performance skill and [`benchmarks/AGENTS.md`](../benchmarks/AGENTS.md) |

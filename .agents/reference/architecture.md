@@ -27,6 +27,8 @@ project-wide constraints.
 
 ## Android and Compose conventions
 
+- Follow [`implementation.md`](implementation.md) for the project-wide screen, state, Flow,
+  coroutine, component API, resource, accessibility, adaptive-layout, and edge-to-edge contracts.
 - The app is edge-to-edge. Handle system bars and IME insets at the correct layout boundary rather than adding arbitrary padding.
 - Hoist screen state and events. Keep composables focused on rendering and interaction, with previews for representative states when practical.
 - Prefer immutable collections and stable state models at Compose boundaries.

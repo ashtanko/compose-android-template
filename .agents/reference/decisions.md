@@ -102,6 +102,29 @@ scene-model changes require coordinated app and navigation-module work.
 **Review when:** Navigation 3 cannot support a required platform or scene, or measured complexity
 shows that the current shared navigation layer no longer earns its cost.
 
+### AD-005: Stateful screens separate wiring from rendering
+
+**Status:** Accepted
+
+**Context:** A composable that obtains dependencies, collects application state, performs
+navigation, and renders a full layout is difficult to preview, test, and reuse. Applying the same
+ceremony to a static screen creates abstractions without value.
+
+**Decision:** A stateful screen has a small route/state-holder composable and a plain UI composable
+that accepts immutable display state and callbacks. Static screens remain plain until state or
+business behavior justifies a state holder.
+
+**Alternatives:** Passing ViewModels through the UI tree was rejected because it hides dependencies
+and couples rendering to lifecycle and DI. Requiring a ViewModel and `Flow` for every screen was
+rejected because architectural ceremony is not separation of concerns.
+
+**Consequences:** Stateful UI can be previewed and tested without the application graph, and
+navigation remains an application-host concern. Feature authors must make state ownership explicit
+when a screen becomes stateful.
+
+**Review when:** A supported UI platform cannot use the split effectively, or repeated state-holder
+wrappers provide no testability or ownership benefit.
+
 ## New decision template
 
 ```markdown

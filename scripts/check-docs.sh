@@ -73,7 +73,7 @@ check_documented_make_targets() {
         fi
     done < <(
         rg --only-matching --no-filename --pcre2 \
-            '(?<=`)make [a-z][a-z0-9-]*|^[[:space:]]*make [a-z][a-z0-9-]*' \
+            '(?<=`)make [a-z][a-z0-9-]*(?=`)|^make [a-z][a-z0-9-]*' \
             README.md AGENTS.md .agents \
             | awk '{ print $2 }' \
             | sort --unique

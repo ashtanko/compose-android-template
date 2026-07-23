@@ -31,6 +31,7 @@ This file is the canonical entry point for coding agents working in this reposit
 
 - Architecture and module placement: [`.agents/reference/architecture.md`](.agents/reference/architecture.md)
 - Architectural decisions and decision template: [`.agents/reference/decisions.md`](.agents/reference/decisions.md)
+- Android/Kotlin implementation rules: [`.agents/reference/implementation.md`](.agents/reference/implementation.md)
 - Commands and validation matrix: [`.agents/reference/commands.md`](.agents/reference/commands.md)
 - Testing strategy: [`.agents/reference/testing.md`](.agents/reference/testing.md)
 - Android security review: [`.agents/reference/security.md`](.agents/reference/security.md)

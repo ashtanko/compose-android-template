@@ -182,8 +182,9 @@ make verify GRADLE_ARGS="--no-daemon --stacktrace"
 
 Coding agents should start with [`AGENTS.md`](AGENTS.md). The [`.agents` workspace](.agents/README.md)
 contains progressively loaded architecture, decision, testing, security, performance, and validation
-references, reusable task skills, and an optional pre-commit hook. `CLAUDE.md` remains a thin Claude
-Code adapter so repository guidance has one canonical source.
+references, concrete Android/Kotlin implementation rules, reusable task skills, and an optional
+pre-commit hook. `CLAUDE.md` remains a thin Claude Code adapter so repository guidance has one
+canonical source.
 
 ## 🤝 Contributing
 
