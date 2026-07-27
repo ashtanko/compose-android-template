@@ -28,22 +28,14 @@ android {
 dependencies {
     implementation(project(":library-kotlin"))
 
-    libs.apply {
-        androidx.apply {
-            implementation(material3)
-            compose.apply {
-                implementation(foundation)
-                implementation(foundation.layout)
-            }
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.foundation.layout)
 
-            androidTestImplementation(test.ext)
+    androidTestImplementation(libs.androidx.test.ext)
 
-            ui.apply {
-                androidTestImplementation(test.junit4)
-                debugImplementation(test.manifest)
-            }
-        }
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    debugImplementation(libs.androidx.ui.test.manifest)
 
-        androidTestImplementation(truth)
-    }
+    androidTestImplementation(libs.truth)
 }

@@ -172,111 +172,89 @@ dependencies {
     implementation(project(":feature:posts:data"))
     implementation(project(":feature:posts:presentation"))
 
-    libs.apply {
-        androidx.apply {
-            implementation(core.ktx)
-            implementation(lifecycle.runtime.ktx)
-            implementation(activity.compose)
-            implementation(platform(compose.bom))
-            implementation(ui)
-            implementation(ui.graphics)
-            implementation(ui.tooling.preview)
-            implementation(material3)
-            implementation(runtime.tracing)
-            implementation(tracing.ktx)
-            implementation(navigation3.runtime)
-            implementation(navigation3.ui)
-            implementation(material3.navigation3)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.runtime.tracing)
+    implementation(libs.androidx.tracing.ktx)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.material3.navigation3)
 
-            compose.apply {
-                implementation(material3.adaptive)
-                implementation(material3.adaptive.layout)
-                implementation(material3.adaptive.navigation)
-                implementation(material3.adaptive.navigationSuite)
-                implementation(materialWindow)
-                implementation(icons.extended)
-            }
+    implementation(libs.androidx.compose.material3.adaptive)
+    implementation(libs.androidx.compose.material3.adaptive.layout)
+    implementation(libs.androidx.compose.material3.adaptive.navigation)
+    implementation(libs.androidx.compose.material3.adaptive.navigationSuite)
+    implementation(libs.androidx.compose.materialWindow)
+    implementation(libs.androidx.compose.icons.extended)
 
-            androidTestImplementation(junit)
-            androidTestImplementation(platform(compose.bom))
-            androidTestImplementation(ui.test.junit4)
-            testImplementation(ui.test.junit4)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    testImplementation(libs.androidx.ui.test.junit4)
 
-            debugImplementation(ui.tooling)
-            debugImplementation(ui.test.manifest)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
 
-            ui.apply {
-                implementation(text.google.fonts)
-                debugImplementation(test.manifest)
-                androidTestImplementation(test.junit4)
-                androidTestImplementation(test)
-            }
+    implementation(libs.androidx.ui.text.google.fonts)
 
-            androidTestImplementation(arch.core.test)
-        }
+    androidTestImplementation(libs.arch.core.test)
 
-        baselineProfile(project(":benchmarks"))
+    baselineProfile(project(":benchmarks"))
 
-        implementation(paging.runtime)
-        implementation(paging.compose)
+    implementation(libs.paging.runtime)
+    implementation(libs.paging.compose)
 
-        implementation(generativeai)
+    implementation(libs.generativeai)
 
-        kotlinx.apply {
-            implementation(collections.immutable)
-            implementation(coroutines.android)
-            implementation(coroutines.core)
-            implementation(serialization)
+    implementation(libs.kotlinx.collections.immutable)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.serialization)
 
-            testImplementation(coroutines.test)
-            testImplementation(coroutines.debug)
-        }
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.kotlinx.coroutines.debug)
 
-        coil.apply {
-            implementation(kt)
-            implementation(kt.compose)
-            implementation(kt.svg)
-        }
+    implementation(libs.coil.kt)
+    implementation(libs.coil.kt.compose)
+    implementation(libs.coil.kt.svg)
 
-        hilt.apply {
-            kspTest(compiler)
-            kspAndroidTest(compiler)
-            testImplementation(android.testing)
-        }
+    kspTest(libs.hilt.compiler)
+    kspAndroidTest(libs.hilt.compiler)
+    testImplementation(libs.hilt.android.testing)
 
-        implementation(accompanist.adaptive)
-        implementation(accompanist.permissions)
+    implementation(libs.accompanist.adaptive)
+    implementation(libs.accompanist.permissions)
 
-        implementation(libs.androidx.window)
-        implementation(libs.androidx.window.core)
+    implementation(libs.androidx.window)
+    implementation(libs.androidx.window.core)
 
-        implementation(room.paging)
+    implementation(libs.room.paging)
 
-        implementation(jacoco.core)
+    implementation(libs.jacoco.core)
 
-        implementation(square.okhttp)
-        implementation(square.okhttp.logging)
-        implementation(square.okhttp.mockwebserver)
-        implementation(square.retrofit.core)
-        implementation(skydoves.sandwich.retrofit)
-        implementation(square.retrofit.kotlin.serialization)
+    implementation(libs.square.okhttp)
+    implementation(libs.square.okhttp.logging)
+    implementation(libs.square.okhttp.mockwebserver)
+    implementation(libs.square.retrofit.core)
+    implementation(libs.skydoves.sandwich.retrofit)
+    implementation(libs.square.retrofit.kotlin.serialization)
 
-        testImplementation(square.turbine)
-        testImplementation(mockito)
-        testImplementation(mockito.kotlin2)
-        testImplementation(mockk.kotlin)
-        androidTestImplementation(mockk.android)
+    testImplementation(libs.square.turbine)
+    testImplementation(libs.mockito)
+    testImplementation(libs.mockito.kotlin2)
+    testImplementation(libs.mockk.kotlin)
+    androidTestImplementation(libs.mockk.android)
 
-        testImplementation(robolectric.robolectric)
-        testImplementation(androidx.activity.compose)
+    testImplementation(libs.robolectric.robolectric)
+    testImplementation(libs.androidx.activity.compose)
 
-        androidTestImplementation(libs.androidx.junit)
-        androidTestImplementation(libs.androidx.espresso.core)
-        androidTestImplementation(platform(libs.androidx.compose.bom))
-        androidTestImplementation(libs.androidx.ui.test.junit4)
-        debugImplementation(libs.androidx.ui.tooling)
-        debugImplementation(libs.androidx.ui.test.manifest)
-    }
+    androidTestImplementation(libs.androidx.espresso.core)
 }
 
 dependencyGuard {

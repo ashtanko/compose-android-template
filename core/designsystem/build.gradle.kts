@@ -24,20 +24,12 @@ android {
 }
 
 dependencies {
-    libs.apply {
-        androidx.apply {
-            implementation(material3)
-            compose.apply {
-                implementation(foundation)
-                api(foundation.layout)
-            }
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.compose.foundation)
+    api(libs.androidx.compose.foundation.layout)
 
-            androidTestImplementation(test.ext)
+    androidTestImplementation(libs.androidx.test.ext)
 
-            ui.apply {
-                androidTestImplementation(test.junit4)
-                debugImplementation(test.manifest)
-            }
-        }
-    }
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    debugImplementation(libs.androidx.ui.test.manifest)
 }
