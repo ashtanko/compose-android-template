@@ -29,6 +29,12 @@ tasks.register("spotlessCheck") {
     dependsOn(gradle.includedBuild("build-logic").task(":convention:spotlessCheck"))
 }
 
+tasks.register("spotlessApply") {
+    group = "formatting"
+    description = "Applies formatting in the included build logic."
+    dependsOn(gradle.includedBuild("build-logic").task(":convention:spotlessApply"))
+}
+
 tasks.register("detekt") {
     group = "verification"
     description = "Runs Detekt in the included build logic."
@@ -54,6 +60,7 @@ tasks.register("detektAutoCorrect") {
 //     [-PpluginAlias=myapp] \
 //     [-Pauthor="Jane Doe"] \
 //     [-PdryRun=true] \
+//     [-Pverbose=true] \
 //     [-Pforce=true]
 tasks.register<Exec>("renameProject") {
     group = "template"
@@ -64,6 +71,7 @@ tasks.register<Exec>("renameProject") {
     val pluginAlias = providers.gradleProperty("pluginAlias")
     val author      = providers.gradleProperty("author")
     val dryRun      = providers.gradleProperty("dryRun").map { it.toBoolean() }.orElse(false)
+    val verbose     = providers.gradleProperty("verbose").map { it.toBoolean() }.orElse(false)
     val force       = providers.gradleProperty("force").map { it.toBoolean() }.orElse(false)
     val script      = layout.projectDirectory.file("scripts/rename-template.sh").asFile
 
@@ -76,6 +84,7 @@ tasks.register<Exec>("renameProject") {
         pluginAlias.orNull?.let { cmd += listOf("--plugin-alias", it) }
         author.orNull?.let      { cmd += listOf("--author", it) }
         if (dryRun.get()) cmd += "--dry-run"
+        if (verbose.get()) cmd += "--verbose"
         if (force.get())  cmd += "--force"
         commandLine(cmd)
     }

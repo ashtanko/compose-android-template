@@ -13,7 +13,10 @@ A modern, production-ready Android template built with **Jetpack Compose**, **Na
 
 1. Click the **[Use this template](https://github.com/ashtanko/compose-android-template/generate)** button.
 2. Clone your new repository.
-3. Run the rename script to replace template package names, applicationId, plugin aliases, folder structure, and (optionally) copyright headers with your own:
+3. Run the rename script to replace template package names, applicationId, plugin aliases, source
+   and screenshot-reference paths, display names, retained helper tooling, and (optionally)
+   copyright headers with your own. The script requires Python 3.8 or newer, validates all
+   destinations before writing, and rolls back changes if an operation fails:
 
    ```bash
    # preview first
@@ -40,7 +43,9 @@ A modern, production-ready Android template built with **Jetpack Compose**, **Na
        -PdryRun=true   # drop this to apply
    ```
 
-   After applying, run `./gradlew spotlessApply` then `./gradlew clean assembleDebug` to verify.
+   After applying, run `./gradlew spotlessApply` and then `make verify`. Formatting is a separate
+   step because package changes can alter Kotlin import ordering and the Gradle `renameProject`
+   task cannot safely start a nested Gradle build.
 
 4. Update SDK and library versions in `gradle/libs.versions.toml` as needed (single source of truth for dependencies and plugin versions).
 

@@ -60,6 +60,7 @@ intentional, then review every generated diff.
 
 Use `bash scripts/add-module.sh` with explicit flags for repeatable, non-interactive module creation. Follow [the module skill](../skills/add-android-module/SKILL.md) and inspect all generated files before keeping them.
 
-`make template-check` proves that the rename script's dry-run is non-mutating and that both Android
-and Kotlin module generation produce the expected source layout, convention plugins, namespace,
-and single Gradle registration.
+`make template-check` copies the tracked repository into a temporary fixture, proves that a rename
+dry-run is non-mutating, performs a real rename with XML/Kotlin-sensitive characters, checks all
+package and screenshot-reference moves, verifies service-provider and helper-script updates,
+rejects invalid identifiers, and creates Android and Kotlin modules from the renamed defaults.

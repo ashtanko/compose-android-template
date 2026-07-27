@@ -1,0 +1,10 @@
+{
+  "applicationPackage": "dev.shtanko.template",
+  "author": "ashtanko (Oleksii Shtanko)",
+  "buildLogicGroup": "dev.shtanko.androidlab.buildlogic",
+  "buildLogicPackage": "dev.shtanko.androidlab",
+  "codePackage": "app.template",
+  "displayName": "Compose Android Template",
+  "pluginAlias": "androidlab",
+  "projectName": "Android Template"
+}
