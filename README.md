@@ -61,6 +61,9 @@ A modern, production-ready Android template built with **Jetpack Compose**, **Na
 # Run the same host-side verification used by pull requests
 make verify
 
+# Scan tracked files for credentials and sensitive release files
+make secrets-check
+
 # Run linting and static analysis
 ./gradlew detekt
 
@@ -76,10 +79,29 @@ make verify
 
 ### Local configuration
 
-For local release signing, use an untracked `key.properties` file with `storeFile`,
-`storePassword`, `keyAlias`, and `keyPassword`. CI keeps the existing
-`SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS`, and `SIGNING_KEY_PASSWORD` environment-variable
-contract.
+Release builds use an untracked `key.properties` file locally and protected environment secrets in
+GitHub Actions. See [`RELEASING.md`](RELEASING.md) for the copy-ready local file, GitHub secret
+commands, interactive upload-key generator, protected-environment setup, and release workflow.
+
+### Secret leak safeguards
+
+Enable the repository-owned pre-commit hook once per clone:
+
+```bash
+git config core.hooksPath .agents/hooks
+```
+
+The hook checks staged Git blobs without reading ignored local credentials. A lightweight,
+read-only GitHub Actions workflow repeats the check for every pull request, including
+documentation-only changes. After its first run, make **Reject committed secrets** a required
+status check in the default branch ruleset.
+
+Repository administrators should also enable GitHub Secret Protection and push protection under
+**Settings → Security → Advanced Security** when available; native provider-aware scanning
+complements the repository's intentionally small, high-confidence rule set.
+
+If a real credential is ever committed, revoke or rotate it immediately. Removing it in a later
+commit does not make the exposed value safe.
 
 ## 🏗️ Project Architecture
 
@@ -165,7 +187,7 @@ those values; the summary below intentionally avoids copying fast-changing versi
 - **Baseline Profiles** — generated via `:benchmarks` for faster startup and smoother frames.
 - **Screenshot Testing** — automated UI regression with Roborazzi + the Compose screenshot plugin.
 - **Dependency Guard** — locks transitive dependency surface across builds.
-- **Signing-ready** — release `signingConfig` resolves keystore credentials from env vars on CI (`SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS`, `SIGNING_KEY_PASSWORD`) or an untracked `key.properties` file locally.
+- **Signing-ready** — local builds use an ignored credential file, while a manually approved GitHub Actions workflow restores an upload key only on its ephemeral runner and retains the signed AAB plus R8 mapping.
 
 ## 🧪 Testing
 
@@ -198,6 +220,7 @@ The `Makefile` wraps common Gradle invocations:
 
 - `make` / `make help` — list available targets without changing the project.
 - `make docs-check` — validate documentation links and project facts.
+- `make secrets-check` — reject tracked credentials and sensitive release files.
 - `make build` / `make install` — assemble or install the debug app.
 - `make test` — run unit tests.
 - `make check` — run lint, Detekt, Spotless, and Dependency Guard checks.

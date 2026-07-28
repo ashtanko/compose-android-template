@@ -1,0 +1,6 @@
+# Copy this file to key.properties and replace every placeholder.
+# Prefer an absolute path to a keystore stored outside the repository.
+storeFile=/absolute/path/to/upload-keystore.p12
+storePassword=replace-me
+keyAlias=upload
+keyPassword=replace-me
