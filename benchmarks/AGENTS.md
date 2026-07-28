@@ -4,8 +4,9 @@ The root [`AGENTS.md`](../AGENTS.md) applies. This file adds rules for macrobenc
 profiles.
 
 - Keep benchmark code deterministic and target release-like, non-debuggable application builds.
-- Use the managed-device configuration declared by this module unless the task explicitly compares
-  physical devices.
+- Use the declared managed device for deterministic baseline-profile generation. Use a stable
+  physical device for representative timing measurements; emulator results are suitable only for
+  smoke checks and trends tied to the same host.
 - Keep setup outside measured blocks when it is not part of the user journey.
 - Record the scenario, build, device, iterations, baseline, and comparison method with results.
 - Cover stable, important user journeys; do not add traversal solely to increase profile size.

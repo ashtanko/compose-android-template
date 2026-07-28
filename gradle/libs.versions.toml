@@ -92,6 +92,7 @@ androidxSavedStateCompose = "1.5.0"
 
 compileSdk = "37"
 minSdk = "24"
+benchmarkMinSdk = "28"
 targetSdk = "37"
 
 [bundles]
