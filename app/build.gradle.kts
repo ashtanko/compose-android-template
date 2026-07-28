@@ -150,6 +150,7 @@ android {
         create("benchmark") {
             initWith(buildTypes.getByName("release"))
             matchingFallbacks += listOf("release")
+            signingConfig = signingConfigs.getByName("debug")
             isDebuggable = false
             proguardFiles("benchmark-rules.pro")
         }

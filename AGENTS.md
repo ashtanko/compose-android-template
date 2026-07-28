@@ -17,7 +17,7 @@ This file is the canonical entry point for coding agents working in this reposit
 - Put platform-independent logic in a Kotlin/JVM module. Keep Android APIs and Compose code in Android modules.
 - Do not edit generated output under `build/`, `.gradle/`, `.kotlin/`, IDE state, reports, dependency snapshots, screenshot goldens, or baselines unless the task explicitly requires it.
 - Never commit `local.properties`, production signing credentials, production keystores, environment files, or real secrets. The repository's template debug keystore may remain. Preserve the existing CI environment-variable contract for signing.
-- Follow `.editorconfig`, Detekt, KtLint, and Spotless. Prefer immutable UI state and lifecycle-aware `Flow` collection in Compose code.
+- Follow `.editorconfig`, Detekt, KtLint, and Spotless. Use trailing commas in multi-line parameter lists, argument lists, and collection literals (enabled via `.editorconfig`'s `ij_kotlin_allow_trailing_comma*` and enforced by KtLint). Prefer immutable UI state and lifecycle-aware `Flow` collection in Compose code.
 
 ## Working method
 

@@ -210,7 +210,9 @@ those values; the summary below intentionally avoids copying fast-changing versi
 ./gradlew :app:connectedDebugAndroidTest
 
 # Macrobenchmarks & baseline profile
+# Run timing measurements on a stable, connected physical device.
 ./gradlew :benchmarks:connectedBenchmarkReleaseAndroidTest
+# Generate profiles reproducibly with the managed device declared by :benchmarks.
 ./gradlew :app:generateBaselineProfile
 ```
 

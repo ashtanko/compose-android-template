@@ -14,28 +14,6 @@
  * limitations under the License.
  */
 
-plugins {
-    alias(libs.plugins.androidlab.android.benchmark)
-}
+package dev.shtanko.template.benchmarks
 
-val baselineProfileDevice = "pixel6Api34"
-
-android {
-    namespace = "dev.shtanko.template.benchmarks"
-
-    testOptions.managedDevices.localDevices {
-        create(baselineProfileDevice) {
-            device = "Pixel 6"
-            apiLevel = 34
-            systemImageSource = "aosp"
-        }
-    }
-
-    targetProjectPath = ":app"
-    experimentalProperties["android.experimental.self-instrumenting"] = true
-}
-
-baselineProfile {
-    managedDevices += baselineProfileDevice
-    useConnectedDevices = false
-}
+internal const val TARGET_PACKAGE_NAME = "dev.shtanko.template"
