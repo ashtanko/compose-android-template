@@ -18,7 +18,8 @@ Run commands from the repository root with the Gradle wrapper. JDK 21 is require
 | Android lint | `./gradlew lint` or `./gradlew :module:lintDebug` |
 | Screenshot verification | `./gradlew validateDebugScreenshotTest` and/or `./gradlew verifyRoborazziDebug` |
 | Instrumentation | `./gradlew :app:connectedDebugAndroidTest` with a device or emulator available |
-| Macrobenchmark | `./gradlew :benchmarks:connectedBenchmarkReleaseAndroidTest` |
+| Macrobenchmark | `./gradlew :benchmarks:connectedBenchmarkReleaseAndroidTest` on a stable physical device |
+| Baseline profile generation | `./gradlew :app:generateBaselineProfile` using the declared managed device |
 
 Replace `:module` with the actual Gradle path, for example `:core:navigation`. Use `--tests "fully.qualified.ClassName"` to narrow a unit-test task when iterating.
 
