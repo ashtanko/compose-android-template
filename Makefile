@@ -1,5 +1,7 @@
 GRADLE := ./gradlew
 GRADLE_ARGS ?=
+LOCALE ?= pt-PT
+FORMAT ?= table
 
 .DEFAULT_GOAL := help
 
@@ -7,6 +9,8 @@ GRADLE_ARGS ?=
 	help \
 	docs-check \
 	template-check \
+	localization-check \
+	localization-report \
 	build \
 	install \
 	test \
@@ -37,6 +41,8 @@ help:
 	@echo "Build and verification:"
 	@echo "  docs-check                  Validate documentation links and project facts"
 	@echo "  template-check              Validate rename dry run and module generation"
+	@echo "  localization-check          Validate every translated Android resource"
+	@echo "  localization-report         Report locale coverage (LOCALE, FORMAT)"
 	@echo "  build                       Assemble debug artifacts"
 	@echo "  install                     Install the app's debug build"
 	@echo "  test                        Run unit tests"
@@ -71,6 +77,13 @@ docs-check:
 template-check:
 	bash scripts/check-template-tools.sh
 
+localization-check:
+	python3 -m unittest discover -s scripts/tests -p 'test_localization.py'
+	python3 scripts/localization.py check
+
+localization-report:
+	python3 scripts/localization.py report --locale "$(LOCALE)" --format "$(FORMAT)"
+
 build:
 	$(GRADLE) assembleDebug $(GRADLE_ARGS)
 
@@ -80,10 +93,10 @@ install:
 test:
 	$(GRADLE) test $(GRADLE_ARGS)
 
-check:
+check: localization-check
 	$(GRADLE) lint detekt spotlessCheck dependencyGuard $(GRADLE_ARGS)
 
-verify: docs-check template-check
+verify: docs-check template-check localization-check
 	$(GRADLE) :build-logic:convention:check assembleDebug test lint detekt spotlessCheck dependencyGuard validateDebugScreenshotTest verifyRoborazziDebug $(GRADLE_ARGS)
 
 lint:

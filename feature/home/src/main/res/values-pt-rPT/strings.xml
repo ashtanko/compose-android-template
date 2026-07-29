@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Designed and developed by 2026 ashtanko (Oleksii Shtanko)
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+    <string name="feature_home_subtitle">Uma pequena funcionalidade de referência com estado, validação e testes em camadas.</string>
+    <string name="feature_home_input_label">Entrada para o fatorial</string>
+    <string name="feature_home_input_supporting_text">Introduza um número inteiro entre 0 e %1$d.</string>
+    <string name="feature_home_error_required">Introduza um número.</string>
+    <string name="feature_home_error_invalid_number">Introduza um número inteiro válido.</string>
+    <string name="feature_home_error_out_of_range">Introduza um número entre 0 e %1$d.</string>
+    <string name="feature_home_calculate">Calcular o fatorial</string>
+    <string name="feature_home_result">%1$d! = %2$d</string>
+    <string name="feature_home_explore_navigation">Explorar a navegação</string>
+</resources>

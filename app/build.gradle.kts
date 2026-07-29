@@ -66,6 +66,10 @@ android {
         versionName = "1.0"
     }
 
+    androidResources {
+        generateLocaleConfig = true
+    }
+
     signingConfigs {
         register("release") {
             enableV1Signing = true
@@ -86,6 +90,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            isPseudoLocalesEnabled = true
+        }
+
         release {
             isMinifyEnabled = true
             proguardFiles(

@@ -169,7 +169,7 @@ check_verification_contract() {
 
     verify_recipe="$(
         awk '
-            /^verify:/ { in_verify = 1; next }
+            /^verify:/ { in_verify = 1; print; next }
             in_verify && /^[[:alnum:]_-]+:/ { exit }
             in_verify { print }
         ' Makefile
@@ -182,6 +182,7 @@ check_verification_contract() {
         detekt \
         spotlessCheck \
         dependencyGuard \
+        localization-check \
         validateDebugScreenshotTest \
         verifyRoborazziDebug; do
         if ! grep -Fq -- "$required_task" <<<"$verify_recipe"; then

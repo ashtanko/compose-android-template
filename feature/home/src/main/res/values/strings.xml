@@ -15,7 +15,7 @@
      limitations under the License.
 -->
 <resources>
-    <string name="feature_home_title">Compose Android Template</string>
+    <string name="feature_home_title" translatable="false">Compose Android Template</string>
     <string name="feature_home_subtitle">A small reference feature with state, validation, and layered tests.</string>
     <string name="feature_home_input_label">Factorial input</string>
     <string name="feature_home_input_supporting_text">Enter a whole number from 0 to %1$d.</string>

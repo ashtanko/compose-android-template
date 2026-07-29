@@ -70,6 +70,9 @@ make verify
 # Apply fixes exposed as safe Detekt auto-corrections
 ./gradlew detektAutoCorrect
 
+# Check translation completeness and formatter compatibility
+make localization-check
+
 # Format code
 ./gradlew spotlessApply
 ```
@@ -166,6 +169,11 @@ those values; the summary below intentionally avoids copying fast-changing versi
 - **Screenshot Testing** — automated UI regression with Roborazzi + the Compose screenshot plugin.
 - **Dependency Guard** — locks transitive dependency surface across builds.
 - **Signing-ready** — release `signingConfig` resolves keystore credentials from env vars on CI (`SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS`, `SIGNING_KEY_PASSWORD`) or an untracked `key.properties` file locally.
+- **Localization-ready** — English fallback resources, European Portuguese translations,
+  generated per-app language configuration, pseudolocales, and translation validation/reporting.
+
+See [`LOCALIZATION.md`](LOCALIZATION.md) for the resource strategy, translator workflow, and
+validation matrix.
 
 ## 🧪 Testing
 
@@ -200,6 +208,8 @@ The `Makefile` wraps common Gradle invocations:
 
 - `make` / `make help` — list available targets without changing the project.
 - `make docs-check` — validate documentation links and project facts.
+- `make localization-check` — validate translated resources in every Android module.
+- `make localization-report LOCALE=pt-PT FORMAT=csv` — export translation coverage.
 - `make build` / `make install` — assemble or install the debug app.
 - `make test` — run unit tests.
 - `make check` — run lint, Detekt, Spotless, and Dependency Guard checks.

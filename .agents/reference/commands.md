@@ -8,6 +8,7 @@ Run commands from the repository root with the Gradle wrapper. JDK 21 is require
 | --- | --- |
 | Documentation only | `make docs-check` |
 | Template tooling | `make template-check` |
+| Android string resources or translations | `make localization-check` |
 | Shell script | `bash -n path/to/script.sh` plus a safe dry run when supported |
 | Pure Kotlin module | `./gradlew :module:test` |
 | Android module | `./gradlew :module:testDebugUnitTest` |
@@ -26,6 +27,11 @@ Replace `:module` with the actual Gradle path, for example `:core:navigation`. U
 `make docs-check` validates local Markdown links, documented Make targets, module references,
 the canonical agent entrypoint, and version-policy consistency without starting Gradle.
 
+`make localization-check` runs the localization tool's unit tests, discovers locale-specific
+resources in every Android module, and checks common production Compose literals, translation
+completeness, and formatter compatibility. Use
+`make localization-report LOCALE=pt-PT FORMAT=csv` to produce a review catalog.
+
 `./gradlew detekt` runs the standard and Compose rule sets across all Kotlin sources. In modules
 that apply `androidlab.kotlin.explicit-visibility`, it also fails on eligible declarations without
 an explicit visibility modifier.
@@ -41,10 +47,11 @@ For a cross-module or pre-PR change, use the canonical non-mutating verification
 make verify
 ```
 
-It validates documentation and template tools, checks build logic, assembles debug artifacts, and
-runs unit tests, lint, Detekt, Spotless, Dependency Guard, Compose screenshot validation, and
-Roborazzi verification without requiring release signing. The host-side pull-request job invokes
-this exact target; managed-device tests remain a separate environment-dependent CI job.
+It validates documentation, template tools, and localization resources; checks build logic;
+assembles debug artifacts; and runs unit tests, lint, Detekt, Spotless, Dependency Guard, Compose
+screenshot validation, and Roborazzi verification without requiring release signing. The host-side
+pull-request job invokes this exact target; managed-device tests remain a separate
+environment-dependent CI job.
 
 Routine verification never records baselines. Use `make screenshot-record`,
 `make roborazzi-record`, or `make dependency-guard-baseline` only when the corresponding change is
