@@ -135,9 +135,9 @@ changes.
 
 **Decision:** `make verify` is the canonical host-side verification contract and the pull-request
 workflow invokes it directly. It runs project-wide lint and Detekt plus deterministic screenshot,
-dependency, build, test, formatting, documentation, template-tool, and build-logic checks.
-Verification tasks never update baselines. Device tests remain a separate CI job because they
-require managed Android infrastructure.
+dependency, build, test, formatting, documentation, template-tool, localization-resource, and
+build-logic checks. Verification tasks never update baselines. Device tests remain a separate CI
+job because they require managed Android infrastructure.
 
 **Alternatives:** Duplicating individual commands in CI was rejected because local and pull-request
 behavior can diverge. Automatically committing generated baselines was rejected because dependency

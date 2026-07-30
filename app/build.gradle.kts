@@ -126,6 +126,10 @@ android {
         versionName = "1.0"
     }
 
+    androidResources {
+        generateLocaleConfig = true
+    }
+
     signingConfigs {
         register("release") {
             releaseSigningCredentials?.let { credentials ->
@@ -138,6 +142,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            isPseudoLocalesEnabled = true
+        }
+
         release {
             isMinifyEnabled = true
             proguardFiles(

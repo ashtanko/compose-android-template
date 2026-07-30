@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
@@ -37,6 +38,7 @@ import app.template.ui.theme.PastelGreen
 import app.template.ui.theme.PastelMauve
 import app.template.ui.theme.PastelOrange
 import app.template.ui.theme.TemplateTheme
+import dev.shtanko.template.R
 
 @Composable
 fun ContentOrange(
@@ -98,7 +100,7 @@ private fun ContentBase(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 onClick = onNext,
             ) {
-                Text("Next")
+                Text(stringResource(R.string.navigation_next))
             }
         }
     }

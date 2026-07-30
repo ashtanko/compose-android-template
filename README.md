@@ -73,6 +73,9 @@ make secrets-check
 # Apply fixes exposed as safe Detekt auto-corrections
 ./gradlew detektAutoCorrect
 
+# Check translation completeness and formatter compatibility
+make localization-check
+
 # Format code
 ./gradlew spotlessApply
 ```
@@ -187,7 +190,12 @@ those values; the summary below intentionally avoids copying fast-changing versi
 - **Baseline Profiles** — generated via `:benchmarks` for faster startup and smoother frames.
 - **Screenshot Testing** — automated UI regression with Roborazzi + the Compose screenshot plugin.
 - **Dependency Guard** — locks transitive dependency surface across builds.
-- **Signing-ready** — local builds use an ignored credential file, while a manually approved GitHub Actions workflow restores an upload key only on its ephemeral runner and retains the signed AAB plus R8 mapping.
+- **Signing-ready** — local builds resolve keystore credentials from an untracked `key.properties` file, while CI reads env vars (`SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS`, `SIGNING_KEY_PASSWORD`, `SIGNING_KEYSTORE_PATH`); a manually approved GitHub Actions workflow restores an upload key only on its ephemeral runner and retains the signed AAB plus R8 mapping.
+- **Localization-ready** — English fallback resources, European Portuguese translations,
+  generated per-app language configuration, pseudolocales, and translation validation/reporting.
+
+See [`LOCALIZATION.md`](LOCALIZATION.md) for the resource strategy, translator workflow, and
+validation matrix.
 
 ## 🧪 Testing
 
@@ -222,6 +230,8 @@ The `Makefile` wraps common Gradle invocations:
 
 - `make` / `make help` — list available targets without changing the project.
 - `make docs-check` — validate documentation links and project facts.
+- `make localization-check` — validate translated resources in every Android module.
+- `make localization-report LOCALE=pt-PT FORMAT=csv` — export translation coverage.
 - `make secrets-check` — reject tracked credentials and sensitive release files.
 - `make build` / `make install` — assemble or install the debug app.
 - `make test` — run unit tests.

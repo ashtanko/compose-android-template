@@ -251,10 +251,10 @@ check_rename_end_to_end() {
         "rootProject.name = \"$RENAMED_KOTLIN_NAME\""
     assert_contains \
         "$fixture_root/app/src/main/res/values/strings.xml" \
-        "<string name=\"app_name\">$RENAMED_XML_NAME</string>"
+        "<string name=\"app_name\" translatable=\"false\">$RENAMED_XML_NAME</string>"
     assert_contains \
         "$fixture_root/feature/home/src/main/res/values/strings.xml" \
-        "<string name=\"feature_home_title\">$RENAMED_XML_NAME</string>"
+        "<string name=\"feature_home_title\" translatable=\"false\">$RENAMED_XML_NAME</string>"
     assert_contains \
         "$fixture_root/app/src/androidTest/kotlin/$RENAMED_PACKAGE_PATH/MainNavigationTest.kt" \
         "onNodeWithText(\"$RENAMED_KOTLIN_NAME\")"

@@ -170,6 +170,10 @@ build/
 .env
 reports
 
+# Python tooling
+__pycache__/
+*.py[cod]
+
 # Shared agent guidance is intentionally versioned.
 !AGENTS.md
 !CLAUDE.md

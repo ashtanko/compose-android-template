@@ -8,6 +8,7 @@ Run commands from the repository root with the Gradle wrapper. JDK 21 is require
 | --- | --- |
 | Documentation only | `make docs-check` |
 | Template tooling | `make template-check` |
+| Android string resources or translations | `make localization-check` |
 | Sensitive files or credentials | `make secrets-check` |
 | Release signing configuration | `./gradlew :app:validateReleaseSigningConfiguration` |
 | Shell script | `bash -n path/to/script.sh` plus a safe dry run when supported |
@@ -27,6 +28,11 @@ Replace `:module` with the actual Gradle path, for example `:core:navigation`. U
 
 `make docs-check` validates local Markdown links, documented Make targets, module references,
 the canonical agent entrypoint, and version-policy consistency without starting Gradle.
+
+`make localization-check` runs the localization tool's unit tests, discovers locale-specific
+resources in every Android module, and checks common production Compose literals, translation
+completeness, and formatter compatibility. Use
+`make localization-report LOCALE=pt-PT FORMAT=csv` to produce a review catalog.
 
 `make secrets-check` scans every file in the Git index for forbidden credential paths, private-key
 material, common high-confidence token formats, and hardcoded Android signing passwords. The
@@ -49,7 +55,8 @@ For a cross-module or pre-PR change, use the canonical non-mutating verification
 make verify
 ```
 
-It validates documentation, template tools, and tracked files for secrets; checks build logic;
+It validates documentation, template tools, localization resources, and tracked files for secrets;
+checks build logic;
 assembles debug artifacts; and runs unit tests, lint, Detekt, Spotless, Dependency Guard, Compose
 screenshot validation, and Roborazzi verification without requiring release signing. The host-side
 pull-request job invokes this exact target; managed-device tests remain a separate

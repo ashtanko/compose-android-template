@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Designed and developed by 2026 ashtanko (Oleksii Shtanko)
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+    <string name="feature_posts_presentation_title">Publicações</string>
+    <string name="feature_posts_presentation_loading">A carregar publicações</string>
+    <string name="feature_posts_presentation_loading_more">A carregar mais publicações</string>
+    <string name="feature_posts_presentation_error_title">Não foi possível carregar as publicações</string>
+    <string name="feature_posts_presentation_error_network">Verifique a ligação e tente novamente.</string>
+    <string name="feature_posts_presentation_error_service">O serviço de publicações não está disponível. Tente novamente dentro de instantes.</string>
+    <string name="feature_posts_presentation_error_unexpected">Ocorreu um erro. Tente novamente.</string>
+    <string name="feature_posts_presentation_retry">Tentar novamente</string>
+    <string name="feature_posts_presentation_empty_title">Ainda não há publicações</string>
+    <string name="feature_posts_presentation_empty_message">As novas publicações aparecerão aqui quando estiverem disponíveis.</string>
+    <string name="feature_posts_presentation_load_more">Carregar mais</string>
+    <string name="feature_posts_presentation_retry_load_more">Voltar a tentar carregar mais</string>
+</resources>

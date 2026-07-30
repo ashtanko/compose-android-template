@@ -16,6 +16,7 @@ Validate the behavior that changed first, then expand only as risk and scope jus
    - shell: `bash -n` and a supported dry run;
    - JVM logic: the owning module's `test` task, narrowed with `--tests` while iterating;
    - Android logic or Compose state: the owning module's `testDebugUnitTest` task;
+   - localized text resources: `make localization-check`;
    - resources, manifest, or Android configuration: the owning module's `lintDebug` or assemble task.
 4. Run `./gradlew spotlessCheck` for Kotlin or Gradle Kotlin DSL changes. Run Detekt and Android lint when production code or build configuration changed.
 5. Broaden to `make verify` for shared build logic, dependency changes, public API changes, or pre-PR verification.
