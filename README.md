@@ -43,7 +43,9 @@ A modern, production-ready Android template built with **Jetpack Compose**, **Na
        -PdryRun=true   # drop this to apply
    ```
 
-   After applying, run `./gradlew spotlessApply` and then `make verify`. Formatting is a separate
+   After applying, confirm the rename is complete with `./scripts/validate-rename.sh` (or
+   `make rename-validate`). It fails if any original template identity, package folder, or plugin
+   accessor remains. Then run `./gradlew spotlessApply` and `make verify`. Formatting is a separate
    step because package changes can alter Kotlin import ordering and the Gradle `renameProject`
    task cannot safely start a nested Gradle build.
 
@@ -238,6 +240,7 @@ The `Makefile` wraps common Gradle invocations:
 - `make check` — run lint, Detekt, Spotless, and Dependency Guard checks.
 - `make verify` — run the canonical non-mutating host checks used by pull requests.
 - `make template-check` — validate the rename dry run and generated module structure.
+- `make rename-validate` — verify this project was fully renamed away from the template.
 - `make format-check` / `make format` — check or apply formatting.
 - `make device-test` — run debug instrumentation tests on connected devices.
 - `make screenshot-test` / `make screenshot-record` — verify or update Compose screenshot baselines.

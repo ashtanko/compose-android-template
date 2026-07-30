@@ -683,6 +683,10 @@ def main() -> int:
     identity_path = scripts_directory / "template-identity.json"
     wrapper_path = scripts_directory / "rename-template.sh"
     implementation_path = Path(__file__).resolve()
+    # validate-rename.py stores the pristine template identity as anchors it
+    # compares against after a rename, so it must not be rewritten itself.
+    validate_wrapper_path = scripts_directory / "validate-rename.sh"
+    validate_implementation_path = scripts_directory / "validate-rename.py"
 
     identity = load_identity(identity_path)
     in_git = is_git_worktree(repo_root)
@@ -714,7 +718,13 @@ def main() -> int:
     )
     changes = plan_file_changes(
         files,
-        {wrapper_path, implementation_path, identity_path},
+        {
+            wrapper_path,
+            implementation_path,
+            identity_path,
+            validate_wrapper_path,
+            validate_implementation_path,
+        },
         identity,
         args.new_name,
         mappings,
@@ -760,9 +770,10 @@ def main() -> int:
         f"""
 next steps:
   1. review changes:         git status && git diff
-  2. apply formatting:       ./gradlew spotlessApply
-  3. run full verification:  make verify
-  4. commit:                 git add -A && git commit -m {commit_message}
+  2. validate the rename:    bash scripts/validate-rename.sh
+  3. apply formatting:       ./gradlew spotlessApply
+  4. run full verification:  make verify
+  5. commit:                 git add -A && git commit -m {commit_message}
 """,
     )
     return 0
