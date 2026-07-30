@@ -13,29 +13,47 @@ A modern, production-ready Android template built with **Jetpack Compose**, **Na
 
 1. Click the **[Use this template](https://github.com/ashtanko/compose-android-template/generate)** button.
 2. Clone your new repository.
-3. Run the rename script to replace template package names, applicationId, plugin aliases, source
-   and screenshot-reference paths, display names, retained helper tooling, and (optionally)
-   copyright headers with your own. The script requires Python 3.8 or newer, validates all
-   destinations before writing, and rolls back changes if an operation fails:
+3. Run the project setup wizard. It configures project and package names, curated dependency
+   capabilities, example-module removal, and validation. Preview is the default; pass `--apply`
+   only after reviewing the plan:
 
    ```bash
-   # preview first
+   # polished local browser UI
+   ./scripts/setup-project.sh --ui
+
+   # repeatable CLI preview
+   ./scripts/setup-project.sh \
+       --package com.example.myapp \
+       --name "My Awesome App" \
+       --preset standard \
+       --remove-examples \
+       --output ../my-awesome-app
+
+   # apply the reviewed configuration
+   ./scripts/setup-project.sh \
+       --package com.example.myapp \
+       --name "My Awesome App" \
+       --preset standard \
+       --remove-examples \
+       --output ../my-awesome-app \
+       --apply
+   ```
+
+   Running `./scripts/setup-project.sh` without arguments opens an interactive terminal wizard.
+   Both interfaces import and export the same versioned JSON configuration. Copy mode is the safe
+   default; `--in-place` is available when the current clone should be transformed. See
+   [`docs/project-setup-wizard.md`](docs/project-setup-wizard.md) for presets, capabilities, JSON
+   schema, safety behavior, and automation examples.
+
+   The focused legacy rename command and its Gradle adapter remain available:
+
+   ```bash
    ./scripts/rename-template.sh \
        --package com.example.myapp \
        --name "My Awesome App" \
        --author "Your Name" \
        --dry-run
 
-   # apply
-   ./scripts/rename-template.sh \
-       --package com.example.myapp \
-       --name "My Awesome App" \
-       --author "Your Name"
-   ```
-
-   Or via Gradle (same flags, `-P`-style):
-
-   ```bash
    ./gradlew renameProject \
        -Ppackage=com.example.myapp \
        -Pname="My Awesome App" \
@@ -43,9 +61,9 @@ A modern, production-ready Android template built with **Jetpack Compose**, **Na
        -PdryRun=true   # drop this to apply
    ```
 
-   After applying, run `./gradlew spotlessApply` and then `make verify`. Formatting is a separate
-   step because package changes can alter Kotlin import ordering and the Gradle `renameProject`
-   task cannot safely start a nested Gradle build.
+   The setup wizard can run formatting and narrow or full verification as explicit final-step
+   choices. The legacy rename command still leaves formatting as a separate step because the Gradle
+   adapter cannot safely start a nested Gradle build.
 
 4. Update SDK and library versions in `gradle/libs.versions.toml` as needed (single source of truth for dependencies and plugin versions).
 
@@ -131,7 +149,7 @@ rules, and the complete posts demo walkthrough.
 ├── gradle/                 # Version catalog (libs.versions.toml)
 ├── config/                 # Detekt / KtLint / static-analysis configs
 ├── spotless/               # Spotless copyright header template
-└── scripts/                # Helper scripts (e.g. rename-template.sh)
+└── scripts/                # Setup wizard, rename, module, and verification tooling
 ```
 
 Convention plugins under `build-logic/convention` (e.g. `androidlab.android.application.compose`, `androidlab.android.library.compose`, `androidlab.android.feature`, `androidlab.android.junit5`, `androidlab.android.compose.screenshot`, `androidlab.android.roborazzi`, `androidlab.android.benchmark`, `androidlab.hilt`, `androidlab.android.room`, `androidlab.android.lint`, and the selective `androidlab.kotlin.explicit-visibility`) keep per-module `build.gradle.kts` files small and consistent.

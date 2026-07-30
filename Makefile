@@ -7,6 +7,8 @@ FORMAT ?= table
 
 .PHONY: \
 	help \
+	setup \
+	setup-ui \
 	docs-check \
 	template-check \
 	localization-check \
@@ -40,6 +42,10 @@ FORMAT ?= table
 
 help:
 	@echo "Usage: make <target> [GRADLE_ARGS=\"...\"]"
+	@echo
+	@echo "Project setup:"
+	@echo "  setup                       Launch the guided terminal project wizard"
+	@echo "  setup-ui                    Launch the local browser project wizard"
 	@echo
 	@echo "Build and verification:"
 	@echo "  docs-check                  Validate documentation links and project facts"
@@ -76,6 +82,12 @@ help:
 	@echo "  baseline-profile            Generate the app baseline profile"
 	@echo "  tasks                       List available Gradle tasks"
 	@echo "  gradle-version              Print Gradle, Kotlin, and JVM versions"
+
+setup:
+	bash scripts/setup-project.sh
+
+setup-ui:
+	bash scripts/setup-project.sh --ui
 
 docs-check:
 	bash scripts/check-docs.sh

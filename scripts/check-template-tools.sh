@@ -448,6 +448,80 @@ check_collision_preflight() {
     rmdir "$fixture_root/app/src/main/kotlin/com" 2>/dev/null || true
 }
 
+check_setup_wizard() {
+    local fixture_root="$1"
+    local generated_root="$TEMPLATE_TOOLS_TEMP_DIR/generated-project"
+    local exported_config="$TEMPLATE_TOOLS_TEMP_DIR/project-setup.json"
+    local dry_run_output
+
+    python3 "$TEMPLATE_TOOLS_ROOT/scripts/tests/test_setup_wizard.py"
+
+    dry_run_output="$(
+        (
+            cd "$fixture_root"
+            bash scripts/setup-project.sh \
+                --package com.example.wizardcheck \
+                --name "Wizard Check" \
+                --preset minimal \
+                --remove-examples \
+                --output "$generated_root" \
+                --export-config "$exported_config"
+        )
+    )"
+    [[ ! -e "$generated_root" ]] \
+        || fail "setup wizard preview created its destination"
+    grep -Fq -- "Preview only" <<<"$dry_run_output" \
+        || fail "setup wizard did not report preview-only mode"
+    assert_file "$exported_config"
+
+    (
+        cd "$fixture_root"
+        bash scripts/setup-project.sh \
+            --config "$exported_config" \
+            --apply >/dev/null
+    )
+
+    assert_file \
+        "$generated_root/app/src/main/kotlin/com/example/wizardcheck/home/StarterScreen.kt"
+    assert_file \
+        "$generated_root/app/src/main/kotlin/com/example/wizardcheck/home/MainActivity.kt"
+    assert_contains \
+        "$generated_root/app/src/main/kotlin/com/example/wizardcheck/ui/theme/Typography.kt" \
+        "FontFamily.SansSerif"
+    assert_not_contains \
+        "$generated_root/settings.gradle.kts" \
+        'include(":feature:home")'
+    assert_not_contains \
+        "$generated_root/settings.gradle.kts" \
+        'include(":feature:posts:domain")'
+    assert_not_contains \
+        "$generated_root/settings.gradle.kts" \
+        'include(":core:navigation")'
+    assert_not_contains \
+        "$generated_root/settings.gradle.kts" \
+        'include(":benchmarks")'
+    assert_not_contains \
+        "$generated_root/app/build.gradle.kts" \
+        "baselineProfile(project"
+    assert_not_contains \
+        "$generated_root/app/build.gradle.kts" \
+        ".hilt)"
+    assert_not_contains \
+        "$generated_root/app/src/main/AndroidManifest.xml" \
+        'android:name="com.example.wizardcheck.App"'
+
+    bash -n "$generated_root/scripts/setup-project.sh"
+    python3 -m py_compile \
+        "$generated_root/scripts/setup-project.py" \
+        "$generated_root/scripts/setup_wizard/model.py" \
+        "$generated_root/scripts/setup_wizard/engine.py" \
+        "$generated_root/scripts/setup_wizard/server.py"
+    (
+        cd "$generated_root"
+        bash scripts/check-docs.sh >/dev/null
+    )
+}
+
 old_application_package="$(identity_value applicationPackage)"
 old_code_package="$(identity_value codePackage)"
 old_build_logic_package="$(identity_value buildLogicPackage)"
@@ -465,6 +539,7 @@ copy_repository_fixture "$fixture_root"
 
 check_invalid_inputs
 check_collision_preflight "$fixture_root"
+check_setup_wizard "$fixture_root"
 check_rename_end_to_end \
     "$fixture_root" \
     "$old_application_package" \

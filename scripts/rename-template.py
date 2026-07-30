@@ -28,6 +28,10 @@ SKIPPED_DIRECTORY_NAMES = {
     ".kotlin",
     "build",
 }
+SKIPPED_LOCAL_FILE_NAMES = {
+    "key.properties",
+    "local.properties",
+}
 KOTLIN_AND_JAVA_KEYWORDS = {
     "abstract",
     "actual",
@@ -321,7 +325,12 @@ def repository_files(repo_root: Path, in_git: bool) -> list[Path]:
         return sorted(
             repo_root / path
             for path in relative_paths
-            if not path_is_skipped(path) and (repo_root / path).is_file()
+            if (
+                not path_is_skipped(path)
+                and path.name not in SKIPPED_LOCAL_FILE_NAMES
+                and not path.name.startswith(".env")
+                and (repo_root / path).is_file()
+            )
         )
 
     files: list[Path] = []
@@ -330,7 +339,14 @@ def repository_files(repo_root: Path, in_git: bool) -> list[Path]:
             name for name in child_directories if name not in SKIPPED_DIRECTORY_NAMES
         )
         directory_path = Path(directory)
-        files.extend(directory_path / filename for filename in sorted(filenames))
+        files.extend(
+            directory_path / filename
+            for filename in sorted(filenames)
+            if (
+                filename not in SKIPPED_LOCAL_FILE_NAMES
+                and not filename.startswith(".env")
+            )
+        )
     return files
 
 
