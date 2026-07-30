@@ -36,4 +36,5 @@
 - [ ] I listed which tests were selected and why they are proportionate to the change.
 - [ ] Screenshot, dependency, lint, or baseline-profile changes are intentional and reviewed.
 - [ ] I assessed security, privacy, performance, documentation, and agent-guidance impacts.
+- [ ] I confirmed that no credentials, private keys, or production signing files are included.
 - [ ] I created or updated an architectural decision record when the change introduces a durable project-wide constraint.

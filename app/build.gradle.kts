@@ -15,17 +15,28 @@
  */
 import java.util.Properties
 
-val isCiBuild = providers.environmentVariable("CI").map(String::toBoolean).getOrElse(false)
-
 private val storePasswordKey = "storePassword"
 private val keyPasswordKey = "keyPassword"
 private val keyAliasKey = "keyAlias"
 private val storeFileKey = "storeFile"
-private val releaseSigningPropertyKeys = listOf(
+private val releaseSigningKeys = listOf(
     storePasswordKey,
     keyPasswordKey,
     keyAliasKey,
     storeFileKey,
+)
+private val releaseSigningEnvironmentVariables = mapOf(
+    storePasswordKey to "SIGNING_STORE_PASSWORD",
+    keyPasswordKey to "SIGNING_KEY_PASSWORD",
+    keyAliasKey to "SIGNING_KEY_ALIAS",
+    storeFileKey to "SIGNING_KEYSTORE_PATH",
+)
+
+data class ReleaseSigningCredentials(
+    val storeFile: File,
+    val storePassword: String,
+    val keyAlias: String,
+    val keyPassword: String,
 )
 
 val releaseSigningPropertiesFile = rootProject.file("key.properties")
@@ -34,12 +45,61 @@ val releaseSigningProperties = Properties().apply {
         releaseSigningPropertiesFile.inputStream().use(::load)
     }
 }
-val releaseSigningStoreFile = releaseSigningProperties
-    .getProperty(storeFileKey)
-    ?.let(rootProject::file)
-val hasValidLocalReleaseSigningConfig =
-    releaseSigningPropertyKeys.all(releaseSigningProperties::containsKey) &&
-        releaseSigningStoreFile?.isFile == true
+val releaseSigningEnvironmentValues = releaseSigningEnvironmentVariables.mapValues { (_, name) ->
+    providers.environmentVariable(name).orNull
+}
+val hasAnyReleaseSigningEnvironmentValue =
+    releaseSigningEnvironmentValues.values.any { !it.isNullOrBlank() }
+val hasCompleteReleaseSigningEnvironment =
+    releaseSigningEnvironmentValues.values.all { !it.isNullOrBlank() }
+val hasCompleteLocalReleaseSigningProperties =
+    releaseSigningKeys.all { !releaseSigningProperties.getProperty(it).isNullOrBlank() }
+
+val releaseSigningCredentials = when {
+    hasCompleteReleaseSigningEnvironment -> ReleaseSigningCredentials(
+        storeFile = rootProject.file(releaseSigningEnvironmentValues.getValue(storeFileKey)!!),
+        storePassword = releaseSigningEnvironmentValues.getValue(storePasswordKey)!!,
+        keyAlias = releaseSigningEnvironmentValues.getValue(keyAliasKey)!!,
+        keyPassword = releaseSigningEnvironmentValues.getValue(keyPasswordKey)!!,
+    )
+
+    !hasAnyReleaseSigningEnvironmentValue && hasCompleteLocalReleaseSigningProperties ->
+        ReleaseSigningCredentials(
+            storeFile = rootProject.file(releaseSigningProperties.getProperty(storeFileKey)),
+            storePassword = releaseSigningProperties.getProperty(storePasswordKey),
+            keyAlias = releaseSigningProperties.getProperty(keyAliasKey),
+            keyPassword = releaseSigningProperties.getProperty(keyPasswordKey),
+        )
+
+    else -> null
+}
+
+val releaseSigningConfigurationError = when {
+    hasAnyReleaseSigningEnvironmentValue && !hasCompleteReleaseSigningEnvironment -> {
+        val missingVariables = releaseSigningEnvironmentVariables
+            .filterKeys { releaseSigningEnvironmentValues[it].isNullOrBlank() }
+            .values
+            .joinToString()
+        "Release signing environment is incomplete. Missing: $missingVariables."
+    }
+
+    releaseSigningPropertiesFile.isFile && !hasCompleteLocalReleaseSigningProperties -> {
+        val missingProperties = releaseSigningKeys
+            .filter { releaseSigningProperties.getProperty(it).isNullOrBlank() }
+            .joinToString()
+        "Release signing file ${releaseSigningPropertiesFile.path} is incomplete. " +
+            "Missing: $missingProperties."
+    }
+
+    releaseSigningCredentials == null ->
+        "Release signing is not configured. Copy key.properties.example to key.properties " +
+            "for local builds, or configure the production secrets described in RELEASING.md."
+
+    !releaseSigningCredentials.storeFile.isFile ->
+        "Release keystore does not exist: ${releaseSigningCredentials.storeFile.path}"
+
+    else -> null
+}
 
 plugins {
     alias(libs.plugins.androidlab.android.application.compose)
@@ -72,19 +132,11 @@ android {
 
     signingConfigs {
         register("release") {
-            enableV1Signing = true
-            enableV2Signing = true
-
-            if (isCiBuild) {
-                storeFile = file("keystore.jks")
-                storePassword = providers.environmentVariable("SIGNING_STORE_PASSWORD").orNull
-                keyAlias = providers.environmentVariable("SIGNING_KEY_ALIAS").orNull
-                keyPassword = providers.environmentVariable("SIGNING_KEY_PASSWORD").orNull
-            } else if (hasValidLocalReleaseSigningConfig) {
-                storeFile = releaseSigningStoreFile
-                keyAlias = releaseSigningProperties.getProperty(keyAliasKey)
-                keyPassword = releaseSigningProperties.getProperty(keyPasswordKey)
-                storePassword = releaseSigningProperties.getProperty(storePasswordKey)
+            releaseSigningCredentials?.let { credentials ->
+                storeFile = credentials.storeFile
+                storePassword = credentials.storePassword
+                keyAlias = credentials.keyAlias
+                keyPassword = credentials.keyPassword
             }
         }
     }
@@ -122,6 +174,19 @@ android {
 }
 
 tasks {
+    val validateReleaseSigningConfiguration = register("validateReleaseSigningConfiguration") {
+        group = "verification"
+        description = "Validate credentials required to sign a release artifact"
+
+        doLast {
+            releaseSigningConfigurationError?.let { throw GradleException(it) }
+        }
+    }
+
+    matching { it.name == "validateSigningRelease" }.configureEach {
+        dependsOn(validateReleaseSigningConfiguration)
+    }
+
     getByName("check") {
         dependsOn("detekt")
     }

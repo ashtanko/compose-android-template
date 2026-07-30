@@ -213,6 +213,67 @@ need focused tests.
 enforcement scope expands beyond feature boundaries, or maintaining the custom PSI rule becomes
 more costly than its API-safety benefit.
 
+### AD-009: Release signing is isolated from routine CI
+
+**Status:** Accepted
+
+**Context:** Release packaging needs private key material, while pull requests and routine
+verification execute code that must not receive production credentials. A partially configured
+signing block can also fail late or produce an unsigned artifact that looks releasable.
+
+**Decision:** Local releases use a complete ignored `key.properties` file. CI releases use a
+separate upload key restored from secrets in the protected `production` GitHub environment. The
+manual release workflow accepts only the default branch, runs `make verify` before entering the
+protected job, builds an AAB with configuration caching disabled, retains the R8 mapping, and
+removes the temporary keystore. Routine CI remains debug-only. Gradle fails release packaging when
+credentials are absent, partial, or point to a missing keystore. Google Play distributions should
+use Play App Signing so the CI credential is an independently resettable upload key.
+
+**Alternatives:** Giving signing secrets to pull-request CI was rejected because untrusted build
+logic and tests would share the credential boundary. Committing an encrypted keystore was rejected
+for the default setup because key rotation and repository history make it harder to operate than a
+small environment secret. Storing the app-signing key in GitHub was rejected because Play App
+Signing permits a lower-impact upload key. Automatic Play publication was deferred to keep the
+initial release path reviewable and avoid another long-lived credential.
+
+**Consequences:** Releases require explicit environment setup and approval, and the AAB is uploaded
+to Play manually. Signing credentials are exposed only to trusted release build logic. Adding
+automatic store publication, tag-based triggers, another distribution store, or a different key
+management system requires revisiting this boundary.
+
+**Review when:** GitHub offers a practical hardware-backed signing integration, Play publication is
+automated, releases must originate from tags, or the encoded keystore exceeds GitHub's secret-size
+limit.
+
+### AD-010: Secret prevention uses local, CI, and host layers
+
+**Status:** Accepted
+
+**Context:** Ignore rules prevent ordinary accidental staging but can be bypassed with force-add,
+renamed credentials, copied private-key text, or a contributor who has not installed repository
+hooks. A local regex scanner alone cannot recognize every provider token accurately.
+
+**Decision:** The tracked pre-commit hook scans staged blobs for forbidden sensitive paths and
+high-confidence credential content. The canonical `make verify` contract and a dedicated,
+read-only GitHub Actions workflow scan the complete Git index. The dedicated workflow has no path
+exclusions, so documentation-only pull requests are covered independently of local hook
+installation. Findings report only path and rule, never matched values. Repository administrators
+should also enable GitHub Secret Protection and push protection when available.
+
+**Alternatives:** Relying only on `.gitignore` was rejected because force-add and content copied into
+ordinary source files bypass path ignores. Relying only on a local hook was rejected because hooks
+are not installed automatically and can be skipped. Adding a third-party scanner action was
+deferred because the repository-owned high-confidence baseline and GitHub's native provider-aware
+scanner avoid another executable supply-chain dependency.
+
+**Consequences:** Common signing containers, credential files, private keys, and token formats fail
+before commit or in PR CI without exposing their values in logs. False positives require review and
+a narrow rule adjustment. Unknown or novel secret formats still depend on GitHub scanning and human
+review.
+
+**Review when:** False-positive or miss data justifies adopting a dedicated scanner, GitHub changes
+Secret Protection availability, or the repository introduces legitimate private-key test fixtures.
+
 ## New decision template
 
 ```markdown

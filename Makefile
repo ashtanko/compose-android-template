@@ -11,7 +11,10 @@ FORMAT ?= table
 	template-check \
 	localization-check \
 	localization-report \
+	secrets-check \
 	build \
+	generate-release-key \
+	release \
 	install \
 	test \
 	check \
@@ -43,7 +46,10 @@ help:
 	@echo "  template-check              Validate rename dry run and module generation"
 	@echo "  localization-check          Validate every translated Android resource"
 	@echo "  localization-report         Report locale coverage (LOCALE, FORMAT)"
+	@echo "  secrets-check               Reject tracked credentials and sensitive files"
 	@echo "  build                       Assemble debug artifacts"
+	@echo "  generate-release-key        Create an upload keystore and local signing file"
+	@echo "  release                     Build the signed release Android App Bundle"
 	@echo "  install                     Install the app's debug build"
 	@echo "  test                        Run unit tests"
 	@echo "  check                       Run routine static checks"
@@ -84,8 +90,17 @@ localization-check:
 localization-report:
 	python3 scripts/localization.py report --locale "$(LOCALE)" --format "$(FORMAT)"
 
+secrets-check:
+	bash scripts/check-secrets.sh
+
 build:
 	$(GRADLE) assembleDebug $(GRADLE_ARGS)
+
+generate-release-key:
+	bash scripts/generate-release-key.sh
+
+release:
+	$(GRADLE) :app:bundleRelease --no-configuration-cache $(GRADLE_ARGS)
 
 install:
 	$(GRADLE) :app:installDebug $(GRADLE_ARGS)
@@ -93,10 +108,10 @@ install:
 test:
 	$(GRADLE) test $(GRADLE_ARGS)
 
-check: localization-check
+check: localization-check secrets-check
 	$(GRADLE) lint detekt spotlessCheck dependencyGuard $(GRADLE_ARGS)
 
-verify: docs-check template-check localization-check
+verify: docs-check template-check localization-check secrets-check
 	$(GRADLE) :build-logic:convention:check assembleDebug test lint detekt spotlessCheck dependencyGuard validateDebugScreenshotTest verifyRoborazziDebug $(GRADLE_ARGS)
 
 lint:
