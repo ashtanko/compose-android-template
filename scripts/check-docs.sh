@@ -157,14 +157,37 @@ check_verification_contract() {
         fail "CI host verification must invoke the canonical make verify target"
     fi
 
+    if ! rg --fixed-strings --quiet \
+        "run: bash scripts/check-secrets.sh --all" \
+        .github/workflows/secret-check.yml; then
+        fail "the dedicated PR secret workflow must scan every tracked file"
+    fi
+
+    if ! rg --quiet '^[[:space:]]{2}pull_request:' .github/workflows/secret-check.yml \
+        || rg --quiet '^[[:space:]]+paths(-ignore)?:' .github/workflows/secret-check.yml; then
+        fail "the dedicated PR secret workflow must run for every pull request path"
+    fi
+
+    if ! rg --quiet '^[[:space:]]*contents:[[:space:]]*read' \
+        .github/workflows/secret-check.yml; then
+        fail "the dedicated PR secret workflow must have read-only repository access"
+    fi
+
     if rg --quiet \
         'dependencyGuardBaseline|update[A-Za-z]+ScreenshotTest|recordRoborazzi|git-auto-commit-action' \
         .github/workflows/ci.yml; then
         fail "CI verification must not update or commit dependency or screenshot baselines"
     fi
 
-    if rg --quiet 'contents: write|pull-requests: write' .github/workflows/ci.yml; then
+    if rg --quiet \
+        'contents: write|pull-requests: write' \
+        .github/workflows/ci.yml \
+        .github/workflows/secret-check.yml; then
         fail "CI verification must not receive broad repository write permissions"
+    fi
+
+    if ! rg --quiet '^verify:.*secrets-check' Makefile; then
+        fail "make verify must run secrets-check before host verification"
     fi
 
     verify_recipe="$(

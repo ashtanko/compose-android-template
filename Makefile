@@ -7,7 +7,10 @@ GRADLE_ARGS ?=
 	help \
 	docs-check \
 	template-check \
+	secrets-check \
 	build \
+	generate-release-key \
+	release \
 	install \
 	test \
 	check \
@@ -37,7 +40,10 @@ help:
 	@echo "Build and verification:"
 	@echo "  docs-check                  Validate documentation links and project facts"
 	@echo "  template-check              Validate rename dry run and module generation"
+	@echo "  secrets-check               Reject tracked credentials and sensitive files"
 	@echo "  build                       Assemble debug artifacts"
+	@echo "  generate-release-key        Create an upload keystore and local signing file"
+	@echo "  release                     Build the signed release Android App Bundle"
 	@echo "  install                     Install the app's debug build"
 	@echo "  test                        Run unit tests"
 	@echo "  check                       Run routine static checks"
@@ -71,8 +77,17 @@ docs-check:
 template-check:
 	bash scripts/check-template-tools.sh
 
+secrets-check:
+	bash scripts/check-secrets.sh
+
 build:
 	$(GRADLE) assembleDebug $(GRADLE_ARGS)
+
+generate-release-key:
+	bash scripts/generate-release-key.sh
+
+release:
+	$(GRADLE) :app:bundleRelease --no-configuration-cache $(GRADLE_ARGS)
 
 install:
 	$(GRADLE) :app:installDebug $(GRADLE_ARGS)
@@ -80,10 +95,10 @@ install:
 test:
 	$(GRADLE) test $(GRADLE_ARGS)
 
-check:
+check: secrets-check
 	$(GRADLE) lint detekt spotlessCheck dependencyGuard $(GRADLE_ARGS)
 
-verify: docs-check template-check
+verify: docs-check template-check secrets-check
 	$(GRADLE) :build-logic:convention:check assembleDebug test lint detekt spotlessCheck dependencyGuard validateDebugScreenshotTest verifyRoborazziDebug $(GRADLE_ARGS)
 
 lint:

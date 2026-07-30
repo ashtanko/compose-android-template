@@ -57,8 +57,33 @@ activity, service, receiver, or provider requires an explicit use case and secur
 - Values placed in resources, assets, native code, or `BuildConfig` can be recovered from an APK.
   Treat every client-side value as configuration, not secure secret storage.
 - Keep privileged API credentials and authorization enforcement on a trusted backend.
-- Preserve the documented CI environment-variable contract for release signing.
+- Use Play App Signing with a separate upload key when distributing through Google Play. Do not
+  place the app-signing key in developer or CI release configuration.
+- Preserve the documented CI environment-variable contract for release signing:
+  `SIGNING_KEYSTORE_PATH`, `SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS`, and
+  `SIGNING_KEY_PASSWORD`. All four values must come from the same source.
+- Limit signing secrets to the protected `production` GitHub environment and the release build
+  step. Pull-request and routine CI jobs must remain secret-free and must not package release
+  artifacts.
+- Disable Gradle configuration caching for signed release invocations so credentials are not
+  serialized into a reusable project configuration-cache entry.
 - Use the repository's template debug keystore only for local/template purposes.
+
+### Leak prevention
+
+- Enable the repository's pre-commit hook with `git config core.hooksPath .agents/hooks`. It scans
+  staged Git blobs, so unstaged working-tree content does not create false findings.
+- Keep `make secrets-check` in the canonical `make verify` contract and the lightweight
+  `secret-check.yml` workflow so every pull request scans tracked files, including
+  documentation-only changes, even when a contributor does not install the local hook.
+- Require the workflow's `Reject committed secrets` check in the default branch ruleset so a failed
+  scan blocks merges.
+- Treat the repository-owned scanner as a fast baseline, not a complete secret detector. Enable
+  GitHub Secret Protection and push protection where the repository visibility and plan support
+  them; provider-aware scanning covers token formats that local filename and regex rules cannot.
+- Never print a detected value in hook or CI output. Report only the path and detection rule.
+- A committed secret is compromised even if a later commit deletes it. Revoke or rotate it first,
+  then remove it from reachable history when the incident response requires that cleanup.
 
 ## Permissions and privacy
 
@@ -75,6 +100,8 @@ activity, service, receiver, or provider requires an explicit use case and secur
   their transitive surface with Dependency Guard.
 - Prefer narrowly scoped CI permissions. A job that only reads and verifies code should not receive
   write permissions.
+- Build releases only from the default branch after the canonical host checks pass. Gate access to
+  release secrets with environment protection rules where the repository plan supports them.
 - Review third-party build actions and plugins before adoption; pin and update them through the
   repository's dependency-maintenance process.
 - Do not automatically accept a new dependency baseline without reviewing why the dependency graph
