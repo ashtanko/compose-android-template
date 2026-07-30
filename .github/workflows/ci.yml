@@ -82,6 +82,18 @@ jobs:
           name: lint-reports
           path: '**/build/reports/lint-results-*.html'
 
+      - name: Generate localization report (HTML)
+        if: ${{ !cancelled() }}
+        run: make localization-report-html
+
+      - name: Upload localization report (HTML)
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: localization-report
+          path: build/reports/localization/index.html
+          if-no-files-found: warn
+
 #      - name: Upload static-analysis reports (SARIF)
 #        if: ${{ !cancelled() }}
 #        uses: actions/upload-artifact@v7
