@@ -8,6 +8,8 @@ Run commands from the repository root with the Gradle wrapper. JDK 21 is require
 | --- | --- |
 | Documentation only | `make docs-check` |
 | Template tooling | `make template-check` |
+| Sensitive files or credentials | `make secrets-check` |
+| Release signing configuration | `./gradlew :app:validateReleaseSigningConfiguration` |
 | Shell script | `bash -n path/to/script.sh` plus a safe dry run when supported |
 | Pure Kotlin module | `./gradlew :module:test` |
 | Android module | `./gradlew :module:testDebugUnitTest` |
@@ -18,12 +20,19 @@ Run commands from the repository root with the Gradle wrapper. JDK 21 is require
 | Android lint | `./gradlew lint` or `./gradlew :module:lintDebug` |
 | Screenshot verification | `./gradlew validateDebugScreenshotTest` and/or `./gradlew verifyRoborazziDebug` |
 | Instrumentation | `./gradlew :app:connectedDebugAndroidTest` with a device or emulator available |
-| Macrobenchmark | `./gradlew :benchmarks:connectedBenchmarkReleaseAndroidTest` |
+| Macrobenchmark | `./gradlew :benchmarks:connectedBenchmarkReleaseAndroidTest` on a stable physical device |
+| Baseline profile generation | `./gradlew :app:generateBaselineProfile` using the declared managed device |
 
 Replace `:module` with the actual Gradle path, for example `:core:navigation`. Use `--tests "fully.qualified.ClassName"` to narrow a unit-test task when iterating.
 
 `make docs-check` validates local Markdown links, documented Make targets, module references,
 the canonical agent entrypoint, and version-policy consistency without starting Gradle.
+
+`make secrets-check` scans every file in the Git index for forbidden credential paths, private-key
+material, common high-confidence token formats, and hardcoded Android signing passwords. The
+pre-commit hook runs the same scanner against staged additions and modifications. The dedicated
+`secret-check.yml` GitHub Actions workflow runs for every pull request, including documentation-only
+changes that the Android build workflow intentionally skips.
 
 `./gradlew detekt` runs the standard and Compose rule sets across all Kotlin sources. In modules
 that apply `androidlab.kotlin.explicit-visibility`, it also fails on eligible declarations without
@@ -40,14 +49,27 @@ For a cross-module or pre-PR change, use the canonical non-mutating verification
 make verify
 ```
 
-It validates documentation and template tools, checks build logic, assembles debug artifacts, and
-runs unit tests, lint, Detekt, Spotless, Dependency Guard, Compose screenshot validation, and
-Roborazzi verification without requiring release signing. The host-side pull-request job invokes
-this exact target; managed-device tests remain a separate environment-dependent CI job.
+It validates documentation, template tools, and tracked files for secrets; checks build logic;
+assembles debug artifacts; and runs unit tests, lint, Detekt, Spotless, Dependency Guard, Compose
+screenshot validation, and Roborazzi verification without requiring release signing. The host-side
+pull-request job invokes this exact target; managed-device tests remain a separate
+environment-dependent CI job.
 
 Routine verification never records baselines. Use `make screenshot-record`,
 `make roborazzi-record`, or `make dependency-guard-baseline` only when the corresponding change is
 intentional, then review every generated diff.
+
+## Release build
+
+Run `make generate-release-key` to interactively create a new upload keystore and the ignored local
+signing properties file. The generator refuses to overwrite either output.
+
+Run `make release` to build the signed release Android App Bundle. It reads a complete untracked
+`key.properties` file locally or the complete documented signing environment on CI, disables
+configuration caching for the signing invocation, and fails if credentials or the keystore are
+missing. Routine `make verify` and pull-request CI remain debug-only and do not require release
+secrets. See [`RELEASING.md`](../../RELEASING.md) for credential setup and the protected manual
+GitHub Actions workflow.
 
 ## Mutating commands
 

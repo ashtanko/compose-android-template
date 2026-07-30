@@ -39,7 +39,9 @@ The skills use the portable `SKILL.md` format. Agents without automatic skill di
 
 ## Optional pre-commit hook
 
-The hook syntax-checks staged shell scripts and runs `spotlessCheck` when staged Kotlin or Gradle Kotlin DSL files are present. Enable it for this clone with:
+The hook rejects sensitive staged paths and common high-confidence credential formats,
+syntax-checks staged shell scripts, and runs `spotlessCheck` when staged Kotlin or Gradle Kotlin DSL
+files are present. Enable it for this clone with:
 
 ```bash
 git config core.hooksPath .agents/hooks

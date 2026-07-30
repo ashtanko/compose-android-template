@@ -5,6 +5,9 @@ set -euo pipefail
 repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
 
+printf 'Checking staged files for secrets...\n'
+bash scripts/check-secrets.sh --staged
+
 needs_spotless=false
 
 while IFS= read -r -d '' path; do
