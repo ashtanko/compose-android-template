@@ -71,7 +71,6 @@ dependencies {
     compileOnly(libs.android.junit5.gradlePlugin)
     compileOnly(libs.screenshot.gradlePlugin)
     compileOnly(libs.baselineprofile.gradlePlugin)
-    compileOnly(libs.roborazzi.gradlePlugin)
 
     detektPlugins(libs.detekt.formatting)
     detektPlugins(libs.detekt.rules)
@@ -148,11 +147,6 @@ gradlePlugin {
         register("androidJUnit5") {
             id = "androidlab.android.junit5"
             implementationClass = "dev.shtanko.androidlab.convention.AndroidJUnit5ConventionPlugin"
-        }
-        register("androidRoborazzi") {
-            id = "androidlab.android.roborazzi"
-            implementationClass =
-                "dev.shtanko.androidlab.convention.AndroidRoborazziConventionPlugin"
         }
         register("androidTest") {
             id = "androidlab.android.test"

@@ -18,6 +18,7 @@ FORMAT ?= table
 	release \
 	install \
 	test \
+	integration-test \
 	check \
 	verify \
 	lint \
@@ -27,12 +28,13 @@ FORMAT ?= table
 	format-check \
 	format \
 	device-test \
+	device-test-ci \
+	device-test-all \
 	benchmark \
 	screenshot-test \
 	screenshot-record \
-	roborazzi-test \
-	roborazzi-record \
 	coverage \
+	coverage-verify \
 	dependency-guard \
 	dependency-guard-baseline \
 	baseline-profile \
@@ -54,6 +56,7 @@ help:
 	@echo "  release                     Build the signed release Android App Bundle"
 	@echo "  install                     Install the app's debug build"
 	@echo "  test                        Run unit tests"
+	@echo "  integration-test            Run JVM integration tests"
 	@echo "  check                       Run routine static checks"
 	@echo "  verify                      Assemble debug, test, and run routine checks"
 	@echo "  lint                        Run Android lint"
@@ -65,14 +68,15 @@ help:
 	@echo
 	@echo "Device and visual tests:"
 	@echo "  device-test                 Run debug instrumentation tests"
+	@echo "  device-test-ci              Run all instrumentation and E2E tests on CI devices"
+	@echo "  device-test-all             Run all instrumentation and E2E tests on all devices"
 	@echo "  benchmark                   Run benchmarkRelease macrobenchmarks"
 	@echo "  screenshot-test             Verify Compose screenshot baselines"
 	@echo "  screenshot-record           Update Compose screenshot baselines"
-	@echo "  roborazzi-test              Verify Roborazzi baselines"
-	@echo "  roborazzi-record            Update Roborazzi baselines"
 	@echo
 	@echo "Reports and maintenance:"
-	@echo "  coverage                    Generate the app Kover HTML report"
+	@echo "  coverage                    Generate JVM and Android coverage reports"
+	@echo "  coverage-verify             Enforce JVM business-logic coverage thresholds"
 	@echo "  dependency-guard            Check dependency baselines"
 	@echo "  dependency-guard-baseline   Update the app dependency baseline"
 	@echo "  baseline-profile            Generate the app baseline profile"
@@ -113,11 +117,14 @@ install:
 test:
 	$(GRADLE) test $(GRADLE_ARGS)
 
+integration-test:
+	$(GRADLE) integrationTest $(GRADLE_ARGS)
+
 check: localization-check secrets-check
 	$(GRADLE) lint detekt spotlessCheck dependencyGuard $(GRADLE_ARGS)
 
 verify: docs-check template-check localization-check secrets-check
-	$(GRADLE) :build-logic:convention:check assembleDebug test lint detekt spotlessCheck dependencyGuard validateDebugScreenshotTest verifyRoborazziDebug $(GRADLE_ARGS)
+	$(GRADLE) :build-logic:convention:check assembleDebug test integrationTest coverageVerification coverageReport lint detekt spotlessCheck dependencyGuard validateDebugScreenshotTest $(GRADLE_ARGS)
 
 lint:
 	$(GRADLE) lint $(GRADLE_ARGS)
@@ -140,6 +147,12 @@ format:
 device-test:
 	$(GRADLE) connectedDebugAndroidTest $(GRADLE_ARGS)
 
+device-test-ci:
+	$(GRADLE) ciManagedDeviceTest $(GRADLE_ARGS)
+
+device-test-all:
+	$(GRADLE) allManagedDeviceTest $(GRADLE_ARGS)
+
 benchmark:
 	$(GRADLE) :benchmarks:connectedBenchmarkReleaseAndroidTest $(GRADLE_ARGS)
 
@@ -149,14 +162,11 @@ screenshot-test:
 screenshot-record:
 	$(GRADLE) updateDebugScreenshotTest $(GRADLE_ARGS)
 
-roborazzi-test:
-	$(GRADLE) verifyRoborazziDebug $(GRADLE_ARGS)
-
-roborazzi-record:
-	$(GRADLE) recordRoborazziDebug $(GRADLE_ARGS)
-
 coverage:
-	$(GRADLE) :app:koverHtmlReport $(GRADLE_ARGS)
+	$(GRADLE) coverageReport $(GRADLE_ARGS)
+
+coverage-verify:
+	$(GRADLE) coverageVerification $(GRADLE_ARGS)
 
 dependency-guard:
 	$(GRADLE) dependencyGuard $(GRADLE_ARGS)

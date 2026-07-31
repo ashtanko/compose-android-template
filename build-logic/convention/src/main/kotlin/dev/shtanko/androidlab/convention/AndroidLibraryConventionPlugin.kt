@@ -2,6 +2,7 @@ package dev.shtanko.androidlab.convention
 
 import com.android.build.api.dsl.LibraryExtension
 import dev.shtanko.androidlab.configureDetekt
+import dev.shtanko.androidlab.configureGradleManagedDevices
 import dev.shtanko.androidlab.configureKotlinAndroid
 import dev.shtanko.androidlab.libs
 import org.gradle.api.Plugin
@@ -23,6 +24,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
 
             extensions.configure<LibraryExtension> {
                 configureKotlinAndroid(this)
+                configureGradleManagedDevices(this)
                 testOptions.targetSdk =
                     libs.findVersion("targetSdk").get().requiredVersion.toInt()
                 defaultConfig.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

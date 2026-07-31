@@ -73,7 +73,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: local-test-results
-          path: '**/build/test-results/test*UnitTest/**.xml'
+          path: '**/build/test-results/**/*.xml'
+          if-no-files-found: ignore
 
       - name: Upload lint reports (HTML)
         if: ${{ !cancelled() }}
@@ -96,6 +97,14 @@ jobs:
         with:
           name: screenshot-reports
           path: '**/build/reports/screenshotTest/**'
+          if-no-files-found: ignore
+
+      - name: Upload coverage reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-reports
+          path: '**/build/reports/jacoco/**'
           if-no-files-found: ignore
 
 #  upload_sarif:
@@ -159,7 +168,10 @@ jobs:
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
 
       - name: Run instrumented tests
-        run: ./gradlew :app:ciGroupDebugAndroidTest
+        run: make device-test-ci
+
+      - name: Generate combined coverage reports
+        run: make coverage
 
       - name: Upload test results
         if: always()
@@ -167,3 +179,11 @@ jobs:
         with:
           name: instrumented-test-results
           path: '**/build/reports/androidTests/managedDevice/**'
+
+      - name: Upload combined coverage reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: device-coverage-reports
+          path: '**/build/reports/jacoco/**'
+          if-no-files-found: ignore

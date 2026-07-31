@@ -29,4 +29,5 @@ dependencies {
     implementation(libs.square.retrofit.kotlin.serialization)
 
     testImplementation(libs.kotlinx.coroutines.test)
+    integrationTestImplementation(libs.square.okhttp.mockwebserver)
 }

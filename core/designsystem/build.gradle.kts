@@ -28,8 +28,4 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     api(libs.androidx.compose.foundation.layout)
 
-    androidTestImplementation(libs.androidx.test.ext)
-
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.test.manifest)
 }
