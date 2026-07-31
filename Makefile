@@ -9,6 +9,7 @@ FORMAT ?= table
 	help \
 	docs-check \
 	template-check \
+	rename-validate \
 	localization-check \
 	localization-report \
 	secrets-check \
@@ -44,6 +45,7 @@ help:
 	@echo "Build and verification:"
 	@echo "  docs-check                  Validate documentation links and project facts"
 	@echo "  template-check              Validate rename dry run and module generation"
+	@echo "  rename-validate             Verify this project was fully renamed from the template"
 	@echo "  localization-check          Validate every translated Android resource"
 	@echo "  localization-report         Report locale coverage (LOCALE, FORMAT)"
 	@echo "  secrets-check               Reject tracked credentials and sensitive files"
@@ -82,6 +84,9 @@ docs-check:
 
 template-check:
 	bash scripts/check-template-tools.sh
+
+rename-validate:
+	bash scripts/validate-rename.sh
 
 localization-check:
 	python3 -m unittest discover -s scripts/tests -p 'test_localization.py'

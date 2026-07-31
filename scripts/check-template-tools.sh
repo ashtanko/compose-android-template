@@ -134,8 +134,13 @@ import sys
 
 root = pathlib.Path(sys.argv[1])
 unexpected = sys.argv[2]
+# validate-rename.py deliberately keeps the pristine template identity as
+# anchors to compare against, so it is exempt from the stale-value scan.
+exempt_relative_paths = {pathlib.Path("scripts/validate-rename.py")}
 for path in sorted(item for item in root.rglob("*") if item.is_file()):
     if any(part in {".gradle", ".kotlin", "build"} for part in path.parts):
+        continue
+    if path.relative_to(root) in exempt_relative_paths:
         continue
     try:
         text = path.read_text(encoding="utf-8")
@@ -309,6 +314,11 @@ check_rename_end_to_end() {
 
     (
         cd "$fixture_root"
+        bash scripts/validate-rename.sh --verbose >/dev/null
+    ) || fail "validate-rename.sh rejected a fully renamed project"
+
+    (
+        cd "$fixture_root"
         bash scripts/rename-template.sh \
             --package com.example.second \
             --name "Second Project" \
@@ -398,6 +408,17 @@ check_renamed_module_generation() {
         1
 }
 
+check_validate_rejects_template() {
+    local fixture_root="$1"
+
+    if (
+        cd "$fixture_root"
+        bash scripts/validate-rename.sh >/dev/null 2>&1
+    ); then
+        fail "validate-rename.sh accepted an un-renamed template"
+    fi
+}
+
 check_invalid_inputs() {
     if bash "$TEMPLATE_TOOLS_ROOT/scripts/rename-template.sh" \
         --package com.example.invalid \
@@ -464,6 +485,7 @@ mkdir -p "$fixture_root"
 copy_repository_fixture "$fixture_root"
 
 check_invalid_inputs
+check_validate_rejects_template "$fixture_root"
 check_collision_preflight "$fixture_root"
 check_rename_end_to_end \
     "$fixture_root" \
