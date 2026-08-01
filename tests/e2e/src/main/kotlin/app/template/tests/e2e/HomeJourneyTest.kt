@@ -22,6 +22,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.template.home.MainActivity
@@ -39,10 +40,14 @@ public class HomeJourneyTest {
     public fun userCalculatesFactorialAndInputSurvivesRecreation() {
         composeRule.onNodeWithText("Factorial input").performTextInput("5")
         composeRule.onNodeWithText("Calculate factorial").performClick()
-        composeRule.onNodeWithText("5! = 120").assertIsDisplayed()
+        composeRule.onNodeWithText("5! = 120")
+            .performScrollTo()
+            .assertIsDisplayed()
 
         composeRule.activityRule.scenario.recreate()
 
-        composeRule.onNode(hasSetTextAction() and hasText("5")).assertIsDisplayed()
+        composeRule.onNode(hasSetTextAction() and hasText("5"))
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 }
