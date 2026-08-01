@@ -32,6 +32,7 @@ This directory contains shared, vendor-neutral context for coding agents. [`../A
 | Components, intents, permissions, secrets, data, or CI trust | [`reference/security.md`](reference/security.md) | The affected manifests and build files |
 | Startup, runtime, Compose, size, database, or network performance | [`reference/performance.md`](reference/performance.md) | A focused performance skill and [`benchmarks/AGENTS.md`](../benchmarks/AGENTS.md) |
 | Creating a module | [`skills/add-android-module/SKILL.md`](skills/add-android-module/SKILL.md) | Architecture and testing references |
+| Delivering a complete feature | [`skills/deliver-android-feature/SKILL.md`](skills/deliver-android-feature/SKILL.md) | Focused Kotlin/Compose skills selected by the implementation |
 | Choosing validation | [`reference/commands.md`](reference/commands.md) | [`skills/verify-android-change/SKILL.md`](skills/verify-android-change/SKILL.md) |
 | Focused Kotlin or Compose work | The matching file under [`skills`](skills) | Architecture, testing, security, or performance only as needed |
 
@@ -75,6 +76,7 @@ Review the listed guidance whenever these areas change:
 | CI permissions, jobs, or verification tasks | Commands, security, decisions, and the pull-request template |
 | Navigation ownership, APIs, or libraries | Architecture, decisions, implementation guidance, and relevant Compose skills |
 | Test infrastructure, selection rules, screenshots, or baselines | Testing, commands, verification guidance, and relevant testing skills |
+| Feature lifecycle, evidence requirements, or end-to-end automation | Feature-delivery skill, architecture, testing, commands, decisions, and the pull-request template |
 
 ### Quarterly audit
 

@@ -7,6 +7,7 @@ project-wide constraints.
 
 - `app` is the Android application, Hilt entry point, Compose UI host, and Navigation 3 integration point.
 - `core/designsystem` contains reusable Compose components and shared visual tokens.
+- `core/testing` contains reusable test-only helpers such as the canonical screenshot preview matrix.
 - `core/navigation` contains shared navigation state and navigator behavior.
 - `library-kotlin` contains pure Kotlin/JVM logic and must not depend on Android APIs.
 - `library-android` contains reusable Android-specific code and resources.
@@ -17,6 +18,8 @@ project-wide constraints.
   and data-layer Hilt bindings.
 - `feature/posts/presentation` owns the posts ViewModel, sealed UI state, route, and Compose screen.
 - `benchmarks` contains macrobenchmarks and the baseline-profile generator targeting `app`.
+- `tests/e2e` is a standalone Android test module targeting `app` and owns a small set of stable
+  application journeys.
 - `build-logic` is an included build containing convention plugins; `buildSrc` contains shared build implementation.
 
 `settings.gradle.kts` is the authoritative module list. Inspect it before assuming a module exists because template users can add, remove, or rename modules.
@@ -93,6 +96,10 @@ API review first.
 - Put JVM tests in `src/test` and device/instrumentation tests in `src/androidTest`.
 - Keep pure business rules testable without Android dependencies.
 - Use screenshot tests for visual behavior when the affected module already owns screenshot infrastructure; update goldens only when the visual change is intentional.
+- Use `core/testing` only from test configurations; production modules must not acquire runtime
+  dependencies on test helpers.
+- Keep cross-feature application journeys in `tests/e2e`; keep feature behavior and platform
+  integration in the owning module.
 - Use `benchmarks` for performance and baseline-profile work rather than placing benchmark code in application source sets.
 
 Use [`testing.md`](testing.md) for test-layer selection and [`performance.md`](performance.md) for

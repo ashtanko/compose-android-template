@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deliver Android Feature"
+  short_description: "Implement and verify a complete Android feature"
+  default_prompt: "Use $deliver-android-feature to implement this feature from acceptance criteria through every required verification layer."

@@ -56,6 +56,7 @@ internal fun Project.configureJacoco(
                 "create${variant.name.replaceFirstChar(Char::uppercaseChar)}CombinedCoverageReport",
                 JacocoReport::class,
             ) {
+                dependsOn("test${variant.name.replaceFirstChar(Char::uppercaseChar)}UnitTest")
                 classDirectories.setFrom(
                     allJars,
                     allDirectories.map { dirs ->
@@ -80,21 +81,7 @@ internal fun Project.configureJacoco(
                     ),
                 )
 
-                executionData.setFrom(
-                    project.fileTree(
-                        layout.buildDirectory.dir(
-                            "outputs/unit_test_code_coverage/${variant.name}UnitTest",
-                        ),
-                    )
-                        .matching { include("**/*.exec") },
-
-                    project.fileTree(
-                        layout.buildDirectory.dir(
-                            "outputs/code_coverage/${variant.name}AndroidTest",
-                        ),
-                    )
-                        .matching { include("**/*.ec") },
-                )
+                executionData.setFrom(coverageExecutionData(variant.name))
             }
 
         variant.artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
@@ -108,6 +95,18 @@ internal fun Project.configureJacoco(
 
     configureUnitTestCoverage()
 }
+
+private fun Project.coverageExecutionData(variantName: String) = files(
+    fileTree(
+        layout.buildDirectory.dir("outputs/unit_test_code_coverage/${variantName}UnitTest"),
+    ).matching { include("**/*.exec") },
+    fileTree(
+        layout.buildDirectory.dir("outputs/code_coverage/${variantName}AndroidTest"),
+    ).matching { include("**/*.ec") },
+    fileTree(
+        layout.buildDirectory.dir("outputs/managed_device_code_coverage/$variantName"),
+    ).matching { include("**/*.ec") },
+)
 
 private fun Project.configureJacocoToolVersion() {
     configure<JacocoPluginExtension> {

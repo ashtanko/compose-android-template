@@ -16,29 +16,36 @@
 
 package app.template.feature.home
 
-import android.content.res.Configuration
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
+import app.template.core.testing.screenshot.ScreenSizePreviews
+import app.template.core.testing.screenshot.ScreenVariantPreviews
 import app.template.feature.home.ui.HomeScreen
 import app.template.feature.home.ui.model.FactorialResult
 import app.template.feature.home.ui.model.HomeUiState
 import com.android.tools.screenshot.PreviewTest
 
 @PreviewTest
-@Preview(
-    name = "Home calculated result",
-    widthDp = 400,
-    heightDp = 500,
-    locale = "en",
-    fontScale = 1f,
-    uiMode = Configuration.UI_MODE_NIGHT_NO,
-    showBackground = true,
-)
+@ScreenSizePreviews
 @Composable
-public fun HomeScreenCalculatedResultPreview() {
-    MaterialTheme(colorScheme = lightColorScheme()) {
+public fun HomeScreenSizePreview() {
+    HomeScreenCalculatedResult()
+}
+
+@PreviewTest
+@ScreenVariantPreviews
+@Composable
+public fun HomeScreenVariantPreview() {
+    HomeScreenCalculatedResult()
+}
+
+@Composable
+private fun HomeScreenCalculatedResult() {
+    val colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
+    MaterialTheme(colorScheme = colorScheme) {
         HomeScreen(
             state = HomeUiState(
                 input = "5",

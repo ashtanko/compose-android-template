@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 plugins {
-    alias(libs.plugins.androidlab.android.feature)
+    alias(libs.plugins.androidlab.android.library)
     alias(libs.plugins.androidlab.android.library.jacoco)
     alias(libs.plugins.androidlab.android.junit5)
+    alias(libs.plugins.androidlab.android.room)
     alias(libs.plugins.androidlab.kotlin.explicit.visibility)
 }
 
 android {
     namespace = "app.template.feature.database"
+}
+
+dependencies {
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.ext)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.truth)
 }

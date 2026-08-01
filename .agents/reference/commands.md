@@ -13,14 +13,16 @@ Run commands from the repository root with the Gradle wrapper. JDK 21 is require
 | Release signing configuration | `./gradlew :app:validateReleaseSigningConfiguration` |
 | Shell script | `bash -n path/to/script.sh` plus a safe dry run when supported |
 | Pure Kotlin module | `./gradlew :module:test` |
+| JVM integration | `./gradlew :module:integrationTest` |
 | Android module | `./gradlew :module:testDebugUnitTest` |
 | App unit behavior | `./gradlew :app:testDebugUnitTest` |
 | Formatting | `./gradlew spotlessCheck` |
 | Static analysis | `./gradlew detekt` |
 | Compose-specific static analysis | `./gradlew detektCompose` |
 | Android lint | `./gradlew lint` or `./gradlew :module:lintDebug` |
-| Screenshot verification | `./gradlew validateDebugScreenshotTest` and/or `./gradlew verifyRoborazziDebug` |
-| Instrumentation | `./gradlew :app:connectedDebugAndroidTest` with a device or emulator available |
+| Screenshot verification | `./gradlew validateDebugScreenshotTest` |
+| One module's instrumentation | `./gradlew :module:connectedDebugAndroidTest` with a device or emulator available |
+| Project managed-device suite | `make device-test-ci` |
 | Macrobenchmark | `./gradlew :benchmarks:connectedBenchmarkReleaseAndroidTest` on a stable physical device |
 | Baseline profile generation | `./gradlew :app:generateBaselineProfile` using the declared managed device |
 
@@ -57,14 +59,20 @@ make verify
 
 It validates documentation, template tools, localization resources, and tracked files for secrets;
 checks build logic;
-assembles debug artifacts; and runs unit tests, lint, Detekt, Spotless, Dependency Guard, Compose
-screenshot validation, and Roborazzi verification without requiring release signing. The host-side
+assembles debug artifacts; and runs unit and JVM integration tests, coverage reporting and
+verification, lint, Detekt, Spotless, Dependency Guard, and Compose screenshot validation without requiring release signing. The host-side
 pull-request job invokes this exact target; managed-device tests remain a separate
 environment-dependent CI job.
 
-Routine verification never records baselines. Use `make screenshot-record`,
-`make roborazzi-record`, or `make dependency-guard-baseline` only when the corresponding change is
+Routine verification never records baselines. Use `make screenshot-record` or
+`make dependency-guard-baseline` only when the corresponding change is
 intentional, then review every generated diff.
+
+`make device-test-ci` runs every module's debug instrumentation tests and `tests/e2e` journeys on
+the managed phone and tablet group used by CI. `make device-test-all` expands to every declared
+managed device. These tasks are intentionally separate from the host contract because they require
+Android system images and virtualization. Run `make coverage` after the device suite when a local
+combined Android unit-and-instrumentation coverage report is required; CI does this automatically.
 
 ## Release build
 

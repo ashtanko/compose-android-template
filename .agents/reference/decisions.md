@@ -274,6 +274,37 @@ review.
 **Review when:** False-positive or miss data justifies adopting a dedicated scanner, GitHub changes
 Secret Protection availability, or the repository introduces legitimate private-key test fixtures.
 
+### AD-011: Complete features use layered executable evidence
+
+**Status:** Accepted
+
+**Context:** Having test libraries available does not guarantee that a feature is verified. Unit,
+UI, screenshot, Android integration, and end-to-end tests can drift into the wrong source sets or
+remain outside the commands run locally and in pull requests.
+
+**Decision:** Feature delivery starts from testable acceptance criteria and maps each behavior to
+the lowest reliable layer. Kotlin/JVM modules provide `src/integrationTest` and enforce line
+coverage for business logic. Plain Compose behavior runs host-side with Robolectric. Visual
+contracts use the shared screenshot size/theme/font matrix. Room, Hilt, navigation, lifecycle, and
+platform contracts run on managed devices. A standalone `tests/e2e` module owns a small number of
+stable application journeys. `make verify` is the complete host gate; `make device-test-ci` is the
+complete managed-device gate. The `deliver-android-feature` skill makes this evidence mapping the
+agent workflow.
+
+**Alternatives:** Putting every assertion in application instrumentation tests was rejected because
+it is slow and obscures ownership. Running UI behavior only on devices was rejected because plain
+state-driven Compose tests do not need platform fidelity. Keeping unused competing screenshot or
+coverage tools was rejected because no-op verification creates false confidence.
+
+**Consequences:** Every feature has traceable evidence and the same aggregate tasks run locally and
+in CI. Screenshot references and device time grow deliberately, so visual states and end-to-end
+journeys must remain representative rather than exhaustive. New Android modules automatically join
+the managed-device matrix through conventions.
+
+**Review when:** Host Compose tests are less reliable than managed-device equivalents, CI device
+cost materially exceeds its value, or a new test platform provides the same fidelity with a simpler
+contract.
+
 ## New decision template
 
 ```markdown

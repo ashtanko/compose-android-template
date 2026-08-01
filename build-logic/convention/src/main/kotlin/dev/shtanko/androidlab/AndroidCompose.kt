@@ -22,8 +22,13 @@ internal fun Project.configureAndroidCompose(
             val bom = libs.findLibrary("androidx-compose-bom").get()
             "implementation"(platform(bom))
             "androidTestImplementation"(platform(bom))
+            "testImplementation"(platform(bom))
             "implementation"(libs.findLibrary("androidx-compose-ui-tooling-preview").get())
             "debugImplementation"(libs.findLibrary("androidx-compose-ui-tooling").get())
+            "debugImplementation"(libs.findLibrary("androidx-ui-test-manifest").get())
+            "testImplementation"(libs.findLibrary("androidx-ui-test-junit4").get())
+            "testImplementation"(libs.findLibrary("androidx-activity-compose").get())
+            "testImplementation"(libs.findLibrary("robolectric-robolectric").get())
         }
     }
 

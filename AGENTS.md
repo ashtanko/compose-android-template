@@ -37,4 +37,5 @@ This file is the canonical entry point for coding agents working in this reposit
 - Android security review: [`.agents/reference/security.md`](.agents/reference/security.md)
 - Performance measurement: [`.agents/reference/performance.md`](.agents/reference/performance.md)
 - Creating a module: [`.agents/skills/add-android-module/SKILL.md`](.agents/skills/add-android-module/SKILL.md)
+- Delivering a complete feature: [`.agents/skills/deliver-android-feature/SKILL.md`](.agents/skills/deliver-android-feature/SKILL.md)
 - Selecting checks for a change: [`.agents/skills/verify-android-change/SKILL.md`](.agents/skills/verify-android-change/SKILL.md)

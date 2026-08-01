@@ -12,10 +12,12 @@ integration is the behavior under test.
 | --- | --- |
 | Pure calculation, validation, mapping, or domain rule | Kotlin/JVM unit test |
 | Repository or state-holder behavior | JVM unit test with fakes |
+| Retrofit serialization or multi-class data boundary | JVM integration test in `src/integrationTest` |
 | Coroutine scheduling, cancellation, or `Flow` emissions | `runTest` and Turbine or direct collection |
 | Compose content, semantics, enabled state, or callback wiring | Plain state-driven Compose test |
 | Layout, typography, clipping, color, elevation, or visual focus | Screenshot test |
 | Navigation, lifecycle, manifest, DI, or platform integration | Instrumentation or managed-device test |
+| Stable cross-feature application journey | Standalone managed-device test in `tests/e2e` |
 | Startup, frame timing, or baseline-profile coverage | Macrobenchmark in `benchmarks` |
 
 Use the command matrix in [`commands.md`](commands.md) to select the narrowest task.
@@ -24,7 +26,8 @@ Use the command matrix in [`commands.md`](commands.md) to select the narrowest t
 
 - Put platform-independent tests in `src/test`; keep their production code free of Android APIs.
 - Put tests requiring Android framework behavior in the owning Android module.
-- Put end-to-end navigation and application wiring tests in `app`.
+- Put navigation and application wiring integration tests in `app`; put stable cross-feature user
+  journeys in `tests/e2e`.
 - Put design-system interaction and semantics tests beside the design-system component.
 - Keep macrobenchmarks and baseline-profile generation in `benchmarks`.
 - Do not move logic to an Android test merely because the current production class is difficult to
@@ -73,15 +76,21 @@ Compose test patterns.
 - Navigation state:
   [`NavigatorTest.kt`](../../core/navigation/src/test/kotlin/app/template/core/navigation/NavigatorTest.kt)
 - Design-system semantics and callbacks:
-  [`TemplateComponentsTest.kt`](../../core/designsystem/src/androidTest/kotlin/app/template/core/designsystem/component/TemplateComponentsTest.kt)
+  [`TemplateComponentsTest.kt`](../../core/designsystem/src/test/kotlin/app/template/core/designsystem/component/TemplateComponentsTest.kt)
 - State-holder behavior:
   [`PostsViewModelTest.kt`](../../feature/posts/presentation/src/test/kotlin/app/template/feature/posts/presentation/ui/PostsViewModelTest.kt)
 - Plain feature UI behavior:
-  [`PostsScreenTest.kt`](../../feature/posts/presentation/src/androidTest/kotlin/app/template/feature/posts/presentation/ui/PostsScreenTest.kt)
+  [`PostsScreenTest.kt`](../../feature/posts/presentation/src/test/kotlin/app/template/feature/posts/presentation/ui/PostsScreenTest.kt)
 - Deterministic feature screenshot:
   [`HomeScreenScreenshotTest.kt`](../../feature/home/src/screenshotTest/kotlin/app/template/feature/home/HomeScreenScreenshotTest.kt)
+- Retrofit integration:
+  [`RetrofitPostsRemoteDataSourceIntegrationTest.kt`](../../feature/posts/data/src/integrationTest/kotlin/app/template/feature/posts/data/remote/RetrofitPostsRemoteDataSourceIntegrationTest.kt)
+- SQLite integration:
+  [`TemplateDatabaseTest.kt`](../../feature/database/src/androidTest/kotlin/app/template/feature/database/TemplateDatabaseTest.kt)
 - Application navigation integration:
   [`MainNavigationTest.kt`](../../app/src/androidTest/kotlin/app/template/MainNavigationTest.kt)
+- End-to-end application journey:
+  [`HomeJourneyTest.kt`](../../tests/e2e/src/main/kotlin/app/template/tests/e2e/HomeJourneyTest.kt)
 - Startup measurement:
   [`ExampleStartupBenchmark.kt`](../../benchmarks/src/main/java/dev/shtanko/template/benchmarks/ExampleStartupBenchmark.kt)
 
@@ -106,6 +115,10 @@ verification task pass.
 Compose screenshot previews live in `src/screenshotTest`; approved images live in
 `src/screenshotTestDebug/reference`. `make verify` and `make screenshot-test` compare against those
 images. Only `make screenshot-record` updates them, and every update requires visual review.
+
+Screen-level screenshots use the nine compact/medium/expanded width and height combinations from
+`core/testing` plus dark-theme and 1.5 font-scale variants. Visually distinct loading, content,
+empty, and error states receive deterministic compact references.
 
 ## Definition of done
 

@@ -107,14 +107,11 @@ plugins {
     alias(libs.plugins.androidlab.android.application.jacoco)
     alias(libs.plugins.androidlab.android.compose.screenshot)
     alias(libs.plugins.androidlab.android.junit5)
-    alias(libs.plugins.androidlab.android.roborazzi)
     alias(libs.plugins.androidlab.android.room)
     alias(libs.plugins.androidlab.hilt)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.serialization)
-    alias(libs.plugins.kover)
     alias(libs.plugins.sonarqube)
-    jacoco
 }
 
 android {
@@ -124,6 +121,7 @@ android {
         applicationId = "dev.shtanko.template"
         versionCode = 1
         versionName = "1.0"
+        testInstrumentationRunner = "app.template.HiltTestRunner"
     }
 
     androidResources {
@@ -211,33 +209,6 @@ tasks {
         )
     }
 
-    register<JacocoReport>("testCoverage") {
-        dependsOn("test")
-        group = "Reporting"
-        description = "Generate Jacoco coverage reports"
-
-        val excludedFiles = mutableSetOf("**/*Test*.*")
-        val projectBuildDirectory = project.layout.buildDirectory.get().asFile.absoluteFile
-        val sourceDirs = fileTree(
-            "$projectBuildDirectory/classes/kotlin/",
-        ) {
-            exclude(excludedFiles)
-        }
-        val coverageDirs = listOf(
-            "src/main/java",
-            "src/main/kotlin",
-        )
-        classDirectories.setFrom(files(sourceDirs))
-        additionalClassDirs.setFrom(files(coverageDirs))
-        executionData.setFrom(
-            files("$projectBuildDirectory/jacoco/test.exec"),
-        )
-
-        reports {
-            listOf(xml, html).map { it.required }.forEach { it.set(true) }
-            xml.outputLocation.set(file("$projectBuildDirectory/reports/jacoco/report.xml"))
-        }
-    }
 }
 
 dependencies {
@@ -268,8 +239,10 @@ dependencies {
     implementation(libs.androidx.compose.icons.extended)
 
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(project(":feature:posts:domain"))
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.truth)
     testImplementation(libs.androidx.ui.test.junit4)
 
     debugImplementation(libs.androidx.ui.tooling)
@@ -301,6 +274,7 @@ dependencies {
     kspTest(libs.hilt.compiler)
     kspAndroidTest(libs.hilt.compiler)
     testImplementation(libs.hilt.android.testing)
+    androidTestImplementation(libs.hilt.android.testing)
 
     implementation(libs.accompanist.adaptive)
     implementation(libs.accompanist.permissions)
@@ -310,11 +284,8 @@ dependencies {
 
     implementation(libs.room.paging)
 
-    implementation(libs.jacoco.core)
-
     implementation(libs.square.okhttp)
     implementation(libs.square.okhttp.logging)
-    implementation(libs.square.okhttp.mockwebserver)
     implementation(libs.square.retrofit.core)
     implementation(libs.skydoves.sandwich.retrofit)
     implementation(libs.square.retrofit.kotlin.serialization)

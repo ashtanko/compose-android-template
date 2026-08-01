@@ -119,7 +119,7 @@ rules, and the complete posts demo walkthrough.
 ├── .agents/                # Shared coding-agent references, skills, and hooks
 ├── AGENTS.md               # Canonical coding-agent instructions
 ├── app/                    # Main Android application (Compose + Navigation 3)
-├── core/                   # Shared application foundations, such as navigation
+├── core/                   # Shared production foundations and test utilities
 ├── feature/                # Feature-focused modules
 │   └── posts/              # Clean Architecture demo
 │       ├── domain/         # model/, repository/, result/, usecase/
@@ -128,6 +128,7 @@ rules, and the complete posts demo walkthrough.
 ├── library-android/        # Android-specific library module
 ├── library-kotlin/         # Pure Kotlin library module (business logic)
 ├── benchmarks/             # Macrobenchmark + baseline profile generator
+├── tests/e2e/              # Managed-device application journeys
 ├── build-logic/            # Shared Gradle convention plugins (includeBuild)
 ├── buildSrc/               # Project-wide build configuration
 ├── gradle/                 # Version catalog (libs.versions.toml)
@@ -136,7 +137,7 @@ rules, and the complete posts demo walkthrough.
 └── scripts/                # Helper scripts (e.g. rename-template.sh)
 ```
 
-Convention plugins under `build-logic/convention` (e.g. `androidlab.android.application.compose`, `androidlab.android.library.compose`, `androidlab.android.feature`, `androidlab.android.junit5`, `androidlab.android.compose.screenshot`, `androidlab.android.roborazzi`, `androidlab.android.benchmark`, `androidlab.hilt`, `androidlab.android.room`, `androidlab.android.lint`, and the selective `androidlab.kotlin.explicit-visibility`) keep per-module `build.gradle.kts` files small and consistent.
+Convention plugins under `build-logic/convention` (e.g. `androidlab.android.application.compose`, `androidlab.android.library.compose`, `androidlab.android.feature`, `androidlab.android.junit5`, `androidlab.android.compose.screenshot`, `androidlab.android.benchmark`, `androidlab.hilt`, `androidlab.android.room`, `androidlab.android.lint`, and the selective `androidlab.kotlin.explicit-visibility`) keep per-module `build.gradle.kts` files small and consistent.
 
 Kotlin packages mirror these directories. Single-module UI features use `ui`, `ui/model`, and
 `ui/components`; reusable components shared by unrelated features live in `core/designsystem`.
@@ -174,14 +175,15 @@ those values; the summary below intentionally avoids copying fast-changing versi
 
 ### Testing & Quality
 - **JUnit 5** — modern unit testing.
-- **Roborazzi** — screenshot / golden-image testing.
+- **Compose Preview Screenshot Testing** — host-side adaptive visual regression testing.
 - **Compose Guard** — Compose compiler stability metrics.
-- **Kover + JaCoCo** — coverage reports.
+- **JaCoCo** — coverage reports and JVM business-logic thresholds.
 - **Detekt + Compose Rules + KtLint + Spotless** — Kotlin and Compose-specific static analysis,
   selective explicit-visibility enforcement for feature/layer modules, and formatting.
 - **Dependency Guard** — transitive dependency change detection.
 - **MockK + Mockito + Turbine + Truth + AssertJ** — testing toolkit.
-- **Robolectric** & **Espresso** — JVM- and device-side instrumentation.
+- **Robolectric, Compose Test, AndroidX Test, and UI Automator** — local UI, integration, and
+  end-to-end testing.
 
 ## 📱 Features
 
@@ -190,7 +192,7 @@ those values; the summary below intentionally avoids copying fast-changing versi
 - **Adaptive Layouts** — foldables and tablets via Material 3 Adaptive.
 - **Edge-to-Edge** — modern UI implementation by default.
 - **Baseline Profiles** — generated via `:benchmarks` for faster startup and smoother frames.
-- **Screenshot Testing** — automated UI regression with Roborazzi + the Compose screenshot plugin.
+- **Screenshot Testing** — automated adaptive UI regression with the Compose screenshot plugin.
 - **Dependency Guard** — locks transitive dependency surface across builds.
 - **Signing-ready** — local builds resolve keystore credentials from an untracked `key.properties` file, while CI reads env vars (`SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS`, `SIGNING_KEY_PASSWORD`, `SIGNING_KEYSTORE_PATH`); a manually approved GitHub Actions workflow restores an upload key only on its ephemeral runner and retains the signed AAB plus R8 mapping.
 - **Localization-ready** — English fallback resources, European Portuguese translations,
@@ -205,19 +207,19 @@ validation matrix.
 # Run unit tests (JUnit 5)
 ./gradlew test
 
+# Run deterministic JVM integration tests
+./gradlew integrationTest
+
 # Compose Preview screenshot tests
 ./gradlew validateDebugScreenshotTest  # compare against approved references
 ./gradlew updateDebugScreenshotTest    # intentionally update references
 
-# Screenshot tests (Roborazzi)
-./gradlew recordRoborazziDebug   # record new baselines
-./gradlew verifyRoborazziDebug   # compare against baselines
+# Coverage reports and JVM business-logic gate
+./gradlew coverageReport
+./gradlew coverageVerification
 
-# Coverage
-./gradlew :app:koverHtmlReport
-
-# Instrumentation tests
-./gradlew :app:connectedDebugAndroidTest
+# Instrumentation and end-to-end tests on the managed CI phone/tablet group
+./gradlew ciManagedDeviceTest
 
 # Macrobenchmarks & baseline profile
 # Run timing measurements on a stable, connected physical device.
@@ -237,15 +239,17 @@ The `Makefile` wraps common Gradle invocations:
 - `make secrets-check` — reject tracked credentials and sensitive release files.
 - `make build` / `make install` — assemble or install the debug app.
 - `make test` — run unit tests.
+- `make integration-test` — run JVM integration tests.
 - `make check` — run lint, Detekt, Spotless, and Dependency Guard checks.
 - `make verify` — run the canonical non-mutating host checks used by pull requests.
 - `make template-check` — validate the rename dry run and generated module structure.
 - `make rename-validate` — verify this project was fully renamed away from the template.
 - `make format-check` / `make format` — check or apply formatting.
 - `make device-test` — run debug instrumentation tests on connected devices.
+- `make device-test-ci` / `make device-test-all` — run every instrumentation and end-to-end test
+  on the CI or complete managed-device matrix.
 - `make screenshot-test` / `make screenshot-record` — verify or update Compose screenshot baselines.
-- `make roborazzi-test` / `make roborazzi-record` — verify or update Roborazzi baselines.
-- `make coverage` — generate the app Kover HTML coverage report.
+- `make coverage` / `make coverage-verify` — generate coverage reports or enforce JVM thresholds.
 - `make dependency-guard` / `make dependency-guard-baseline` — verify or update dependency baselines.
 - `make benchmark` — run `benchmarkRelease` macrobenchmarks.
 - `make baseline-profile` — generate the app baseline profile.
@@ -270,7 +274,9 @@ Coding agents should start with [`AGENTS.md`](AGENTS.md). The [`.agents` workspa
 contains progressively loaded architecture, decision, testing, security, performance, and validation
 references, concrete Android/Kotlin implementation rules, reusable task skills, and an optional
 pre-commit hook. `CLAUDE.md` remains a thin Claude Code adapter so repository guidance has one
-canonical source.
+canonical source. Complete features follow the
+[`deliver-android-feature`](.agents/skills/deliver-android-feature/SKILL.md) workflow so acceptance
+criteria, implementation, every required test layer, and CI evidence remain traceable.
 
 ## 🤝 Contributing
 

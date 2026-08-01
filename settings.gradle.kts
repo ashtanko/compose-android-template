@@ -31,9 +31,14 @@ include(":library-kotlin")
 include(":library-android")
 include(":benchmarks")
 
+// region tests
+include(":tests:e2e")
+// endregion
+
 // region core
 include(":core:navigation")
 include(":core:designsystem")
+include(":core:testing")
 // endregion
 
 // region feature
