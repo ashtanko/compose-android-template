@@ -27,7 +27,6 @@ internal fun configureGradleManagedDevices(
                         device = deviceConfig.device
                         apiLevel = deviceConfig.apiLevel
                         systemImageSource = deviceConfig.systemImageSource
-                        testedAbi = TESTED_ABI
                     }
                 }
             }
@@ -43,7 +42,6 @@ internal fun configureGradleManagedDevices(
 }
 
 private const val API_LEVEL_35 = 35
-private const val TESTED_ABI = "x86_64"
 
 private data class DeviceConfig(
     val device: String,
