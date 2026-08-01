@@ -86,7 +86,7 @@ Compose test patterns.
 - Retrofit integration:
   [`RetrofitPostsRemoteDataSourceIntegrationTest.kt`](../../feature/posts/data/src/integrationTest/kotlin/app/template/feature/posts/data/remote/RetrofitPostsRemoteDataSourceIntegrationTest.kt)
 - SQLite integration:
-  [`TemplateDatabaseTest.kt`](../../feature/database/src/androidTest/kotlin/app/template/feature/database/TemplateDatabaseTest.kt)
+  [`TemplateDatabaseTest.kt`](../../core/database/src/androidTest/kotlin/app/template/core/database/TemplateDatabaseTest.kt)
 - Application navigation integration:
   [`MainNavigationTest.kt`](../../app/src/androidTest/kotlin/app/template/MainNavigationTest.kt)
 - End-to-end application journey:

@@ -42,7 +42,7 @@ include(":core:testing")
 // endregion
 
 // region feature
-include(":feature:database")
+include(":core:database")
 include(":feature:home")
 include(":feature:posts:domain")
 include(":feature:posts:data")
