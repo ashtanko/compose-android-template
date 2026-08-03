@@ -112,6 +112,11 @@ plugins {
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.serialization)
     alias(libs.plugins.sonarqube)
+
+    // Uncomment the below plugins to enable Firebase and Play Publisher deployments
+    // alias(libs.plugins.google.services)
+    // alias(libs.plugins.firebase.crashlytics)
+    // alias(libs.plugins.play.publisher)
 }
 
 android {
@@ -217,6 +222,11 @@ dependencies {
     implementation(project(":feature:posts:data"))
     implementation(project(":feature:posts:presentation"))
 
+    // Firebase (Uncomment when you have added google-services.json)
+    // implementation(platform(libs.firebase.bom))
+    // implementation(libs.firebase.analytics)
+    // implementation(libs.firebase.crashlytics)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -305,3 +315,10 @@ dependencies {
 dependencyGuard {
     configuration("releaseRuntimeClasspath")
 }
+
+// Uncomment and configure to enable automated Google Play deployments
+// play {
+//     serviceAccountCredentials.set(file("serviceAccountCredentials.json"))
+//     track.set("internal")
+//     defaultToAppBundles.set(true)
+// }

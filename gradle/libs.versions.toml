@@ -93,6 +93,11 @@ minSdk = "24"
 benchmarkMinSdk = "28"
 targetSdk = "37"
 
+firebaseBom = "33.1.2"
+googleServices = "4.4.2"
+firebaseCrashlyticsPlugin = "3.0.2"
+playPublisher = "3.9.0"
+
 [bundles]
 androidx-compose-ui-test = ["androidx-compose-ui-test", "androidx-compose-ui-testManifest"]
 
@@ -279,6 +284,9 @@ hilt-gradlePlugin = { group = "com.google.dagger", name = "hilt-android-gradle-p
 android-junit5-gradlePlugin = { group = "de.mannodermaus.gradle.plugins", name = "android-junit5", version.ref = "android-junit5-plugin" }
 screenshot-gradlePlugin = { group = "com.android.compose.screenshot", name = "screenshot-test-gradle-plugin", version.ref = "screenshot" }
 baselineprofile-gradlePlugin = { group = "androidx.benchmark", name = "benchmark-baseline-profile-gradle-plugin", version.ref = "androidxMacroBenchmark" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -323,3 +331,6 @@ androidlab-hilt = { id = "androidlab.hilt", version = "unspecified" }
 androidlab-jvm-library = { id = "androidlab.jvm.library", version = "unspecified" }
 androidlab-kotlin-explicit-visibility = { id = "androidlab.kotlin.explicit-visibility", version = "unspecified" }
 android-junit5 = { id = "de.mannodermaus.android-junit5", version.ref = "android-junit5-plugin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
+play-publisher = { id = "com.github.triplet.play", version.ref = "playPublisher" }

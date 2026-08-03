@@ -16,14 +16,17 @@
 
 package app.template.tests.e2e
 
+import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.waitUntilExactlyOneExists
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.template.home.MainActivity
 import org.junit.Rule
@@ -36,10 +39,14 @@ public class HomeJourneyTest {
     @get:Rule
     public val composeRule = createAndroidComposeRule<MainActivity>()
 
+    @OptIn(ExperimentalTestApi::class)
     @Test
     public fun userCalculatesFactorialAndInputSurvivesRecreation() {
         composeRule.onNodeWithText("Factorial input").performTextInput("5")
+        composeRule.onNodeWithText("Factorial input").performImeAction()
         composeRule.onNodeWithText("Calculate factorial").performClick()
+
+        composeRule.waitUntilExactlyOneExists(hasText("5! = 120"))
         composeRule.onNodeWithText("5! = 120")
             .performScrollTo()
             .assertIsDisplayed()

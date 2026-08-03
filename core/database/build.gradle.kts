@@ -22,7 +22,7 @@ plugins {
 }
 
 android {
-    namespace = "app.template.feature.database"
+    namespace = "app.template.core.database"
 }
 
 dependencies {

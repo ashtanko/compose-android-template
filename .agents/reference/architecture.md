@@ -64,7 +64,7 @@ public signature or module boundary changes.
 Modules with meaningful feature or layer boundaries apply
 `androidlab.kotlin.explicit-visibility`. The initial enforcement scope is:
 
-- `feature/database`;
+- `core/database`;
 - `feature/home`;
 - `feature/posts/domain`;
 - `feature/posts/data`;

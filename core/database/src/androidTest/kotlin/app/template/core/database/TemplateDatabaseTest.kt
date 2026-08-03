@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package app.template.feature.database
+package app.template.core.database
 
 import android.content.Context
 import androidx.room.Room
