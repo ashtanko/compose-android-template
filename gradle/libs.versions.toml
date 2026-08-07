@@ -94,7 +94,7 @@ benchmarkMinSdk = "28"
 targetSdk = "37"
 
 firebaseBom = "34.17.0"
-googleServices = "4.4.2"
+googleServices = "4.5.0"
 firebaseCrashlyticsPlugin = "3.0.7"
 playPublisher = "3.9.0"
 
