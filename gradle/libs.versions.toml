@@ -22,7 +22,7 @@ mockito_kotlin = "5.4.0"                    # https://github.com/mockito/mockito
 mockk = "1.14.11"                            # https://mockk.io
 diktat = "2.0.0"                            # https://github.com/saveourtool/diktat
 turbine = "1.2.1"                           # https://github.com/cashapp/turbine/releases
-ksp = "2.3.10"                               # https://mvnrepository.com/artifact/com.google.devtools.ksp/symbol-processing-api
+ksp = "2.3.11"                               # https://mvnrepository.com/artifact/com.google.devtools.ksp/symbol-processing-api
 dependencyGuard = "0.5.0"                   # https://mvnrepository.com/artifact/com.dropbox.dependency-guard/dependency-guard
 immutable = "0.5.1"                         # https://github.com/Kotlin/kotlinx.collections.immutable
 hilt = "2.60.1"                             # https://mvnrepository.com/artifact/com.google.dagger/hilt-android
@@ -93,9 +93,9 @@ minSdk = "24"
 benchmarkMinSdk = "28"
 targetSdk = "37"
 
-firebaseBom = "33.16.0"
+firebaseBom = "34.17.0"
 googleServices = "4.4.2"
-firebaseCrashlyticsPlugin = "3.0.2"
+firebaseCrashlyticsPlugin = "3.0.7"
 playPublisher = "3.9.0"
 
 [bundles]
