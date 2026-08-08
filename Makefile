@@ -12,6 +12,9 @@ FORMAT ?= table
 	rename-validate \
 	localization-check \
 	localization-report \
+	localization-report-html \
+	localization-serve \
+	localization-web-build \
 	secrets-check \
 	build \
 	generate-release-key \
@@ -50,6 +53,9 @@ help:
 	@echo "  rename-validate             Verify this project was fully renamed from the template"
 	@echo "  localization-check          Validate every translated Android resource"
 	@echo "  localization-report         Report locale coverage (LOCALE, FORMAT)"
+	@echo "  localization-report-html    Write the localization status dashboard (HTML)"
+	@echo "  localization-serve          Run the local localization web wizard (dev only)"
+	@echo "  localization-web-build      Build the localization web wizard frontend"
 	@echo "  secrets-check               Reject tracked credentials and sensitive files"
 	@echo "  build                       Assemble debug artifacts"
 	@echo "  generate-release-key        Create an upload keystore and local signing file"
@@ -93,11 +99,21 @@ rename-validate:
 	bash scripts/validate-rename.sh
 
 localization-check:
-	python3 -m unittest discover -s scripts/tests -p 'test_localization.py'
-	python3 scripts/localization.py check
+	python3 -m unittest discover -s scripts/tests -p 'test_*.py'
+	PYTHONPATH=scripts python3 -m localization check
 
 localization-report:
-	python3 scripts/localization.py report --locale "$(LOCALE)" --format "$(FORMAT)"
+	PYTHONPATH=scripts python3 -m localization report --locale "$(LOCALE)" --format "$(FORMAT)"
+
+localization-report-html:
+	PYTHONPATH=scripts python3 -m localization report --format html \
+		--output build/reports/localization/index.html
+
+localization-serve:
+	PYTHONPATH=scripts python3 -m localization serve --host 127.0.0.1 --port 8080
+
+localization-web-build:
+	cd tools/localization-web && npm install && npm run build
 
 secrets-check:
 	bash scripts/check-secrets.sh

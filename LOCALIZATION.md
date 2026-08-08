@@ -41,11 +41,19 @@ Android's official guidance underpins these choices:
    files, malformed XML, missing or stale resources, empty values, incompatible
    string-array/plural shapes, and changed formatter argument indexes or types. Preview-only files
    remain free to use developer-facing sample text. Its unit tests run first.
+
+   Add `--warnings` to also surface non-fatal quality findings (truncation risk from large length
+   ratios, values identical to the source, and line-break or trailing-punctuation drift). Warnings
+   never change the exit code:
+
+   ```bash
+   PYTHONPATH=scripts python3 -m localization check --warnings
+   ```
 5. Produce a translator or reviewer catalog when needed:
 
    ```bash
    make localization-report LOCALE=pt-PT FORMAT=table
-   python3 scripts/localization.py report \
+   PYTHONPATH=scripts python3 -m localization report \
        --locale pt-PT \
        --format csv \
        --output /tmp/pt-PT-translations.csv
@@ -57,6 +65,86 @@ Android's official guidance underpins these choices:
 6. Have a native speaker review wording in context. Automated checks prove resource integrity, not
    linguistic quality.
 
+## Authoring commands
+
+The tool can scaffold and edit resources while preserving each file's license header, comments,
+element order, and indentation (only the targeted value changes):
+
+```bash
+# Scaffold a new locale across every owning module. --fill source (default) copies the
+# default text as a starting point; --fill empty leaves values blank so the gate lists them.
+PYTHONPATH=scripts python3 -m localization add-locale es --fill source
+
+# Add a new default string to one module.
+PYTHONPATH=scripts python3 -m localization add-string \
+    --module app --name navigation_back --text "Back"
+
+# Set one translation value (updates in place, or adds the key if missing).
+PYTHONPATH=scripts python3 -m localization set \
+    --locale pt-PT --module app --name navigation_back --text "Anterior"
+```
+
+Values are XML- and Android-escaped automatically. Adding a default string without translating it in
+existing locales is reported by `make localization-check`, which is the intended reminder to
+complete the translations.
+
+## Translation exchange and review
+
+Export a locale for a translation-management system and import the filled file back through the same
+minimal-diff writer:
+
+```bash
+# Export for a translator.
+PYTHONPATH=scripts python3 -m localization report --locale pt-PT --format xliff --output pt.xlf
+PYTHONPATH=scripts python3 -m localization report --locale pt-PT --format csv --output pt.csv
+
+# Import the returned file (format inferred from the extension).
+PYTHONPATH=scripts python3 -m localization import --locale pt-PT --input pt.xlf
+```
+
+String resources round-trip fully; plural and array units are reported as unsupported on import
+rather than written incorrectly. List default resources that no Kotlin (`R.string`/`R.plurals`/
+`R.array`) or XML (`@string`/`@plurals`/`@array`) reference uses:
+
+```bash
+PYTHONPATH=scripts python3 -m localization orphans
+```
+
+Orphan detection is advisory: resources resolved dynamically by name cannot be seen, so review
+before removing anything.
+
+## Status dashboard
+
+`make localization-report-html` writes a self-contained HTML dashboard to
+`build/reports/localization/index.html` covering every discovered locale: overall and per-locale
+coverage, a locale x module coverage heatmap, the errors from the resource gate, the quality
+warnings, and a searchable table of every translatable value. The page inlines its CSS and
+JavaScript, so it needs no external assets.
+
+Continuous integration runs the same target and uploads the result as the `localization-report`
+build artifact on every run, including runs where `make verify` fails, so the localization status is
+always visible from the workflow summary. The dashboard is a dev and CI reporting tool only; it is
+never packaged into the app.
+
+## Web wizard
+
+For interactive review and editing, a development-only web wizard reuses the same core. It shows
+coverage, errors, warnings, and unused keys, and edits translations inline through the minimal-diff
+writer. It is never packaged into the app and never runs in CI.
+
+```bash
+# Backend (from the repository root):
+python3 -m pip install -r tools/localization-web/requirements.txt
+make localization-serve            # FastAPI on http://localhost:8080
+
+# Frontend (separate terminal):
+cd tools/localization-web && npm install && npm run dev   # http://localhost:5173
+```
+
+Building the frontend once (`make localization-web-build`) lets the backend serve the UI and API
+together on a single port. See [`tools/localization-web/README.md`](tools/localization-web/README.md)
+for details.
+
 When adding another locale, create at least one matching locale directory, translate every
 localizable default resource across all owning modules, and run `make localization-check`. The
 generated locale configuration picks it up automatically.
@@ -66,6 +154,7 @@ generated locale configuration picks it up automatically.
 | Layer | What it catches | Command or action |
 | --- | --- | --- |
 | Repository resource gate | Missing, stale, empty, or format-incompatible translations | `make localization-check` |
+| Status dashboard | Coverage gaps and quality warnings across every locale at a glance | `make localization-report-html` |
 | Android resource tooling | Invalid qualifiers, resource linking, lint localization issues | `./gradlew assembleDebug lint` |
 | Expansion pseudolocale | Hardcoded text, truncation, fixed-width layouts, concatenated fragments | Run debug with `English (XA)` |
 | RTL pseudolocale | Absolute left/right assumptions and bidi/layout issues | Run debug with `AR (XB)` |
