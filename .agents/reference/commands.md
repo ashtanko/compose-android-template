@@ -33,8 +33,17 @@ the canonical agent entrypoint, and version-policy consistency without starting 
 
 `make localization-check` runs the localization tool's unit tests, discovers locale-specific
 resources in every Android module, and checks common production Compose literals, translation
-completeness, and formatter compatibility. Use
-`make localization-report LOCALE=pt-PT FORMAT=csv` to produce a review catalog.
+completeness, and formatter compatibility. Add `--warnings` to the underlying
+`python3 -m localization check` for non-fatal quality findings. Use
+`make localization-report LOCALE=pt-PT FORMAT=csv` to produce a review catalog, or
+`make localization-report-html` to write the self-contained status dashboard to
+`build/reports/localization/index.html` (CI uploads it as the `localization-report` artifact).
+The tool can also author resources with `python3 -m localization add-locale <tag>`,
+`add-string`, and `set`, which preserve each file's header, comments, order, and indentation;
+exchange translations with `report --format xliff` and `import`; and list unused default keys with
+`orphans`. `make localization-serve` starts the development-only web wizard (FastAPI backend under
+`scripts/localization/web.py`, React frontend under `tools/localization-web/`); it needs the web
+extras in `tools/localization-web/requirements.txt` and is never part of CI or the app.
 
 `make secrets-check` scans every file in the Git index for forbidden credential paths, private-key
 material, common high-confidence token formats, and hardcoded Android signing passwords. The

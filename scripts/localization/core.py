@@ -14,20 +14,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""Check Android translations and export translator-friendly locale reports."""
+"""Parse and validate Android text resources across every module.
+
+This module holds the parsing, locale, and validation core shared by the
+command-line interface, the HTML report generator, and the local web wizard.
+It has no output-formatting or command-line concerns of its own.
+"""
 
 from __future__ import annotations
 
-import argparse
-import csv
-import json
 import os
 import re
-import sys
 from collections import Counter
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Sequence, TextIO
+from typing import Sequence
 from xml.etree import ElementTree
 
 
@@ -646,139 +647,3 @@ def build_report(root: Path, locale: str) -> tuple[list[ReportRow], list[Issue]]
                     ),
                 )
     return rows, issues
-
-
-def write_report(rows: Sequence[ReportRow], output_format: str, stream: TextIO) -> None:
-    """Write report rows in a human-readable or machine-readable format."""
-
-    if output_format == "json":
-        json.dump(
-            [asdict(row) for row in rows],
-            stream,
-            ensure_ascii=False,
-            indent=2,
-        )
-        stream.write("\n")
-        return
-    if output_format == "csv":
-        field_names = list(ReportRow.__dataclass_fields__)
-        writer = csv.DictWriter(stream, fieldnames=field_names)
-        writer.writeheader()
-        writer.writerows(asdict(row) for row in rows)
-        return
-
-    translated = sum(row.status == "translated" for row in rows)
-    stream.write(f"Locale: {rows[0].locale if rows else 'unknown'}\n")
-    stream.write(f"Translated values: {translated}/{len(rows)}\n")
-    for row in rows:
-        marker = "OK" if row.status == "translated" else row.status.upper()
-        item = f"[{row.item}]" if row.item else ""
-        stream.write(
-            f"{marker:15} {row.module}:"
-            f"{row.resource_type}/{row.key}{item}\n",
-        )
-
-
-def print_issues(issues: Iterable[Issue], root: Path) -> None:
-    """Print compiler-style failures with stable repository-relative paths."""
-
-    resolved_root = root.resolve()
-    for issue in issues:
-        try:
-            path = issue.path.resolve().relative_to(resolved_root)
-        except ValueError:
-            path = issue.path
-        print(
-            f"{path}: error: [{issue.locale}] {issue.message}",
-            file=sys.stderr,
-        )
-
-
-def create_parser() -> argparse.ArgumentParser:
-    """Create the command-line interface."""
-
-    parser = argparse.ArgumentParser(
-        description=(
-            "Validate Android string, plurals, and string-array translations "
-            "across every module."
-        ),
-    )
-    parser.add_argument(
-        "--root",
-        type=Path,
-        default=Path.cwd(),
-        help="repository root (default: current directory)",
-    )
-    subparsers = parser.add_subparsers(dest="command", required=True)
-
-    check_parser = subparsers.add_parser(
-        "check",
-        help="fail on missing, stale, empty, or format-incompatible translations",
-    )
-    check_parser.add_argument(
-        "--locale",
-        action="append",
-        dest="locales",
-        help="BCP 47 locale to check; repeat as needed (default: discover all)",
-    )
-
-    report_parser = subparsers.add_parser(
-        "report",
-        help="export translation coverage and source text",
-    )
-    report_parser.add_argument("--locale", required=True, help="BCP 47 locale")
-    report_parser.add_argument(
-        "--format",
-        choices=("table", "csv", "json"),
-        default="table",
-        dest="output_format",
-    )
-    report_parser.add_argument(
-        "--output",
-        type=Path,
-        help="write the report to this file instead of stdout",
-    )
-    return parser
-
-
-def run(arguments: argparse.Namespace) -> int:
-    """Run the requested command and return a process exit code."""
-
-    if arguments.command == "check":
-        issues, coverage = check_repository(arguments.root, arguments.locales)
-        if issues:
-            print_issues(issues, arguments.root)
-            return 1
-        summary = ", ".join(
-            f"{locale} {translated}/{total}"
-            for locale, (translated, total) in coverage.items()
-        )
-        print(f"Localization check passed: {summary} translated resources.")
-        return 0
-
-    rows, issues = build_report(arguments.root, arguments.locale)
-    if issues:
-        print_issues(issues, arguments.root)
-        return 1
-    if arguments.output:
-        arguments.output.parent.mkdir(parents=True, exist_ok=True)
-        with arguments.output.open("w", encoding="utf-8", newline="") as stream:
-            write_report(rows, arguments.output_format, stream)
-        print(f"Wrote localization report to {arguments.output}")
-    else:
-        write_report(rows, arguments.output_format, sys.stdout)
-    return 0
-
-
-def main() -> int:
-    """Parse arguments and run the localization tool."""
-
-    try:
-        return run(create_parser().parse_args())
-    except ValueError as error:
-        print(f"error: {error}", file=sys.stderr)
-        return 2
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
