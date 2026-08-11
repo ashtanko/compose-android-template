@@ -96,7 +96,7 @@ targetSdk = "37"
 firebaseBom = "34.17.0"
 googleServices = "4.5.0"
 firebaseCrashlyticsPlugin = "3.0.7"
-playPublisher = "4.1.0"
+playPublisher = "4.1.1"
 
 [bundles]
 androidx-compose-ui-test = ["androidx-compose-ui-test", "androidx-compose-ui-testManifest"]
