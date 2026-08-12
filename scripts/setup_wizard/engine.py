@@ -40,6 +40,10 @@ SKIPPED_DIRECTORIES = {
 }
 SKIPPED_LOCAL_FILES = {"local.properties", "key.properties"}
 SOURCE_MANIFEST_PATH = Path("scripts/setup_wizard/source-manifest.txt")
+SCREENSHOT_VERIFICATION_TASKS = (
+    "validateDebugScreenshotTest",
+    "verifyRoborazziDebug",
+)
 AI_TOOLING_PATHS = (
     ".agents",
     ".claude",
@@ -50,12 +54,12 @@ AI_TOOLING_PATHS = (
 EXAMPLE_MODULES = (
     "feature/home",
     "feature/posts",
-    "feature/database",
+    "core/database",
     "library-android",
     "library-kotlin",
 )
 EXAMPLE_SETTINGS = (
-    ':feature:database',
+    ':core:database',
     ':feature:home',
     ':feature:posts:domain',
     ':feature:posts:data',
@@ -993,22 +997,72 @@ def _configure_verification_contract(
     root: Path,
     capabilities: frozenset[str],
 ) -> None:
-    if "screenshots" not in capabilities:
-        makefile_path = root / "Makefile"
-        makefile = makefile_path.read_text(encoding="utf-8")
-        makefile = makefile.replace(" validateDebugScreenshotTest", "")
-        makefile = makefile.replace(" verifyRoborazziDebug", "")
-        makefile_path.write_text(makefile, encoding="utf-8")
+    if "screenshots" in capabilities:
+        return
 
-        docs_check_path = root / "scripts" / "check-docs.sh"
-        docs_check = docs_check_path.read_text(encoding="utf-8")
-        docs_check = docs_check.replace(
-            "        localization-check \\\n"
-            "        validateDebugScreenshotTest \\\n"
-            "        verifyRoborazziDebug; do",
-            "        localization-check; do",
-        )
-        docs_check_path.write_text(docs_check, encoding="utf-8")
+    makefile_path = root / "Makefile"
+    makefile = makefile_path.read_text(encoding="utf-8")
+    for task in SCREENSHOT_VERIFICATION_TASKS:
+        makefile = makefile.replace(f" {task}", "")
+    makefile_path.write_text(makefile, encoding="utf-8")
+
+    docs_check_path = root / "scripts" / "check-docs.sh"
+    docs_check_path.write_text(
+        _remove_required_verification_tasks(
+            docs_check_path.read_text(encoding="utf-8"),
+            SCREENSHOT_VERIFICATION_TASKS,
+        ),
+        encoding="utf-8",
+    )
+
+
+def _remove_required_verification_tasks(
+    docs_check: str,
+    tasks: Iterable[str],
+) -> str:
+    """Drop tasks from the ``check-docs.sh`` required verification task list.
+
+    The list is matched structurally instead of as one literal block so that
+    reordering or extending it in the template does not silently stop the
+    wizard from relaxing the generated project's verification contract.
+    """
+    removed = frozenset(tasks)
+    result: list[str] = []
+    block: list[str] | None = None
+    for line in docs_check.splitlines():
+        if block is None:
+            result.append(line)
+            if line.strip() == "for required_task in \\":
+                block = []
+            continue
+        block.append(line)
+        if line.rstrip().endswith("; do"):
+            result.extend(_rewrite_required_task_block(block, removed))
+            block = None
+    if block is not None:
+        result.extend(block)
+    return "\n".join(result) + "\n"
+
+
+def _rewrite_required_task_block(
+    block: list[str],
+    removed: frozenset[str],
+) -> list[str]:
+    kept: list[tuple[str, str]] = []
+    for line in block:
+        task = line.strip().removesuffix("; do").removesuffix(" \\").strip()
+        if task in removed:
+            continue
+        kept.append((line[: len(line) - len(line.lstrip())], task))
+
+    if not kept:
+        return block
+
+    last_index = len(kept) - 1
+    return [
+        f"{indent}{task}; do" if index == last_index else f"{indent}{task} \\"
+        for index, (indent, task) in enumerate(kept)
+    ]
 
 
 def _install_minimal_starter(root: Path, config: SetupConfig) -> None:

@@ -5,6 +5,7 @@ from __future__ import annotations
 import http.client
 import io
 import json
+import subprocess
 import sys
 import tempfile
 import threading
@@ -19,10 +20,12 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from setup_wizard.engine import (
+    SCREENSHOT_VERIFICATION_TASKS,
     SOURCE_MANIFEST_PATH,
     SetupError,
     _RepositorySnapshot,
     _configure_ai_free_project,
+    _remove_required_verification_tasks,
     _tracked_files,
     build_plan,
     create_archive,
@@ -1010,6 +1013,69 @@ class WizardUiContractTest(unittest.TestCase):
         self.assertIn("X-Setup-Token", script)
         self.assertIn('schemaVersion: 3', script)
         self.assertIn('fetch("/api/archive"', script)
+
+
+class VerificationContractTest(unittest.TestCase):
+    def test_screenshot_tasks_are_dropped_from_the_repository_docs_check(self) -> None:
+        docs_check = (SCRIPTS_ROOT / "check-docs.sh").read_text(encoding="utf-8")
+
+        relaxed = _remove_required_verification_tasks(
+            docs_check,
+            SCREENSHOT_VERIFICATION_TASKS,
+        )
+
+        block = relaxed.split("for required_task in \\", maxsplit=1)[1]
+        block = block.split("; do", maxsplit=1)[0]
+        for task in SCREENSHOT_VERIFICATION_TASKS:
+            self.assertNotIn(task, block)
+        for retained_task in ("assembleDebug", "localization-check", "coverageReport"):
+            self.assertIn(retained_task, block)
+
+    def test_relaxed_docs_check_remains_valid_shell(self) -> None:
+        docs_check = (SCRIPTS_ROOT / "check-docs.sh").read_text(encoding="utf-8")
+
+        relaxed = _remove_required_verification_tasks(
+            docs_check,
+            SCREENSHOT_VERIFICATION_TASKS,
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            script = Path(directory) / "check-docs.sh"
+            script.write_text(relaxed, encoding="utf-8")
+            subprocess.run(("bash", "-n", str(script)), check=True)
+
+    def test_removal_terminates_the_remaining_task_list(self) -> None:
+        source = (
+            "    for required_task in \\\n"
+            "        assembleDebug \\\n"
+            "        validateDebugScreenshotTest; do\n"
+            "        :\n"
+            "    done\n"
+        )
+
+        relaxed = _remove_required_verification_tasks(
+            source,
+            SCREENSHOT_VERIFICATION_TASKS,
+        )
+
+        self.assertEqual(
+            "    for required_task in \\\n"
+            "        assembleDebug; do\n"
+            "        :\n"
+            "    done\n",
+            relaxed,
+        )
+
+    def test_unrelated_script_is_unchanged(self) -> None:
+        source = "echo hello\nfor task in a b; do\n    :\ndone\n"
+
+        self.assertEqual(
+            source,
+            _remove_required_verification_tasks(
+                source,
+                SCREENSHOT_VERIFICATION_TASKS,
+            ),
+        )
 
 
 if __name__ == "__main__":
