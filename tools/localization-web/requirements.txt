@@ -1,0 +1,5 @@
+# Development-only dependencies for the localization web wizard backend.
+# These are never packaged into the app and are intentionally kept out of the
+# fast, dependency-free localization gate (make localization-check).
+fastapi>=0.110
+uvicorn[standard]>=0.29

@@ -195,7 +195,7 @@ implementation details.
 **Decision:** Modules with intentional feature or layer boundaries opt in to
 `androidlab.kotlin.explicit-visibility`. Its custom Detekt rule checks non-local classes, objects,
 named functions, properties, and primary-constructor properties in every source set. The initial
-scope is `feature/database`, `feature/home`, and all three `feature/posts` layer modules. Visibility
+scope is `core/database`, `feature/home`, and all three `feature/posts` layer modules. Visibility
 is assigned from actual usage: file/class details are `private`, module implementation is
 `internal`, and only genuine module contracts or app-facing entry points are `public`.
 

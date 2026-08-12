@@ -2,5 +2,14 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "packageRules": [
+    {
+      "description": "Keep Compose Rules compatible with Detekt 1.23.8",
+      "matchPackageNames": [
+        "io.nlopez.compose.rules:detekt"
+      ],
+      "allowedVersions": "/^0\\.4\\./"
+    }
   ]
 }

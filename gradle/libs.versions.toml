@@ -3,7 +3,7 @@ jvmTarget = "21"
 agp = "9.3.0"                               # https://mvnrepository.com/artifact/com.android.application/com.android.application.gradle.plugin
 kotlin = "2.4.0"                           # https://github.com/JetBrains/kotlin
 coreKtx = "1.19.0"                          # https://mvnrepository.com/artifact/androidx.core/core-ktx
-junit5 = "6.1.2"                            # https://junit.org/junit5 | https://central.sonatype.com/artifact/org.junit.jupiter/junit-jupiter
+junit5 = "6.1.3"                            # https://junit.org/junit5 | https://central.sonatype.com/artifact/org.junit.jupiter/junit-jupiter
 junitVersion = "1.3.0"                      # https://mvnrepository.com/artifact/androidx.test.ext/junit
 espressoCore = "3.7.0"                      # https://mvnrepository.com/artifact/androidx.test.espresso/espresso-core
 lifecycleRuntimeKtx = "2.11.0"              # https://mvnrepository.com/artifact/androidx.lifecycle/lifecycle-runtime-ktx
@@ -20,18 +20,17 @@ serialization = "1.11.0"                    # https://github.com/Kotlin/kotlinx.
 mockito = "5.23.0"                          # https://mvnrepository.com/artifact/org.mockito/mockito-core
 mockito_kotlin = "5.4.0"                    # https://github.com/mockito/mockito-kotlin
 mockk = "1.14.11"                            # https://mockk.io
-kover = "0.9.9"                             # https://github.com/Kotlin/kotlinx-kover
 diktat = "2.0.0"                            # https://github.com/saveourtool/diktat
 turbine = "1.2.1"                           # https://github.com/cashapp/turbine/releases
-ksp = "2.3.10"                               # https://mvnrepository.com/artifact/com.google.devtools.ksp/symbol-processing-api
+ksp = "2.3.11"                               # https://mvnrepository.com/artifact/com.google.devtools.ksp/symbol-processing-api
 dependencyGuard = "0.5.0"                   # https://mvnrepository.com/artifact/com.dropbox.dependency-guard/dependency-guard
 immutable = "0.5.1"                         # https://github.com/Kotlin/kotlinx.collections.immutable
 hilt = "2.60.1"                             # https://mvnrepository.com/artifact/com.google.dagger/hilt-android
 hiltExt = "1.4.0"
-sonarqube = "7.3.1.8318"                    # https://mvnrepository.com/artifact/org.sonarqube/org.sonarqube.gradle.plugin
+sonarqube = "7.4.0.8496"                    # https://mvnrepository.com/artifact/org.sonarqube/org.sonarqube.gradle.plugin
 hiltNavigationCompose = "1.3.0"             # https://mvnrepository.com/artifact/androidx.hilt/hilt-navigation-compose
 jacoco = "0.8.15"                           # https://mvnrepository.com/artifact/org.jacoco/org.jacoco.core
-composeDetekt = "0.4.23"                    # Detekt 1.23.8 compatibility: https://mrmans0n.github.io/compose-rules/detekt/
+composeDetekt = "0.4.28"                    # Detekt 1.23.8 compatibility: https://mrmans0n.github.io/compose-rules/detekt/
 formattingDetekt = "1.23.8"                 # https://mvnrepository.com/artifact/io.gitlab.arturbosch.detekt/detekt-formatting
 archCore = "2.2.0"                          # https://mvnrepository.com/artifact/androidx.arch.core/core-common
 screenshot = "0.0.1-alpha16"                # https://mvnrepository.com/artifact/com.android.compose.screenshot/screenshot-test-gradle-plugin
@@ -66,7 +65,6 @@ androidx-baselineprofile = "1.4.1"          # https://mvnrepository.com/artifact
 runtime-tracing = "1.11.4"                  # https://mvnrepository.com/artifact/androidx.compose.runtime/runtime-tracing
 desugar_jdk_libs = "2.1.5"                  # https://mvnrepository.com/artifact/com.android.tools/desugar_jdk_libs
 androidxUiAutomator = "2.4.0"                # https://mvnrepository.com/artifact/androidx.test.uiautomator/uiautomator
-roborazzi = "1.70.0"                        # https://mvnrepository.com/artifact/io.github.takahirom.roborazzi/roborazzi
 paging = "3.5.0"                            # https://mvnrepository.com/artifact/androidx.paging/paging-runtime
 accompanist = "0.37.3"                      # https://mvnrepository.com/artifact/com.google.accompanist/accompanist-adaptive
 androidx-window = "1.5.1"                   # https://mvnrepository.com/artifact/androidx.window/window
@@ -94,6 +92,11 @@ compileSdk = "37"
 minSdk = "24"
 benchmarkMinSdk = "28"
 targetSdk = "37"
+
+firebaseBom = "34.17.0"
+googleServices = "4.5.0"
+firebaseCrashlyticsPlugin = "3.0.7"
+playPublisher = "4.1.0"
 
 [bundles]
 androidx-compose-ui-test = ["androidx-compose-ui-test", "androidx-compose-ui-testManifest"]
@@ -182,8 +185,6 @@ arch-core-test = { group = "androidx.arch.core", name = "core-testing", version.
 square-turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 robolectric-robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
-roborazzi = { group = "io.github.takahirom.roborazzi", name = "roborazzi", version.ref = "roborazzi" }
-roborazzi-accessibility-check = { group = "io.github.takahirom.roborazzi", name = "roborazzi-accessibility-check", version.ref = "roborazzi" }
 screenshot-validation-api = { group = "com.android.tools.screenshot", name = "screenshot-validation-api", version.ref = "screenshot" }
 # endregion
 
@@ -206,7 +207,6 @@ junit5-jupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", vers
 junit5-platformLauncher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit5" }
 junit5-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit5" }
 junit5-vintageEngine = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "junit5" }
-jacoco-core = { module = "org.jacoco:org.jacoco.core", version.ref = "jacoco" }
 assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 android-junit5-test-core = { group = "de.mannodermaus.junit5", name = "android-test-core", version.ref = "android-junit5-test" }
@@ -284,7 +284,9 @@ hilt-gradlePlugin = { group = "com.google.dagger", name = "hilt-android-gradle-p
 android-junit5-gradlePlugin = { group = "de.mannodermaus.gradle.plugins", name = "android-junit5", version.ref = "android-junit5-plugin" }
 screenshot-gradlePlugin = { group = "com.android.compose.screenshot", name = "screenshot-test-gradle-plugin", version.ref = "screenshot" }
 baselineprofile-gradlePlugin = { group = "androidx.benchmark", name = "benchmark-baseline-profile-gradle-plugin", version.ref = "androidxMacroBenchmark" }
-roborazzi-gradlePlugin = { group = "io.github.takahirom.roborazzi", name = "roborazzi-gradle-plugin", version.ref = "roborazzi" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -297,7 +299,6 @@ serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref 
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 diktat = { id = "com.saveourtool.diktat", version.ref = "diktat" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
@@ -309,7 +310,6 @@ sonarqube = { id = "org.sonarqube", version.ref = "sonarqube" }
 screenshot = { id = "com.android.compose.screenshot", version.ref = "screenshot" }
 baselineprofile = { id = "androidx.baselineprofile", version.ref = "androidxMacroBenchmark"}
 android-test = { id = "com.android.test", version.ref = "agp" }
-roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 google-android-libraries-mapsplatform-secrets-gradle-plugin = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "googleAndroidLibrariesMapsplatformSecretsGradlePlugin" }
 
 # Plugins defined by this project
@@ -325,10 +325,12 @@ androidlab-android-library-compose = { id = "androidlab.android.library.compose"
 androidlab-android-library-jacoco = { id = "androidlab.android.library.jacoco", version = "unspecified" }
 androidlab-android-junit5 = { id = "androidlab.android.junit5", version = "unspecified" }
 androidlab-android-lint = { id = "androidlab.android.lint", version = "unspecified" }
-androidlab-android-roborazzi = { id = "androidlab.android.roborazzi", version = "unspecified" }
 androidlab-android-room = { id = "androidlab.android.room", version = "unspecified" }
 androidlab-android-test = { id = "androidlab.android.test", version = "unspecified" }
 androidlab-hilt = { id = "androidlab.hilt", version = "unspecified" }
 androidlab-jvm-library = { id = "androidlab.jvm.library", version = "unspecified" }
 androidlab-kotlin-explicit-visibility = { id = "androidlab.kotlin.explicit-visibility", version = "unspecified" }
 android-junit5 = { id = "de.mannodermaus.android-junit5", version.ref = "android-junit5-plugin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
+play-publisher = { id = "com.github.triplet.play", version.ref = "playPublisher" }

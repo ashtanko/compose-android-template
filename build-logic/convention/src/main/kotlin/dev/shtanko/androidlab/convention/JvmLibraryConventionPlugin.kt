@@ -1,6 +1,7 @@
 package dev.shtanko.androidlab.convention
 
 import dev.shtanko.androidlab.configureDetekt
+import dev.shtanko.androidlab.configureJvmTesting
 import dev.shtanko.androidlab.configureKotlinJvm
 import dev.shtanko.androidlab.libs
 import org.gradle.api.Plugin
@@ -21,6 +22,7 @@ class JvmLibraryConventionPlugin : Plugin<Project> {
                 apply(plugin = "io.gitlab.arturbosch.detekt")
             }
             configureKotlinJvm()
+            configureJvmTesting()
             configureDetekt()
             tasks {
                 withType<Test> {

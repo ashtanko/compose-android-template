@@ -32,10 +32,7 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.foundation.layout)
 
-    androidTestImplementation(libs.androidx.test.ext)
+    screenshotTestImplementation(project(":core:testing"))
 
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.test.manifest)
-
-    androidTestImplementation(libs.truth)
+    testImplementation(libs.truth)
 }

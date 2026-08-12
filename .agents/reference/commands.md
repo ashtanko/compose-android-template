@@ -13,14 +13,16 @@ Run commands from the repository root with the Gradle wrapper. JDK 21 is require
 | Release signing configuration | `./gradlew :app:validateReleaseSigningConfiguration` |
 | Shell script | `bash -n path/to/script.sh` plus a safe dry run when supported |
 | Pure Kotlin module | `./gradlew :module:test` |
+| JVM integration | `./gradlew :module:integrationTest` |
 | Android module | `./gradlew :module:testDebugUnitTest` |
 | App unit behavior | `./gradlew :app:testDebugUnitTest` |
 | Formatting | `./gradlew spotlessCheck` |
 | Static analysis | `./gradlew detekt` |
 | Compose-specific static analysis | `./gradlew detektCompose` |
 | Android lint | `./gradlew lint` or `./gradlew :module:lintDebug` |
-| Screenshot verification | `./gradlew validateDebugScreenshotTest` and/or `./gradlew verifyRoborazziDebug` |
-| Instrumentation | `./gradlew :app:connectedDebugAndroidTest` with a device or emulator available |
+| Screenshot verification | `./gradlew validateDebugScreenshotTest` |
+| One module's instrumentation | `./gradlew :module:connectedDebugAndroidTest` with a device or emulator available |
+| Project managed-device suite | `make device-test-ci` |
 | Macrobenchmark | `./gradlew :benchmarks:connectedBenchmarkReleaseAndroidTest` on a stable physical device |
 | Baseline profile generation | `./gradlew :app:generateBaselineProfile` using the declared managed device |
 
@@ -31,8 +33,17 @@ the canonical agent entrypoint, and version-policy consistency without starting 
 
 `make localization-check` runs the localization tool's unit tests, discovers locale-specific
 resources in every Android module, and checks common production Compose literals, translation
-completeness, and formatter compatibility. Use
-`make localization-report LOCALE=pt-PT FORMAT=csv` to produce a review catalog.
+completeness, and formatter compatibility. Add `--warnings` to the underlying
+`python3 -m localization check` for non-fatal quality findings. Use
+`make localization-report LOCALE=pt-PT FORMAT=csv` to produce a review catalog, or
+`make localization-report-html` to write the self-contained status dashboard to
+`build/reports/localization/index.html` (CI uploads it as the `localization-report` artifact).
+The tool can also author resources with `python3 -m localization add-locale <tag>`,
+`add-string`, and `set`, which preserve each file's header, comments, order, and indentation;
+exchange translations with `report --format xliff` and `import`; and list unused default keys with
+`orphans`. `make localization-serve` starts the development-only web wizard (FastAPI backend under
+`scripts/localization/web.py`, React frontend under `tools/localization-web/`); it needs the web
+extras in `tools/localization-web/requirements.txt` and is never part of CI or the app.
 
 `make secrets-check` scans every file in the Git index for forbidden credential paths, private-key
 material, common high-confidence token formats, and hardcoded Android signing passwords. The
@@ -57,14 +68,20 @@ make verify
 
 It validates documentation, template tools, localization resources, and tracked files for secrets;
 checks build logic;
-assembles debug artifacts; and runs unit tests, lint, Detekt, Spotless, Dependency Guard, Compose
-screenshot validation, and Roborazzi verification without requiring release signing. The host-side
+assembles debug artifacts; and runs unit and JVM integration tests, coverage reporting and
+verification, lint, Detekt, Spotless, Dependency Guard, and Compose screenshot validation without requiring release signing. The host-side
 pull-request job invokes this exact target; managed-device tests remain a separate
 environment-dependent CI job.
 
-Routine verification never records baselines. Use `make screenshot-record`,
-`make roborazzi-record`, or `make dependency-guard-baseline` only when the corresponding change is
+Routine verification never records baselines. Use `make screenshot-record` or
+`make dependency-guard-baseline` only when the corresponding change is
 intentional, then review every generated diff.
+
+`make device-test-ci` runs every module's debug instrumentation tests and `tests/e2e` journeys on
+the managed phone and tablet group used by CI. `make device-test-all` expands to every declared
+managed device. These tasks are intentionally separate from the host contract because they require
+Android system images and virtualization. Run `make coverage` after the device suite when a local
+combined Android unit-and-instrumentation coverage report is required; CI does this automatically.
 
 ## Release build
 

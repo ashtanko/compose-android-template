@@ -11,14 +11,19 @@ FORMAT ?= table
 	setup-ui \
 	docs-check \
 	template-check \
+	rename-validate \
 	localization-check \
 	localization-report \
+	localization-report-html \
+	localization-serve \
+	localization-web-build \
 	secrets-check \
 	build \
 	generate-release-key \
 	release \
 	install \
 	test \
+	integration-test \
 	check \
 	verify \
 	lint \
@@ -28,12 +33,13 @@ FORMAT ?= table
 	format-check \
 	format \
 	device-test \
+	device-test-ci \
+	device-test-all \
 	benchmark \
 	screenshot-test \
 	screenshot-record \
-	roborazzi-test \
-	roborazzi-record \
 	coverage \
+	coverage-verify \
 	dependency-guard \
 	dependency-guard-baseline \
 	baseline-profile \
@@ -50,14 +56,19 @@ help:
 	@echo "Build and verification:"
 	@echo "  docs-check                  Validate documentation links and project facts"
 	@echo "  template-check              Validate rename dry run and module generation"
+	@echo "  rename-validate             Verify this project was fully renamed from the template"
 	@echo "  localization-check          Validate every translated Android resource"
 	@echo "  localization-report         Report locale coverage (LOCALE, FORMAT)"
+	@echo "  localization-report-html    Write the localization status dashboard (HTML)"
+	@echo "  localization-serve          Run the local localization web wizard (dev only)"
+	@echo "  localization-web-build      Build the localization web wizard frontend"
 	@echo "  secrets-check               Reject tracked credentials and sensitive files"
 	@echo "  build                       Assemble debug artifacts"
 	@echo "  generate-release-key        Create an upload keystore and local signing file"
 	@echo "  release                     Build the signed release Android App Bundle"
 	@echo "  install                     Install the app's debug build"
 	@echo "  test                        Run unit tests"
+	@echo "  integration-test            Run JVM integration tests"
 	@echo "  check                       Run routine static checks"
 	@echo "  verify                      Assemble debug, test, and run routine checks"
 	@echo "  lint                        Run Android lint"
@@ -69,14 +80,15 @@ help:
 	@echo
 	@echo "Device and visual tests:"
 	@echo "  device-test                 Run debug instrumentation tests"
+	@echo "  device-test-ci              Run all instrumentation and E2E tests on CI devices"
+	@echo "  device-test-all             Run all instrumentation and E2E tests on all devices"
 	@echo "  benchmark                   Run benchmarkRelease macrobenchmarks"
 	@echo "  screenshot-test             Verify Compose screenshot baselines"
 	@echo "  screenshot-record           Update Compose screenshot baselines"
-	@echo "  roborazzi-test              Verify Roborazzi baselines"
-	@echo "  roborazzi-record            Update Roborazzi baselines"
 	@echo
 	@echo "Reports and maintenance:"
-	@echo "  coverage                    Generate the app Kover HTML report"
+	@echo "  coverage                    Generate JVM and Android coverage reports"
+	@echo "  coverage-verify             Enforce JVM business-logic coverage thresholds"
 	@echo "  dependency-guard            Check dependency baselines"
 	@echo "  dependency-guard-baseline   Update the app dependency baseline"
 	@echo "  baseline-profile            Generate the app baseline profile"
@@ -95,12 +107,25 @@ docs-check:
 template-check:
 	bash scripts/check-template-tools.sh
 
+rename-validate:
+	bash scripts/validate-rename.sh
+
 localization-check:
-	python3 -m unittest discover -s scripts/tests -p 'test_localization.py'
-	python3 scripts/localization.py check
+	python3 -m unittest discover -s scripts/tests -p 'test_*.py'
+	PYTHONPATH=scripts python3 -m localization check
 
 localization-report:
-	python3 scripts/localization.py report --locale "$(LOCALE)" --format "$(FORMAT)"
+	PYTHONPATH=scripts python3 -m localization report --locale "$(LOCALE)" --format "$(FORMAT)"
+
+localization-report-html:
+	PYTHONPATH=scripts python3 -m localization report --format html \
+		--output build/reports/localization/index.html
+
+localization-serve:
+	PYTHONPATH=scripts python3 -m localization serve --host 127.0.0.1 --port 8080
+
+localization-web-build:
+	cd tools/localization-web && npm install && npm run build
 
 secrets-check:
 	bash scripts/check-secrets.sh
@@ -120,11 +145,14 @@ install:
 test:
 	$(GRADLE) test $(GRADLE_ARGS)
 
+integration-test:
+	$(GRADLE) integrationTest $(GRADLE_ARGS)
+
 check: localization-check secrets-check
 	$(GRADLE) lint detekt spotlessCheck dependencyGuard $(GRADLE_ARGS)
 
 verify: docs-check template-check localization-check secrets-check
-	$(GRADLE) :build-logic:convention:check assembleDebug test lint detekt spotlessCheck dependencyGuard validateDebugScreenshotTest verifyRoborazziDebug $(GRADLE_ARGS)
+	$(GRADLE) :build-logic:convention:check assembleDebug test integrationTest coverageVerification coverageReport lint detekt spotlessCheck dependencyGuard validateDebugScreenshotTest $(GRADLE_ARGS)
 
 lint:
 	$(GRADLE) lint $(GRADLE_ARGS)
@@ -147,6 +175,12 @@ format:
 device-test:
 	$(GRADLE) connectedDebugAndroidTest $(GRADLE_ARGS)
 
+device-test-ci:
+	$(GRADLE) ciManagedDeviceTest $(GRADLE_ARGS)
+
+device-test-all:
+	$(GRADLE) allManagedDeviceTest $(GRADLE_ARGS)
+
 benchmark:
 	$(GRADLE) :benchmarks:connectedBenchmarkReleaseAndroidTest $(GRADLE_ARGS)
 
@@ -156,14 +190,11 @@ screenshot-test:
 screenshot-record:
 	$(GRADLE) updateDebugScreenshotTest $(GRADLE_ARGS)
 
-roborazzi-test:
-	$(GRADLE) verifyRoborazziDebug $(GRADLE_ARGS)
-
-roborazzi-record:
-	$(GRADLE) recordRoborazziDebug $(GRADLE_ARGS)
-
 coverage:
-	$(GRADLE) :app:koverHtmlReport $(GRADLE_ARGS)
+	$(GRADLE) coverageReport $(GRADLE_ARGS)
+
+coverage-verify:
+	$(GRADLE) coverageVerification $(GRADLE_ARGS)
 
 dependency-guard:
 	$(GRADLE) dependencyGuard $(GRADLE_ARGS)

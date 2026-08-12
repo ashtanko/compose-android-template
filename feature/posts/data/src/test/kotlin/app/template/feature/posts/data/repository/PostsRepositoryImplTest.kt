@@ -20,6 +20,7 @@ import app.template.feature.posts.data.local.PostsLocalDataSource
 import app.template.feature.posts.data.model.PostsDataPage
 import app.template.feature.posts.data.model.PostsPageRequest
 import app.template.feature.posts.data.remote.PostsHttpException
+import app.template.feature.posts.data.remote.PostsPayloadException
 import app.template.feature.posts.data.remote.PostsRemoteDataSource
 import app.template.feature.posts.data.remote.dto.PostDto
 import app.template.feature.posts.domain.model.Post
@@ -27,6 +28,7 @@ import app.template.feature.posts.domain.model.PostsPage
 import app.template.feature.posts.domain.result.DomainResult
 import app.template.feature.posts.domain.result.PostsFailure
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.SerializationException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.io.IOException
@@ -102,6 +104,33 @@ internal class PostsRepositoryImplTest {
         val result = repository.getPosts(page = request.page, pageSize = request.pageSize)
 
         assertThat(result).isEqualTo(DomainResult.Error(PostsFailure.ServiceUnavailable))
+    }
+
+    @Test
+    internal fun `payload and serialization failures return unexpected failure`() = runTest {
+        listOf(
+            PostsPayloadException(),
+            SerializationException("Malformed JSON"),
+        ).forEach { failure ->
+            val repository = PostsRepositoryImpl(
+                remoteDataSource = FakePostsRemoteDataSource { throw failure },
+                localDataSource = FakePostsLocalDataSource(),
+            )
+
+            assertThat(repository.getPosts(page = request.page, pageSize = request.pageSize))
+                .isEqualTo(DomainResult.Error(PostsFailure.Unexpected))
+        }
+    }
+
+    @Test
+    internal fun `unknown failure returns unexpected failure`() = runTest {
+        val repository = PostsRepositoryImpl(
+            remoteDataSource = FakePostsRemoteDataSource { error("Unexpected") },
+            localDataSource = FakePostsLocalDataSource(),
+        )
+
+        assertThat(repository.getPosts(page = request.page, pageSize = request.pageSize))
+            .isEqualTo(DomainResult.Error(PostsFailure.Unexpected))
     }
 
     @Test

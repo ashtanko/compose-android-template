@@ -15,6 +15,7 @@
  */
 plugins {
     alias(libs.plugins.androidlab.android.feature)
+    alias(libs.plugins.androidlab.android.compose.screenshot)
     alias(libs.plugins.androidlab.android.library.jacoco)
     alias(libs.plugins.androidlab.android.junit5)
     alias(libs.plugins.androidlab.kotlin.explicit.visibility)
@@ -30,8 +31,7 @@ dependencies {
     implementation(libs.kotlinx.collections.immutable)
 
     testImplementation(libs.kotlinx.coroutines.test)
+    screenshotTestImplementation(project(":core:testing"))
 
-    androidTestImplementation(libs.androidx.compose.ui.test)
-    androidTestImplementation(libs.androidx.compose.ui.testManifest)
-    androidTestImplementation(libs.truth)
+    testImplementation(libs.truth)
 }

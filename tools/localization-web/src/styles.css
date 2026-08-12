@@ -1,0 +1,271 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --border: #e2e5ea;
+  --text: #1b1f24;
+  --muted: #626a75;
+  --accent: #2f6feb;
+  --ok: #1f8b4c;
+  --warn: #b26a00;
+  --err: #c0392b;
+  --heat-full: #d6f0dd;
+  --heat-low: #fbe0cf;
+  --heat-none: #f7d4d4;
+  --heat-mid: #fdf1c8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171c;
+    --surface: #1c2027;
+    --border: #2b313a;
+    --text: #e6e9ee;
+    --muted: #9aa4b1;
+    --accent: #6ea0ff;
+    --ok: #57c98a;
+    --warn: #e0a44a;
+    --err: #f0776a;
+    --heat-full: #1e4433;
+    --heat-low: #4a2f1c;
+    --heat-none: #4a2222;
+    --heat-mid: #4a3f14;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem;
+}
+
+.titlebar {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.generated {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin: 1rem 0 0.5rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  min-width: 6.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.card .value {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.card .label {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.card .sub {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.card.ok .value {
+  color: var(--ok);
+}
+
+.card.warn .value {
+  color: var(--warn);
+}
+
+.banner {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  margin: 0.6rem 0;
+}
+
+.banner.ok {
+  color: var(--ok);
+}
+
+.banner.error {
+  color: var(--err);
+  border-color: var(--err);
+}
+
+.banner.warn summary {
+  color: var(--warn);
+  cursor: pointer;
+}
+
+.controls {
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+
+.controls label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.78rem;
+  color: var(--muted);
+  gap: 0.2rem;
+}
+
+.controls label.check {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text);
+}
+
+.controls select,
+.controls input[type="search"] {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.controls input[type="search"] {
+  min-width: 16rem;
+}
+
+.spacer {
+  flex: 1;
+}
+
+button {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(1.05);
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background: var(--surface);
+}
+
+th,
+td {
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+td.text {
+  max-width: 24rem;
+}
+
+td.source {
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--muted);
+}
+
+td.text input {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+td.text input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+
+.item {
+  color: var(--muted);
+}
+
+.warn-flag {
+  margin-left: 0.4rem;
+  color: var(--warn);
+  font-size: 0.78rem;
+  cursor: help;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.badge.translated {
+  background: var(--heat-full);
+  color: var(--ok);
+}
+
+.badge.missing {
+  background: var(--heat-none);
+  color: var(--err);
+}
+
+.badge.empty {
+  background: var(--heat-low);
+  color: var(--warn);
+}
+
+.badge.format-mismatch {
+  background: var(--heat-mid);
+  color: var(--warn);
+}
+
+.empty {
+  color: var(--muted);
+  padding: 1rem 0;
+}

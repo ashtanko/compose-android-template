@@ -18,6 +18,10 @@ section before making a non-trivial change in that area.
   has enough asynchronous and data behavior to justify separate layers.
 - `core/designsystem` owns reusable visual tokens and Compose components, not product workflows.
 - `core/navigation` owns shared back-stack primitives and behavior, not feature UI.
+- `core/testing` owns reusable test-only fixtures and screenshot preview matrices. Production
+  modules must not depend on it from `main`.
+- `tests/e2e` owns a small set of stable cross-feature journeys against the assembled application;
+  feature details stay covered by faster owning-module tests.
 - Kotlin/JVM modules own platform-independent rules and models that do not need Android APIs.
 - Android library modules own reusable behavior that genuinely requires Android APIs or resources.
 - Do not add feature-to-feature dependencies without an accepted architectural decision. Move a

@@ -181,11 +181,15 @@ feature/posts/
 │       │   │   └── PostsRemoteDataSource.kt
 │       │   └── repository/
 │       │       └── PostsRepositoryImpl.kt
-│       └── test/kotlin/app/template/feature/posts/data/
-│           ├── mapper/
-│           │   └── PostMapperTest.kt
-│           └── repository/
-│               └── PostsRepositoryImplTest.kt
+│       ├── test/kotlin/app/template/feature/posts/data/
+│       │   ├── local/
+│       │   │   └── InMemoryPostsLocalDataSourceTest.kt
+│       │   ├── mapper/
+│       │   │   └── PostMapperTest.kt
+│       │   └── repository/
+│       │       └── PostsRepositoryImplTest.kt
+│       └── integrationTest/kotlin/app/template/feature/posts/data/remote/
+│           └── RetrofitPostsRemoteDataSourceIntegrationTest.kt
 └── presentation/
     ├── build.gradle.kts
     ├── consumer-rules.pro
@@ -209,9 +213,10 @@ feature/posts/
         │   │       └── PostsViewModel.kt
         │   └── res/values/strings.xml
         ├── test/kotlin/app/template/feature/posts/presentation/ui/
+        │   ├── PostsScreenTest.kt
         │   └── PostsViewModelTest.kt
-        └── androidTest/kotlin/app/template/feature/posts/presentation/ui/
-            └── PostsScreenTest.kt
+        └── screenshotTest/kotlin/app/template/feature/posts/presentation/
+            └── PostsScreenScreenshotTest.kt
 ```
 
 The existing single-module home feature follows the same presentation layout:
@@ -227,9 +232,10 @@ feature/home/src/
 │   ├── HomeScreen.kt
 │   └── HomeViewModel.kt
 ├── test/kotlin/app/template/feature/home/ui/
+│   ├── HomeScreenTest.kt
 │   └── HomeViewModelTest.kt
-└── androidTest/kotlin/app/template/feature/home/ui/
-    └── HomeScreenTest.kt
+└── screenshotTest/kotlin/app/template/feature/home/
+    └── HomeScreenScreenshotTest.kt
 ```
 
 ### End-to-end data flow

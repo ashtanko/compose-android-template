@@ -174,7 +174,7 @@ check_verification_contract() {
     fi
 
     if rg --quiet \
-        'dependencyGuardBaseline|update[A-Za-z]+ScreenshotTest|recordRoborazzi|git-auto-commit-action' \
+        'dependencyGuardBaseline|update[A-Za-z]+ScreenshotTest|git-auto-commit-action' \
         .github/workflows/ci.yml; then
         fail "CI verification must not update or commit dependency or screenshot baselines"
     fi
@@ -206,15 +206,17 @@ check_verification_contract() {
         spotlessCheck \
         dependencyGuard \
         localization-check \
-        validateDebugScreenshotTest \
-        verifyRoborazziDebug; do
+        integrationTest \
+        coverageVerification \
+        coverageReport \
+        validateDebugScreenshotTest; do
         if ! grep -Fq -- "$required_task" <<<"$verify_recipe"; then
             fail "make verify must include $required_task"
         fi
     done
 
     if grep -Eq \
-        'Baseline|update[A-Za-z]+ScreenshotTest|recordRoborazzi' \
+        'Baseline|update[A-Za-z]+ScreenshotTest' \
         <<<"$verify_recipe"; then
         fail "make verify must not contain baseline-update tasks"
     fi

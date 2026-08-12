@@ -10,6 +10,13 @@
 ## 🧪 How Has This Been Tested?
 <!-- List the exact checks selected and explain why they cover the change. -->
 <!-- Call out relevant checks that were not run and why. -->
+- [ ] Unit tests
+- [ ] JVM integration tests
+- [ ] Local Compose behavior tests
+- [ ] Screenshot validation with reviewed references
+- [ ] Managed-device integration tests
+- [ ] End-to-end application journey
+- [ ] Performance or baseline-profile checks
 
 ## 📷 Screenshots (if appropriate)
 <!-- Please provide a screenshot of your change -->

@@ -13,11 +13,9 @@ plugins {
     alias(libs.plugins.android.junit5) apply false
     alias(libs.plugins.screenshot) apply false
     alias(libs.plugins.baselineprofile) apply false
-    alias(libs.plugins.roborazzi) apply false
     alias(libs.plugins.dependencyGuard) apply false
     alias(libs.plugins.spotless) apply false
     alias(libs.plugins.sonarqube) apply false
-    alias(libs.plugins.kover) apply false
     alias(libs.plugins.kotlin.parcelize) apply false
     alias(libs.plugins.serialization) apply false
     alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin) apply false
@@ -49,6 +47,71 @@ tasks.register("detektCompose") {
 tasks.register("detektAutoCorrect") {
     group = "formatting"
     description = "Runs Detekt auto-correction in every module."
+}
+
+val integrationTest = tasks.register("integrationTest") {
+    group = "verification"
+    description = "Runs integration tests in every Kotlin/JVM module."
+}
+
+val coverageReport = tasks.register("coverageReport") {
+    group = "reporting"
+    description = "Generates JVM and Android reports from available unit and device coverage."
+}
+
+val coverageVerification = tasks.register("coverageVerification") {
+    group = "verification"
+    description = "Enforces JVM business-logic coverage thresholds."
+}
+
+val ciManagedDeviceTest = tasks.register("ciManagedDeviceTest") {
+    group = "verification"
+    description = "Runs every debug instrumentation and end-to-end test on the CI device group."
+}
+
+val allManagedDeviceTest = tasks.register("allManagedDeviceTest") {
+    group = "verification"
+    description = "Runs every debug instrumentation and end-to-end test on all managed devices."
+}
+
+subprojects {
+    pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
+        integrationTest.configure {
+            dependsOn(tasks.named("integrationTest"))
+        }
+        coverageReport.configure {
+            dependsOn(tasks.named("jacocoTestReport"))
+        }
+        coverageVerification.configure {
+            dependsOn(tasks.named("jacocoTestCoverageVerification"))
+        }
+    }
+
+    listOf(
+        "androidlab.android.application.jacoco",
+        "androidlab.android.library.jacoco",
+    ).forEach { pluginId ->
+        pluginManager.withPlugin(pluginId) {
+            coverageReport.configure {
+                dependsOn(tasks.named("createDebugCombinedCoverageReport"))
+            }
+        }
+    }
+
+    listOf(
+        "com.android.application",
+        "com.android.library",
+        "com.android.test",
+    ).forEach { pluginId ->
+        pluginManager.withPlugin(pluginId) {
+            ciManagedDeviceTest.configure {
+                dependsOn(tasks.matching { it.name == "ciGroupDebugAndroidTest" })
+            }
+            allManagedDeviceTest.configure {
+                dependsOn(tasks.matching { it.name == "allDevicesDebugAndroidTest" })
+            }
+        }
+    }
 }
 
 // Bootstraps a new project from this template by delegating to
