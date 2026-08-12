@@ -73,6 +73,7 @@ Review the listed guidance whenever these areas change:
 | --- | --- |
 | Convention plugins or shared build configuration | Architecture, decisions, commands, and verification guidance |
 | `scripts/add-module.sh` or generated module structure | Architecture, the add-module skill, template checks, and human-facing setup documentation |
+| `scripts/setup-project.py`, `scripts/setup_wizard/`, or project capability rules | Architecture, security, commands, template checks, and the setup-wizard documentation |
 | CI permissions, jobs, or verification tasks | Commands, security, decisions, and the pull-request template |
 | Navigation ownership, APIs, or libraries | Architecture, decisions, implementation guidance, and relevant Compose skills |
 | Test infrastructure, selection rules, screenshots, or baselines | Testing, commands, verification guidance, and relevant testing skills |

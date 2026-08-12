@@ -24,6 +24,28 @@ project-wide constraints.
 
 `settings.gradle.kts` is the authoritative module list. Inspect it before assuming a module exists because template users can add, remove, or rename modules.
 
+## Setup wizard configuration boundary
+
+The setup wizard uses one versioned `SetupConfig` model for the CLI, browser, preview planner,
+directory output, in-place updates, and ZIP output. Keep source-default discovery and configuration
+resolution in the shared Python model/engine; interface-specific defaults cause exported configs and
+generated projects to diverge.
+
+Classify every surfaced project setting explicitly:
+
+- **editable** values are serialized and transformed by exact, validated source rules;
+- **derived** values, such as active modules and dependency wiring, come from starter and capability
+  choices;
+- **inherited** values remain template-owned and are displayed for transparency;
+- **manual** values require a separate workflow and must not be accepted by the wizard.
+
+Application ID and launcher display name are independent from code package and Gradle project name.
+Android SDK and app-version values are editable; the JVM target remains inherited because it is
+coupled to the repository JDK, Gradle, CI, and documentation contract. Signing credentials and real
+secrets are always manual. When a new setting becomes editable, add its schema metadata, source
+reader, resolver, exact transformer, CLI/UI binding, migration behavior, and archive regression test
+as one change.
+
 ## Package and directory conventions
 
 Directories must mirror Kotlin packages. Keep layer roots organized by responsibility:

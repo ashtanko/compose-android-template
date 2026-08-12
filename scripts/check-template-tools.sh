@@ -94,14 +94,55 @@ copy_repository_fixture() {
     local fixture_root="$1"
     local relative_path
 
-    while IFS= read -r -d '' relative_path; do
+    while IFS= read -r relative_path; do
         [[ -e "$TEMPLATE_TOOLS_ROOT/$relative_path" ]] || continue
         mkdir -p "$fixture_root/$(dirname "$relative_path")"
         cp -Pp "$TEMPLATE_TOOLS_ROOT/$relative_path" "$fixture_root/$relative_path"
-    done < <(
-        git -C "$TEMPLATE_TOOLS_ROOT" \
-            ls-files -z --cached --others --exclude-standard
+    done < "$TEMPLATE_TOOLS_ROOT/scripts/setup_wizard/source-manifest.txt"
+}
+
+check_setup_wizard_source_manifest() {
+    python3 - "$TEMPLATE_TOOLS_ROOT" <<'PY'
+import pathlib
+import subprocess
+import sys
+
+root = pathlib.Path(sys.argv[1])
+manifest_path = root / "scripts/setup_wizard/source-manifest.txt"
+sys.path.insert(0, str(root / "scripts"))
+from setup_wizard.engine import _source_path_is_eligible
+
+tracked = {
+    pathlib.Path(raw.decode())
+    for raw in subprocess.check_output(
+        ("git", "-C", str(root), "ls-files", "-z", "--cached"),
+    ).split(b"\0")
+    if raw
+    if _source_path_is_eligible(pathlib.Path(raw.decode()))
+}
+tracked.update(
+    path
+    for path in (
+        pathlib.Path(".dockerignore"),
+        pathlib.Path("Dockerfile"),
+        pathlib.Path("scripts/setup_wizard/source-manifest.txt"),
     )
+    if (root / path).is_file()
+)
+manifest = {
+    pathlib.Path(line)
+    for line in manifest_path.read_text(encoding="utf-8").splitlines()
+    if line
+}
+missing = sorted(tracked - manifest)
+unexpected = sorted(manifest - tracked)
+if missing or unexpected:
+    if missing:
+        print("source manifest is missing: " + ", ".join(map(str, missing)), file=sys.stderr)
+    if unexpected:
+        print("source manifest has untracked entries: " + ", ".join(map(str, unexpected)), file=sys.stderr)
+    raise SystemExit(1)
+PY
 }
 
 tree_digest() {
@@ -469,6 +510,143 @@ check_collision_preflight() {
     rmdir "$fixture_root/app/src/main/kotlin/com" 2>/dev/null || true
 }
 
+check_setup_wizard() {
+    local fixture_root="$1"
+    local generated_root="$TEMPLATE_TOOLS_TEMP_DIR/generated-project"
+    local exported_config="$TEMPLATE_TOOLS_TEMP_DIR/project-setup.json"
+    local dry_run_output
+
+    python3 "$TEMPLATE_TOOLS_ROOT/scripts/tests/test_setup_wizard.py"
+    touch \
+        "$fixture_root/production-signing.jks" \
+        "$fixture_root/service-account-production.json" \
+        "$fixture_root/.env.production"
+
+    dry_run_output="$(
+        (
+            cd "$fixture_root"
+            bash scripts/setup-project.sh \
+                --package com.example.wizardcheck \
+                --name "Wizard Check" \
+                --application-id com.example.wizardcheck.install \
+                --display-name "Wizard Check App" \
+                --version-code 42 \
+                --version-name 4.2.0 \
+                --compile-sdk 36 \
+                --min-sdk 23 \
+                --target-sdk 35 \
+                --benchmark-min-sdk 27 \
+                --preset minimal \
+                --remove-examples \
+                --ai-free \
+                --output "$generated_root" \
+                --export-config "$exported_config"
+        )
+    )"
+    [[ ! -e "$generated_root" ]] \
+        || fail "setup wizard preview created its destination"
+    grep -Fq -- "Preview only" <<<"$dry_run_output" \
+        || fail "setup wizard did not report preview-only mode"
+    assert_file "$exported_config"
+
+    (
+        cd "$fixture_root"
+        bash scripts/setup-project.sh \
+            --config "$exported_config" \
+            --apply >/dev/null
+    )
+
+    assert_file \
+        "$generated_root/app/src/main/kotlin/com/example/wizardcheck/home/StarterScreen.kt"
+    assert_file \
+        "$generated_root/app/src/main/kotlin/com/example/wizardcheck/home/MainActivity.kt"
+    [[ ! -e "$generated_root/production-signing.jks" ]] \
+        || fail "setup wizard copied an unlisted signing key"
+    [[ ! -e "$generated_root/service-account-production.json" ]] \
+        || fail "setup wizard copied unlisted service credentials"
+    [[ ! -e "$generated_root/.env.production" ]] \
+        || fail "setup wizard copied unlisted environment credentials"
+    assert_contains \
+        "$generated_root/app/src/main/kotlin/com/example/wizardcheck/ui/theme/Typography.kt" \
+        "FontFamily.SansSerif"
+    assert_contains \
+        "$generated_root/app/build.gradle.kts" \
+        'applicationId = "com.example.wizardcheck.install"'
+    assert_contains \
+        "$generated_root/app/build.gradle.kts" \
+        "versionCode = 42"
+    assert_contains \
+        "$generated_root/app/build.gradle.kts" \
+        'versionName = "4.2.0"'
+    assert_contains \
+        "$generated_root/app/src/main/res/values/strings.xml" \
+        '<string name="app_name" translatable="false">Wizard Check App</string>'
+    assert_contains \
+        "$generated_root/gradle/libs.versions.toml" \
+        'compileSdk = "36"'
+    assert_contains \
+        "$generated_root/gradle/libs.versions.toml" \
+        'minSdk = "23"'
+    assert_contains \
+        "$generated_root/gradle/libs.versions.toml" \
+        'targetSdk = "35"'
+    assert_contains \
+        "$generated_root/gradle/libs.versions.toml" \
+        'benchmarkMinSdk = "27"'
+    assert_contains \
+        "$generated_root/scripts/template-identity.json" \
+        '"applicationPackage": "com.example.wizardcheck.install"'
+    assert_contains \
+        "$generated_root/scripts/template-identity.json" \
+        '"displayName": "Wizard Check App"'
+    assert_not_contains \
+        "$generated_root/settings.gradle.kts" \
+        'include(":feature:home")'
+    assert_not_contains \
+        "$generated_root/settings.gradle.kts" \
+        'include(":feature:posts:domain")'
+    assert_not_contains \
+        "$generated_root/settings.gradle.kts" \
+        'include(":core:navigation")'
+    assert_not_contains \
+        "$generated_root/settings.gradle.kts" \
+        'include(":benchmarks")'
+    assert_not_contains \
+        "$generated_root/app/build.gradle.kts" \
+        "baselineProfile(project"
+    assert_not_contains \
+        "$generated_root/app/build.gradle.kts" \
+        ".hilt)"
+    assert_not_contains \
+        "$generated_root/app/src/main/AndroidManifest.xml" \
+        'android:name="com.example.wizardcheck.App"'
+    [[ ! -e "$generated_root/.agents" ]] \
+        || fail "AI-free project retained .agents"
+    [[ ! -e "$generated_root/.claude" ]] \
+        || fail "AI-free project retained .claude"
+    [[ ! -e "$generated_root/AGENTS.md" ]] \
+        || fail "AI-free project retained AGENTS.md"
+    [[ ! -e "$generated_root/CLAUDE.md" ]] \
+        || fail "AI-free project retained CLAUDE.md"
+    assert_not_contains \
+        "$generated_root/app/build.gradle.kts" \
+        "libs.generativeai"
+    assert_not_contains \
+        "$generated_root/gradle/libs.versions.toml" \
+        "generativeai"
+
+    bash -n "$generated_root/scripts/setup-project.sh"
+    python3 -m py_compile \
+        "$generated_root/scripts/setup-project.py" \
+        "$generated_root/scripts/setup_wizard/model.py" \
+        "$generated_root/scripts/setup_wizard/engine.py" \
+        "$generated_root/scripts/setup_wizard/server.py"
+    (
+        cd "$generated_root"
+        bash scripts/check-docs.sh >/dev/null
+    )
+}
+
 old_application_package="$(identity_value applicationPackage)"
 old_code_package="$(identity_value codePackage)"
 old_build_logic_package="$(identity_value buildLogicPackage)"
@@ -482,11 +660,13 @@ TEMPLATE_TOOLS_TEMP_DIR="$(
 )"
 fixture_root="$TEMPLATE_TOOLS_TEMP_DIR/repository"
 mkdir -p "$fixture_root"
+check_setup_wizard_source_manifest
 copy_repository_fixture "$fixture_root"
 
 check_invalid_inputs
 check_validate_rejects_template "$fixture_root"
 check_collision_preflight "$fixture_root"
+check_setup_wizard "$fixture_root"
 check_rename_end_to_end \
     "$fixture_root" \
     "$old_application_package" \

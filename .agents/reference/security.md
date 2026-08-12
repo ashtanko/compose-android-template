@@ -49,6 +49,13 @@ activity, service, receiver, or provider requires an explicit use case and secur
   recovery behavior.
 - If a WebView is introduced, allowlist navigation, disable unnecessary file/content access and
   JavaScript capabilities, and never expose a JavaScript bridge to untrusted content.
+- Keep deployed setup-wizard instances in download-only public mode. Public requests may preview
+  configuration and receive bounded ZIP output, but must never select server paths, mutate the
+  source repository, or trigger formatting and Gradle verification.
+- Require same-origin browser posts, bounded request bodies, a fresh plan digest, tracked/template
+  source enumeration, and concurrent-generation limits on the public archive endpoint. A public
+  source without Git metadata must use the exact setup-wizard source manifest and fail closed if
+  that inventory is missing or stale.
 
 ## Secrets, signing, and configuration
 
@@ -56,6 +63,9 @@ activity, service, receiver, or provider requires an explicit use case and secur
   files.
 - Values placed in resources, assets, native code, or `BuildConfig` can be recovered from an APK.
   Treat every client-side value as configuration, not secure secret storage.
+- The setup wizard may inventory signing and secret-related surfaces, but must never accept or emit
+  keystore paths, signing passwords, tokens, or production credentials. Its editable posts-example
+  URL is public client configuration and must remain HTTPS-only without embedded credentials.
 - Keep privileged API credentials and authorization enforcement on a trusted backend.
 - Use Play App Signing with a separate upload key when distributing through Google Play. Do not
   place the app-signing key in developer or CI release configuration.

@@ -13,29 +13,53 @@ A modern, production-ready Android template built with **Jetpack Compose**, **Na
 
 1. Click the **[Use this template](https://github.com/ashtanko/compose-android-template/generate)** button.
 2. Clone your new repository.
-3. Run the rename script to replace template package names, applicationId, plugin aliases, source
-   and screenshot-reference paths, display names, retained helper tooling, and (optionally)
-   copyright headers with your own. The script requires Python 3.8 or newer, validates all
-   destinations before writing, and rolls back changes if an operation fails:
+3. Run the project setup wizard. It configures code-package and Gradle-project identity separately
+   from the application ID and launcher name. It also covers app versioning, Android SDK levels,
+   curated dependency capabilities, example-module removal, optional AI-free output, and
+   validation. The browser downloads a configured ZIP by default:
 
    ```bash
-   # preview first
+   # Browser UI: preview, then download the configured project ZIP
+   ./scripts/setup-project.sh --ui
+
+   # Repeatable CLI archive preview
+   ./scripts/setup-project.sh \
+       --package com.example.myapp \
+       --name "My Awesome App" \
+       --preset standard \
+       --remove-examples \
+       --ai-free \
+       --archive ../my-awesome-app.zip
+
+   # Create the reviewed archive
+   ./scripts/setup-project.sh \
+       --package com.example.myapp \
+       --name "My Awesome App" \
+       --preset standard \
+       --remove-examples \
+       --ai-free \
+       --archive ../my-awesome-app.zip \
+       --apply
+   ```
+
+   Running `./scripts/setup-project.sh` without arguments opens an interactive terminal wizard.
+   `make setup` and `make setup-ui` are shortcuts for the terminal and browser entry points.
+   Both interfaces import and export the same versioned JSON configuration. The CLI also supports
+   `--output` for a directory copy and `--in-place` when the current clone should be transformed. See
+   [`docs/project-setup-wizard.md`](docs/project-setup-wizard.md) for presets, capabilities, JSON
+   schema, configuration coverage, ZIP downloads, deployment, safety behavior, and automation
+   examples. The wizard intentionally leaves dependency versions, build types, Gradle tuning,
+   signing credentials, and brand assets under the template's existing manual workflows.
+
+   The focused legacy rename command and its Gradle adapter remain available:
+
+   ```bash
    ./scripts/rename-template.sh \
        --package com.example.myapp \
        --name "My Awesome App" \
        --author "Your Name" \
        --dry-run
 
-   # apply
-   ./scripts/rename-template.sh \
-       --package com.example.myapp \
-       --name "My Awesome App" \
-       --author "Your Name"
-   ```
-
-   Or via Gradle (same flags, `-P`-style):
-
-   ```bash
    ./gradlew renameProject \
        -Ppackage=com.example.myapp \
        -Pname="My Awesome App" \
@@ -43,6 +67,9 @@ A modern, production-ready Android template built with **Jetpack Compose**, **Na
        -PdryRun=true   # drop this to apply
    ```
 
+   The setup wizard can run formatting and narrow or full verification as explicit final-step
+   choices. The legacy rename command still leaves formatting as a separate step because the Gradle
+   adapter cannot safely start a nested Gradle build.
    After applying, confirm the rename is complete with `./scripts/validate-rename.sh` (or
    `make rename-validate`). It fails if any original template identity, package folder, or plugin
    accessor remains. Then run `./gradlew spotlessApply` and `make verify`. Formatting is a separate
@@ -120,7 +147,12 @@ rules, and the complete posts demo walkthrough.
 ├── AGENTS.md               # Canonical coding-agent instructions
 ├── app/                    # Main Android application (Compose + Navigation 3)
 ├── core/                   # Shared production foundations and test utilities
+│   ├── designsystem/       # Reusable theme and Compose components
+│   ├── navigation/         # Navigation keys and routing contracts
+│   ├── database/           # Room database and schemas
+│   └── testing/            # Shared test utilities and fakes
 ├── feature/                # Feature-focused modules
+│   ├── home/               # Single-module UI feature
 │   └── posts/              # Clean Architecture demo
 │       ├── domain/         # model/, repository/, result/, usecase/
 │       ├── data/           # di/, local/, remote/, mapper/, repository/
@@ -130,14 +162,15 @@ rules, and the complete posts demo walkthrough.
 ├── benchmarks/             # Macrobenchmark + baseline profile generator
 ├── tests/e2e/              # Managed-device application journeys
 ├── build-logic/            # Shared Gradle convention plugins (includeBuild)
-├── buildSrc/               # Project-wide build configuration
 ├── gradle/                 # Version catalog (libs.versions.toml)
 ├── config/                 # Detekt / KtLint / static-analysis configs
 ├── spotless/               # Spotless copyright header template
-└── scripts/                # Helper scripts (e.g. rename-template.sh)
+├── docs/                   # Long-form guides (project setup wizard)
+├── tools/                  # Dev-only tooling (localization web wizard)
+└── scripts/                # Setup wizard, rename, module, localization, and verification tooling
 ```
 
-Convention plugins under `build-logic/convention` (e.g. `androidlab.android.application.compose`, `androidlab.android.library.compose`, `androidlab.android.feature`, `androidlab.android.junit5`, `androidlab.android.compose.screenshot`, `androidlab.android.benchmark`, `androidlab.hilt`, `androidlab.android.room`, `androidlab.android.lint`, and the selective `androidlab.kotlin.explicit-visibility`) keep per-module `build.gradle.kts` files small and consistent.
+Convention plugins under `build-logic/convention` (e.g. `androidlab.android.application.compose`, `androidlab.android.library.compose`, `androidlab.android.feature`, `androidlab.android.junit5`, `androidlab.android.compose.screenshot`, `androidlab.android.benchmark`, `androidlab.android.application.baselineprofile`, `androidlab.android.application.jacoco`, `androidlab.hilt`, `androidlab.android.room`, `androidlab.android.lint`, `androidlab.spotless`, `androidlab.jvm.library`, and the selective `androidlab.kotlin.explicit-visibility`) keep per-module `build.gradle.kts` files small and consistent.
 
 Kotlin packages mirror these directories. Single-module UI features use `ui`, `ui/model`, and
 `ui/components`; reusable components shared by unrelated features live in `core/designsystem`.
@@ -194,12 +227,16 @@ those values; the summary below intentionally avoids copying fast-changing versi
 - **Baseline Profiles** — generated via `:benchmarks` for faster startup and smoother frames.
 - **Screenshot Testing** — automated adaptive UI regression with the Compose screenshot plugin.
 - **Dependency Guard** — locks transitive dependency surface across builds.
+- **Opt-in Firebase and Play Publisher** — catalog entries and `app/build.gradle.kts` plugin and
+  dependency lines are present but commented out; uncomment them once the project has its own
+  `google-services.json` and Play service account.
 - **Signing-ready** — local builds resolve keystore credentials from an untracked `key.properties` file, while CI reads env vars (`SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS`, `SIGNING_KEY_PASSWORD`, `SIGNING_KEYSTORE_PATH`); a manually approved GitHub Actions workflow restores an upload key only on its ephemeral runner and retains the signed AAB plus R8 mapping.
 - **Localization-ready** — English fallback resources, European Portuguese translations,
-  generated per-app language configuration, pseudolocales, and translation validation/reporting.
+  generated per-app language configuration, pseudolocales, translation validation, a self-contained
+  HTML status dashboard published as a CI artifact, and a dev-only web wizard for inline editing.
 
-See [`LOCALIZATION.md`](LOCALIZATION.md) for the resource strategy, translator workflow, and
-validation matrix.
+See [`LOCALIZATION.md`](LOCALIZATION.md) for the resource strategy, translator workflow, status
+dashboard, web wizard, and validation matrix.
 
 ## 🧪 Testing
 
@@ -233,15 +270,23 @@ validation matrix.
 The `Makefile` wraps common Gradle invocations:
 
 - `make` / `make help` — list available targets without changing the project.
+- `make setup` / `make setup-ui` — launch the terminal or browser project setup wizard.
 - `make docs-check` — validate documentation links and project facts.
 - `make localization-check` — validate translated resources in every Android module.
 - `make localization-report LOCALE=pt-PT FORMAT=csv` — export translation coverage.
+- `make localization-report-html` — write the self-contained localization status dashboard.
+- `make localization-serve` / `make localization-web-build` — run or build the dev-only
+  localization web wizard.
 - `make secrets-check` — reject tracked credentials and sensitive release files.
 - `make build` / `make install` — assemble or install the debug app.
+- `make generate-release-key` / `make release` — create an upload keystore or build the signed AAB.
 - `make test` — run unit tests.
 - `make integration-test` — run JVM integration tests.
-- `make check` — run lint, Detekt, Spotless, and Dependency Guard checks.
+- `make check` — run the routine static checks: localization, secrets, lint, Detekt, Spotless, and
+  Dependency Guard.
 - `make verify` — run the canonical non-mutating host checks used by pull requests.
+- `make lint` / `make detekt` / `make detekt-compose` / `make detekt-fix` — run Android lint, Detekt,
+  the Compose-specific rules, or safe Detekt auto-corrections.
 - `make template-check` — validate the rename dry run and generated module structure.
 - `make rename-validate` — verify this project was fully renamed away from the template.
 - `make format-check` / `make format` — check or apply formatting.
@@ -253,6 +298,7 @@ The `Makefile` wraps common Gradle invocations:
 - `make dependency-guard` / `make dependency-guard-baseline` — verify or update dependency baselines.
 - `make benchmark` — run `benchmarkRelease` macrobenchmarks.
 - `make baseline-profile` — generate the app baseline profile.
+- `make tasks` / `make gradle-version` — list Gradle tasks or print Gradle, Kotlin, and JVM versions.
 
 Pass additional Gradle options with `GRADLE_ARGS`, for example:
 

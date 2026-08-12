@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Project Setup Wizard</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+
+    <main class="shell" aria-busy="true">
+      <header class="topbar">
+        <a class="brand" href="#welcome" aria-label="Project Setup Wizard home">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+          <span>
+            <strong>Project Setup</strong>
+            <small>Compose Android Template</small>
+          </span>
+        </a>
+        <div class="top-actions">
+          <label class="import-action" aria-disabled="true">
+            <input id="import-config" type="file" accept="application/json,.json" disabled>
+            Import JSON
+          </label>
+          <button id="export-config" class="button button-ghost" type="button" disabled>
+            Export JSON
+          </button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <aside class="sidebar" aria-label="Wizard progress">
+          <p class="eyebrow">Your setup</p>
+          <ol id="step-list" class="step-list"></ol>
+
+          <section class="mini-summary" aria-labelledby="summary-title">
+            <p id="summary-title" class="eyebrow">Live summary</p>
+            <strong id="summary-name">My Android App</strong>
+            <code id="summary-package">com.example.myapp</code>
+            <p><span id="summary-count">0</span> optional capabilities</p>
+          </section>
+        </aside>
+
+        <section class="content">
+          <div id="notice" class="notice" role="alert" aria-live="polite" hidden></div>
+
+          <section class="step active" data-panel="0" data-step-title="Welcome" id="welcome">
+            <div class="hero">
+              <p class="eyebrow">Fast, safe, repeatable</p>
+              <h1>Shape the template around your next idea.</h1>
+              <p class="hero-copy">
+                Choose a project identity, remove the examples, and keep only the
+                capabilities you need. Review every operation before anything changes.
+              </p>
+              <div class="hero-actions">
+                <button class="button button-primary" type="button" data-next disabled>
+                  Start setup <span aria-hidden="true">→</span>
+                </button>
+                <span class="safety-note">
+                  <span aria-hidden="true">●</span>
+                  ZIP download is selected by default
+                </span>
+              </div>
+            </div>
+            <div class="feature-grid">
+              <article>
+                <span class="feature-icon" aria-hidden="true">◇</span>
+                <h2>One configuration</h2>
+                <p>The browser and CLI share the same versioned JSON format.</p>
+              </article>
+              <article>
+                <span class="feature-icon" aria-hidden="true">↺</span>
+                <h2>Transactional</h2>
+                <p>Collisions are caught before writing and failed changes roll back.</p>
+              </article>
+              <article>
+                <span class="feature-icon" aria-hidden="true">⌁</span>
+                <h2>Dependency-aware</h2>
+                <p>Prerequisites are resolved automatically and explained clearly.</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="step" data-panel="1" data-step-title="Identity" aria-labelledby="identity-title">
+            <div class="section-heading">
+              <p class="eyebrow">Step 2</p>
+              <h1 id="identity-title">Give the project its identity.</h1>
+              <p>These values update packages, source paths, app labels, build logic, and tooling.</p>
+            </div>
+            <div class="form-grid">
+              <label class="field field-wide">
+                <span>Project name</span>
+                <input id="project-name" autocomplete="off" required value="My Android App">
+                <small>The Gradle root project name.</small>
+              </label>
+              <label class="field field-wide">
+                <span>Package name</span>
+                <input id="package-name" autocomplete="off" required value="com.example.myapp"
+                  pattern="[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+">
+                <small>Lowercase dotted identifier with at least two segments.</small>
+              </label>
+              <label class="field field-wide">
+                <span>Application ID</span>
+                <input id="application-id" autocomplete="off" required
+                  pattern="[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+">
+                <small>Install identity; follows the package name until edited.</small>
+              </label>
+              <label class="field field-wide">
+                <span>Display name</span>
+                <input id="display-name" autocomplete="off" required>
+                <small>Launcher label; follows the project name until edited.</small>
+              </label>
+              <label class="field">
+                <span>Plugin alias <em>optional</em></span>
+                <input id="plugin-alias" autocomplete="off" placeholder="Derived from package">
+              </label>
+              <label class="field">
+                <span>Author <em>optional</em></span>
+                <input id="author" autocomplete="name" placeholder="Your name">
+              </label>
+            </div>
+          </section>
+
+          <section class="step" data-panel="2" data-step-title="Starter" aria-labelledby="starter-title">
+            <div class="section-heading">
+              <p class="eyebrow">Step 3</p>
+              <h1 id="starter-title">Choose your starting point.</h1>
+              <p>Keep the architecture examples for learning, or begin with a focused branded screen.</p>
+            </div>
+            <div class="choice-grid">
+              <label class="choice-card selected">
+                <input type="radio" name="starter" value="remove" checked>
+                <span class="choice-check" aria-hidden="true">✓</span>
+                <span class="choice-art starter-minimal" aria-hidden="true"><i></i><i></i><i></i></span>
+                <strong>Minimal starter</strong>
+                <p>Remove home, posts, database, and sample libraries. Keep a clean Compose screen.</p>
+                <small>Recommended for new products</small>
+              </label>
+              <label class="choice-card">
+                <input type="radio" name="starter" value="keep">
+                <span class="choice-check" aria-hidden="true">✓</span>
+                <span class="choice-art starter-examples" aria-hidden="true"><i></i><i></i><i></i></span>
+                <strong>Keep examples</strong>
+                <p>Retain the layered posts feature, navigation, database, tests, and samples.</p>
+                <small>Useful as an architecture reference</small>
+              </label>
+            </div>
+
+            <label class="project-option">
+              <input id="ai-free" type="checkbox">
+              <span class="option-check" aria-hidden="true">✓</span>
+              <span>
+                <strong>AI-free project</strong>
+                <small>
+                  Exclude coding-agent guidance and the generative-AI client from
+                  the generated project.
+                </small>
+              </span>
+            </label>
+
+            <fieldset class="output-panel">
+              <legend>Project destination</legend>
+              <label class="radio-row selected">
+                <input type="radio" name="output-mode" value="archive" checked>
+                <span><strong>Download ZIP archive</strong><small>Generate the project and download it in this browser.</small></span>
+              </label>
+              <label class="radio-row local-output">
+                <input type="radio" name="output-mode" value="copy">
+                <span><strong>Create a new copy</strong><small>Safest—leave this template untouched.</small></span>
+              </label>
+              <label class="radio-row local-output">
+                <input type="radio" name="output-mode" value="inPlace">
+                <span><strong>Configure in place</strong><small>Requires a clean worktree unless force is confirmed.</small></span>
+              </label>
+              <label id="output-path-field" class="field" hidden>
+                <span>Destination directory</span>
+                <input id="output-path" autocomplete="off">
+              </label>
+            </fieldset>
+          </section>
+
+          <section class="step" data-panel="3" data-step-title="Project settings" id="project-settings" aria-labelledby="project-settings-title">
+            <div class="section-heading">
+              <p class="eyebrow">Step 4</p>
+              <h1 id="project-settings-title">Tune the project defaults.</h1>
+              <p>Versioning, SDK levels, and example configuration come from the repository and remain portable in setup JSON.</p>
+            </div>
+            <div id="project-setting-list" class="settings-list"></div>
+            <section class="surface-section" aria-labelledby="configuration-surfaces-title">
+              <div class="subsection-heading">
+                <h2 id="configuration-surfaces-title">Configuration surfaces</h2>
+                <p>See which project areas are editable, derived from your choices, inherited, or left for manual follow-up.</p>
+              </div>
+              <div id="configuration-surfaces" class="surface-grid"></div>
+            </section>
+          </section>
+
+          <section class="step" data-panel="4" data-step-title="Capabilities" aria-labelledby="capabilities-title">
+            <div class="section-heading split-heading">
+              <div>
+                <p class="eyebrow">Step 5</p>
+                <h1 id="capabilities-title">Build the stack you want.</h1>
+                <p>Select a preset, then fine-tune individual capability groups.</p>
+              </div>
+              <label class="search-field">
+                <span class="visually-hidden">Search capabilities</span>
+                <input id="capability-search" type="search" placeholder="Search capabilities…">
+              </label>
+            </div>
+            <div id="preset-list" class="preset-list" aria-label="Dependency presets">
+              <button type="button" data-preset="minimal" disabled><strong>Minimal</strong><small>Compose foundations</small></button>
+              <button type="button" data-preset="standard" class="selected" disabled><strong>Standard</strong><small>Recommended stack</small></button>
+              <button type="button" data-preset="full" disabled><strong>Full</strong><small>Everything included</small></button>
+              <button type="button" data-preset="custom" disabled><strong>Custom</strong><small>Your selection</small></button>
+            </div>
+            <div id="capability-list" class="capability-list"></div>
+          </section>
+
+          <section class="step" data-panel="5" data-step-title="Review" aria-labelledby="review-title">
+            <div class="section-heading">
+              <p class="eyebrow">Step 6</p>
+              <h1 id="review-title">Review before generating.</h1>
+              <p>The preview is computed by the same engine that applies the setup.</p>
+            </div>
+            <div class="review-grid">
+              <article class="review-card">
+                <div class="review-title"><span aria-hidden="true">Aa</span><h2>Identity</h2></div>
+                <dl id="identity-review"></dl>
+              </article>
+              <article class="review-card">
+                <div class="review-title"><span aria-hidden="true">⌘</span><h2>Capabilities</h2></div>
+                <div id="capability-review" class="chip-list"></div>
+              </article>
+              <article class="review-card review-wide">
+                <div class="review-title"><span aria-hidden="true">↳</span><h2>Planned operations</h2></div>
+                <ol id="operation-review" class="operation-list">
+                  <li>Choose “Preview plan” to validate this configuration.</li>
+                </ol>
+              </article>
+              <article class="review-card review-wide">
+                <div class="review-title"><span aria-hidden="true">⚙</span><h2>Project settings</h2></div>
+                <dl id="settings-review"></dl>
+              </article>
+            </div>
+            <div class="validation-panel">
+              <label class="switch-row">
+                <input id="format-output" type="checkbox" disabled>
+                <span class="switch" aria-hidden="true"></span>
+                <span><strong>Apply Spotless formatting</strong><small>Formats the generated project after setup.</small></span>
+              </label>
+              <label class="field compact-field">
+                <span>Verification</span>
+                <select id="verification" disabled>
+                  <option value="none">Structural checks only</option>
+                  <option value="narrow">Assemble app + app unit tests</option>
+                  <option value="full">Full make verify</option>
+                </select>
+              </label>
+            </div>
+            <button id="preview-plan" class="button button-primary" type="button" disabled>
+              Preview plan
+            </button>
+          </section>
+
+          <section class="step" data-panel="6" data-step-title="Generate" id="generate" aria-labelledby="generate-title">
+            <div id="generate-state" class="generate-state">
+              <div class="orbit" aria-hidden="true"><span></span><span></span><span></span></div>
+              <p class="eyebrow">Final step</p>
+              <h1 id="generate-title">Ready when you are.</h1>
+              <p id="generate-copy">Preview the plan, then download your configured Android project.</p>
+              <div id="plan-digest" class="digest" hidden></div>
+              <label id="force-row" class="check-row" hidden>
+                <input id="force-in-place" type="checkbox">
+                <span>I understand that in-place setup may modify a dirty worktree.</span>
+              </label>
+              <button id="apply-plan" class="button button-primary button-large" type="button" disabled>
+                Build &amp; download ZIP
+              </button>
+            </div>
+          </section>
+
+          <footer class="step-footer">
+            <button id="back-button" class="button button-ghost" type="button" disabled>
+              <span aria-hidden="true">←</span> Back
+            </button>
+            <span id="step-indicator">Loading…</span>
+            <button id="next-button" class="button button-secondary" type="button" disabled>
+              Continue <span aria-hidden="true">→</span>
+            </button>
+          </footer>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
