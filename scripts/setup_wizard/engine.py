@@ -932,18 +932,17 @@ def _configure_modules_and_dependencies(root: Path, config: SetupConfig) -> None
     app_build_path = root / "app" / "build.gradle.kts"
     app_build = app_build_path.read_text(encoding="utf-8")
     if config.starter.remove_examples:
-        app_build = "\n".join(
-            line
-            for line in app_build.splitlines()
-            if not any(
-                f'project("{module}")' in line
-                for module in (
-                    ":feature:home",
-                    ":feature:posts:data",
-                    ":feature:posts:presentation",
-                )
-            )
-        ) + "\n"
+        # Derived from the removed includes so a new example module can never be
+        # dropped from settings while a stale project(...) reference survives.
+        app_build = _remove_project_dependencies(app_build, EXAMPLE_SETTINGS)
+
+    if "hilt" not in capabilities:
+        app_build = _replace_once(
+            app_build,
+            r'(?m)^(\s*testInstrumentationRunner\s*=\s*)"[^"]*"\s*$',
+            lambda match: f'{match.group(1)}"androidx.test.runner.AndroidJUnitRunner"',
+            "app instrumentation test runner",
+        )
 
     app_build = _filter_capability_lines(app_build, capabilities)
     app_build = _remove_balanced_block(app_build, "dependencyGuard {")
@@ -965,6 +964,20 @@ def _configure_modules_and_dependencies(root: Path, config: SetupConfig) -> None
     _configure_verification_contract(root, capabilities)
     if "visual_extras" not in capabilities:
         _install_system_typography(root, config.identity.package_name)
+
+
+def _remove_project_dependencies(text: str, modules: Iterable[str]) -> str:
+    """Drop every dependency line that targets one of ``modules``.
+
+    Configurations are not matched, so ``androidTestImplementation`` and
+    ``testImplementation`` references are removed alongside ``implementation``.
+    """
+    removed = tuple(f'project("{module}")' for module in modules)
+    return "\n".join(
+        line
+        for line in text.splitlines()
+        if not any(reference in line for reference in removed)
+    ) + "\n"
 
 
 def _filter_capability_lines(text: str, capabilities: frozenset[str]) -> str:
@@ -1074,7 +1087,11 @@ def _install_minimal_starter(root: Path, config: SetupConfig) -> None:
         (home_source / filename).unlink(missing_ok=True)
 
     android_test = root / "app" / "src" / "androidTest" / "kotlin" / package_path
-    (android_test / "MainNavigationTest.kt").unlink(missing_ok=True)
+    # HiltGraphTest injects the example posts repository, whose module is gone.
+    for filename in ("MainNavigationTest.kt", "HiltGraphTest.kt"):
+        (android_test / filename).unlink(missing_ok=True)
+    if "hilt" not in config.capabilities:
+        (android_test / "HiltTestRunner.kt").unlink(missing_ok=True)
     _prune_empty_directories(android_test)
 
     home_source.mkdir(parents=True, exist_ok=True)
