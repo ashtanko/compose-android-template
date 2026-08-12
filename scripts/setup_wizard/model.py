@@ -7,9 +7,11 @@ import re
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Iterable
+from urllib.parse import urlsplit
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 3
+SUPPORTED_SCHEMA_VERSIONS = frozenset({1, 2, SCHEMA_VERSION})
 PACKAGE_PATTERN = re.compile(r"^[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)+$")
 PLUGIN_ALIAS_PATTERN = re.compile(r"^[a-z][a-z0-9]*$")
 RESERVED_WORDS = {
@@ -113,6 +115,52 @@ class Capability:
     description: str
     category: str
     requires: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class ProjectSettingDefinition:
+    key: str
+    title: str
+    description: str
+    category: str
+    input_type: str
+    source: str
+    editable: bool = True
+    minimum: int | None = None
+    maximum: int | None = None
+    section: str = "projectSettings"
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.key,
+            "title": self.title,
+            "description": self.description,
+            "category": self.category,
+            "inputType": self.input_type,
+            "source": self.source,
+            "editable": self.editable,
+            "minimum": self.minimum,
+            "maximum": self.maximum,
+            "section": self.section,
+        }
+
+
+@dataclass(frozen=True)
+class ConfigurationSurface:
+    id: str
+    title: str
+    description: str
+    disposition: str
+    sources: tuple[str, ...]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "disposition": self.disposition,
+            "sources": list(self.sources),
+        }
 
 
 CAPABILITIES: tuple[Capability, ...] = (
@@ -223,6 +271,182 @@ CAPABILITIES: tuple[Capability, ...] = (
 
 CAPABILITY_BY_ID = {capability.id: capability for capability in CAPABILITIES}
 
+PROJECT_SETTING_DEFINITIONS: tuple[ProjectSettingDefinition, ...] = (
+    ProjectSettingDefinition(
+        "applicationId",
+        "Application ID",
+        "Install and Play identity. Defaults to the code package when left unset.",
+        "App identity",
+        "text",
+        "app/build.gradle.kts",
+        section="identity",
+    ),
+    ProjectSettingDefinition(
+        "displayName",
+        "App display name",
+        "Launcher label. Defaults to the Gradle project name when left unset.",
+        "App identity",
+        "text",
+        "app/src/main/res/values/strings.xml",
+        section="identity",
+    ),
+    ProjectSettingDefinition(
+        "versionCode",
+        "Version code",
+        "Positive integer used by Android and app stores for upgrade ordering.",
+        "App version",
+        "number",
+        "app/build.gradle.kts",
+        True,
+        1,
+        2_100_000_000,
+    ),
+    ProjectSettingDefinition(
+        "versionName",
+        "Version name",
+        "User-visible release version such as 1.0.0.",
+        "App version",
+        "text",
+        "app/build.gradle.kts",
+    ),
+    ProjectSettingDefinition(
+        "compileSdk",
+        "Compile SDK",
+        "Android API level used to compile every Android module.",
+        "Android toolchain",
+        "number",
+        "gradle/libs.versions.toml",
+        True,
+        35,
+        99,
+    ),
+    ProjectSettingDefinition(
+        "minSdk",
+        "Minimum SDK",
+        "Oldest Android API level supported by the application.",
+        "Android toolchain",
+        "number",
+        "gradle/libs.versions.toml",
+        True,
+        21,
+        99,
+    ),
+    ProjectSettingDefinition(
+        "targetSdk",
+        "Target SDK",
+        "Android behavior level the application opts into.",
+        "Android toolchain",
+        "number",
+        "gradle/libs.versions.toml",
+        True,
+        21,
+        99,
+    ),
+    ProjectSettingDefinition(
+        "benchmarkMinSdk",
+        "Benchmark minimum SDK",
+        "Oldest API level allowed for the macrobenchmark module.",
+        "Android toolchain",
+        "number",
+        "gradle/libs.versions.toml",
+        True,
+        23,
+        99,
+    ),
+    ProjectSettingDefinition(
+        "jvmTarget",
+        "JVM bytecode target",
+        "Java and Kotlin bytecode level; the build itself still requires JDK 21.",
+        "Android toolchain",
+        "number",
+        "gradle/libs.versions.toml",
+        False,
+        17,
+        25,
+    ),
+    ProjectSettingDefinition(
+        "postsBackendUrl",
+        "Posts example backend URL",
+        "Retrofit base URL used only when the example modules are retained.",
+        "Example configuration",
+        "url",
+        "feature/posts/data/.../PostsNetworkModule.kt",
+    ),
+)
+
+CONFIGURATION_SURFACES: tuple[ConfigurationSurface, ...] = (
+    ConfigurationSurface(
+        "identity",
+        "Project and package identity",
+        "Project name, code package, application ID, plugin alias, and optional author.",
+        "editable",
+        ("scripts/template-identity.json", "settings.gradle.kts", "app/build.gradle.kts"),
+    ),
+    ConfigurationSurface(
+        "app-metadata",
+        "App metadata and SDK levels",
+        "Display name, release version, Android SDK levels, and the retained-example backend.",
+        "editable",
+        ("app/build.gradle.kts", "gradle/libs.versions.toml", "feature/posts/data"),
+    ),
+    ConfigurationSurface(
+        "modules",
+        "Module topology",
+        "Starter selection and capability rules retain or remove the example and benchmark modules.",
+        "derived",
+        ("settings.gradle.kts", "scripts/add-module.sh"),
+    ),
+    ConfigurationSurface(
+        "dependencies",
+        "Dependencies and plugins",
+        "Curated capabilities control active app dependencies; versions remain catalog-managed.",
+        "derived",
+        ("gradle/libs.versions.toml", "build.gradle.kts", "app/build.gradle.kts"),
+    ),
+    ConfigurationSurface(
+        "build-runtime",
+        "Gradle execution and performance",
+        "Memory, parallelism, build cache, configuration cache, and AndroidX flags are inherited.",
+        "inherited",
+        ("gradle.properties", "gradle/gradle-daemon-jvm.properties"),
+    ),
+    ConfigurationSurface(
+        "build-types",
+        "Build types, shrinking, and packaging",
+        "Debug, release, benchmark, R8, and packaging policies stay on repository defaults.",
+        "inherited",
+        ("app/build.gradle.kts", "app/proguard-rules.pro", "app/benchmark-rules.pro"),
+    ),
+    ConfigurationSurface(
+        "branding",
+        "Brand assets and localization",
+        "The label is editable; launcher artwork, theme tokens, locales, and translations are manual follow-up work.",
+        "manual",
+        ("app/src/main/res", "LOCALIZATION.md"),
+    ),
+    ConfigurationSurface(
+        "client-secrets",
+        "Client configuration defaults",
+        "The inactive secrets.defaults.properties fallback is inherited; client values are never treated as secrets.",
+        "inherited",
+        ("secrets.defaults.properties", "build.gradle.kts"),
+    ),
+    ConfigurationSurface(
+        "signing",
+        "Signing and CI credentials",
+        "Secrets are never collected. Generated projects retain the key.properties and SIGNING_* environment contract.",
+        "manual",
+        ("key.properties.example", "RELEASING.md", ".github/workflows"),
+    ),
+    ConfigurationSurface(
+        "quality",
+        "Formatting, verification, and agent guidance",
+        "Output mode controls safe checks; AI-free mode can remove coding-agent guidance.",
+        "editable",
+        ("Makefile", ".agents", "scripts/check-template-tools.sh"),
+    ),
+)
+
 PRESETS: dict[str, frozenset[str]] = {
     "minimal": frozenset(),
     "standard": frozenset(
@@ -259,6 +483,8 @@ EXAMPLE_REQUIREMENTS = frozenset(
 class IdentityConfig:
     package_name: str
     project_name: str
+    application_id: str | None = None
+    display_name: str | None = None
     plugin_alias: str | None = None
     author: str | None = None
 
@@ -272,6 +498,7 @@ class OutputConfig:
 @dataclass(frozen=True)
 class StarterConfig:
     remove_examples: bool = True
+    ai_free: bool = False
 
 
 @dataclass(frozen=True)
@@ -281,10 +508,37 @@ class ValidationConfig:
 
 
 @dataclass(frozen=True)
+class ProjectSettingsConfig:
+    version_code: int | None = None
+    version_name: str | None = None
+    compile_sdk: int | None = None
+    min_sdk: int | None = None
+    target_sdk: int | None = None
+    benchmark_min_sdk: int | None = None
+    jvm_target: int | None = None
+    posts_backend_url: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "versionCode": self.version_code,
+            "versionName": self.version_name,
+            "compileSdk": self.compile_sdk,
+            "minSdk": self.min_sdk,
+            "targetSdk": self.target_sdk,
+            "benchmarkMinSdk": self.benchmark_min_sdk,
+            "jvmTarget": self.jvm_target,
+            "postsBackendUrl": self.posts_backend_url,
+        }
+
+
+@dataclass(frozen=True)
 class SetupConfig:
     identity: IdentityConfig
     output: OutputConfig = field(default_factory=OutputConfig)
     starter: StarterConfig = field(default_factory=StarterConfig)
+    project_settings: ProjectSettingsConfig = field(
+        default_factory=ProjectSettingsConfig,
+    )
     capabilities: frozenset[str] = field(default_factory=frozenset)
     validation: ValidationConfig = field(default_factory=ValidationConfig)
     schema_version: int = SCHEMA_VERSION
@@ -294,25 +548,96 @@ class SetupConfig:
         if not isinstance(value, dict):
             raise ValueError("configuration must be a JSON object")
         schema_version = value.get("schemaVersion", SCHEMA_VERSION)
-        if schema_version != SCHEMA_VERSION:
+        if (
+            isinstance(schema_version, bool)
+            or not isinstance(schema_version, int)
+            or schema_version not in SUPPORTED_SCHEMA_VERSIONS
+        ):
             raise ValueError(
-                f"unsupported schemaVersion {schema_version}; expected {SCHEMA_VERSION}",
+                f"unsupported schemaVersion {schema_version}; "
+                f"expected one of {sorted(SUPPORTED_SCHEMA_VERSIONS)}",
             )
 
         identity_value = _object(value, "identity")
         output_value = _object(value, "output", required=False)
         starter_value = _object(value, "starter", required=False)
+        project_settings_value = _object(
+            value,
+            "projectSettings",
+            required=False,
+        )
         validation_value = _object(value, "validation", required=False)
+        if schema_version == SCHEMA_VERSION:
+            _reject_unknown_keys(
+                value,
+                {
+                    "schemaVersion",
+                    "identity",
+                    "output",
+                    "starter",
+                    "projectSettings",
+                    "capabilities",
+                    "validation",
+                },
+                "configuration",
+            )
+            _reject_unknown_keys(
+                identity_value,
+                {
+                    "packageName",
+                    "projectName",
+                    "applicationId",
+                    "displayName",
+                    "pluginAlias",
+                    "author",
+                },
+                "identity",
+            )
+            _reject_unknown_keys(output_value, {"mode", "path"}, "output")
+            _reject_unknown_keys(
+                starter_value,
+                {"removeExamples", "aiFree"},
+                "starter",
+            )
+            _reject_unknown_keys(
+                project_settings_value,
+                {
+                    "versionCode",
+                    "versionName",
+                    "compileSdk",
+                    "minSdk",
+                    "targetSdk",
+                    "benchmarkMinSdk",
+                    "jvmTarget",
+                    "postsBackendUrl",
+                },
+                "projectSettings",
+            )
+            _reject_unknown_keys(
+                validation_value,
+                {"format", "level"},
+                "validation",
+            )
         raw_capabilities = value.get("capabilities", [])
         if not isinstance(raw_capabilities, list) or not all(
             isinstance(item, str) for item in raw_capabilities
         ):
             raise ValueError("capabilities must be an array of capability IDs")
 
+        package_name = _string(identity_value, "packageName")
+        project_name = _string(identity_value, "projectName")
+        application_id = _optional_string(identity_value, "applicationId")
+        display_name = _optional_string(identity_value, "displayName")
+        if schema_version < SCHEMA_VERSION:
+            application_id = application_id or package_name
+            display_name = display_name or project_name
+
         config = cls(
             identity=IdentityConfig(
-                package_name=_string(identity_value, "packageName"),
-                project_name=_string(identity_value, "projectName"),
+                package_name=package_name,
+                project_name=project_name,
+                application_id=application_id,
+                display_name=display_name,
                 plugin_alias=_optional_string(identity_value, "pluginAlias"),
                 author=_optional_string(identity_value, "author"),
             ),
@@ -326,13 +651,49 @@ class SetupConfig:
                     "removeExamples",
                     default=True,
                 ),
+                ai_free=_boolean(
+                    starter_value,
+                    "aiFree",
+                    default=False,
+                ),
+            ),
+            project_settings=ProjectSettingsConfig(
+                version_code=_optional_integer(
+                    project_settings_value,
+                    "versionCode",
+                ),
+                version_name=_optional_string(
+                    project_settings_value,
+                    "versionName",
+                ),
+                compile_sdk=_optional_integer(
+                    project_settings_value,
+                    "compileSdk",
+                ),
+                min_sdk=_optional_integer(project_settings_value, "minSdk"),
+                target_sdk=_optional_integer(
+                    project_settings_value,
+                    "targetSdk",
+                ),
+                benchmark_min_sdk=_optional_integer(
+                    project_settings_value,
+                    "benchmarkMinSdk",
+                ),
+                jvm_target=_optional_integer(
+                    project_settings_value,
+                    "jvmTarget",
+                ),
+                posts_backend_url=_optional_string(
+                    project_settings_value,
+                    "postsBackendUrl",
+                ),
             ),
             capabilities=frozenset(raw_capabilities),
             validation=ValidationConfig(
                 format=_boolean(validation_value, "format", default=False),
                 level=_string(validation_value, "level", default="none"),
             ),
-            schema_version=schema_version,
+            schema_version=SCHEMA_VERSION,
         )
         validate_config(config)
         return config
@@ -351,6 +712,8 @@ class SetupConfig:
             "identity": {
                 "packageName": self.identity.package_name,
                 "projectName": self.identity.project_name,
+                "applicationId": self.identity.application_id,
+                "displayName": self.identity.display_name,
                 "pluginAlias": self.identity.plugin_alias,
                 "author": self.identity.author,
             },
@@ -360,7 +723,9 @@ class SetupConfig:
             },
             "starter": {
                 "removeExamples": self.starter.remove_examples,
+                "aiFree": self.starter.ai_free,
             },
+            "projectSettings": self.project_settings.to_dict(),
             "capabilities": sorted(self.capabilities),
             "validation": {
                 "format": self.validation.format,
@@ -407,6 +772,27 @@ def _optional_string(value: dict[str, Any], key: str) -> str | None:
     return result or None
 
 
+def _optional_integer(value: dict[str, Any], key: str) -> int | None:
+    result = value.get(key)
+    if result is None:
+        return None
+    if isinstance(result, bool) or not isinstance(result, int):
+        raise ValueError(f"{key} must be an integer or null")
+    return result
+
+
+def _reject_unknown_keys(
+    value: dict[str, Any],
+    allowed: set[str],
+    field_name: str,
+) -> None:
+    unknown = sorted(set(value).difference(allowed))
+    if unknown:
+        raise ValueError(
+            f"{field_name} contains unknown fields: {', '.join(unknown)}",
+        )
+
+
 def _boolean(
     value: dict[str, Any],
     key: str,
@@ -443,20 +829,11 @@ def derived_plugin_alias(package_name: str) -> str:
 
 def validate_config(config: SetupConfig) -> None:
     identity = config.identity
-    if not PACKAGE_PATTERN.fullmatch(identity.package_name):
-        raise ValueError(
-            "packageName must be a lowercase dotted identifier with at least two segments",
-        )
-    invalid_segment = next(
-        (
-            segment
-            for segment in identity.package_name.split(".")
-            if segment in RESERVED_WORDS
-        ),
-        None,
-    )
-    if invalid_segment is not None:
-        raise ValueError(f"packageName contains reserved keyword '{invalid_segment}'")
+    _validate_package_identifier(identity.package_name, "packageName")
+    if identity.application_id is not None:
+        _validate_package_identifier(identity.application_id, "applicationId")
+    if identity.display_name is not None:
+        validate_single_line(identity.display_name, "displayName")
 
     validate_single_line(identity.project_name, "projectName")
     plugin_alias = identity.plugin_alias or derived_plugin_alias(identity.package_name)
@@ -470,18 +847,125 @@ def validate_config(config: SetupConfig) -> None:
         if "*/" in identity.author or "--" in identity.author:
             raise ValueError("author contains an unsafe comment terminator")
 
-    if config.output.mode not in {"copy", "inPlace"}:
-        raise ValueError("output.mode must be 'copy' or 'inPlace'")
+    if config.output.mode not in {"archive", "copy", "inPlace"}:
+        raise ValueError("output.mode must be 'archive', 'copy', or 'inPlace'")
     if config.output.mode == "copy" and not config.output.path:
         raise ValueError("output.path is required in copy mode")
-    if config.output.mode == "inPlace" and config.output.path:
-        raise ValueError("output.path must be omitted in inPlace mode")
+    if config.output.mode != "copy" and config.output.path:
+        raise ValueError("output.path must be omitted outside copy mode")
+    if config.output.mode == "archive" and (
+        config.validation.format or config.validation.level != "none"
+    ):
+        raise ValueError(
+            "archive mode supports structural checks only",
+        )
     if config.validation.level not in {"none", "narrow", "full"}:
         raise ValueError("validation.level must be none, narrow, or full")
+
+    project = config.project_settings
+    if project.version_name is not None:
+        validate_single_line(project.version_name, "versionName")
+        if len(project.version_name) > 100:
+            raise ValueError("versionName must be at most 100 characters")
+    _validate_optional_range(
+        project.version_code,
+        "versionCode",
+        minimum=1,
+        maximum=2_100_000_000,
+    )
+    _validate_optional_range(project.compile_sdk, "compileSdk", minimum=35, maximum=99)
+    _validate_optional_range(project.min_sdk, "minSdk", minimum=21, maximum=99)
+    _validate_optional_range(project.target_sdk, "targetSdk", minimum=21, maximum=99)
+    _validate_optional_range(
+        project.benchmark_min_sdk,
+        "benchmarkMinSdk",
+        minimum=23,
+        maximum=99,
+    )
+    _validate_optional_range(project.jvm_target, "jvmTarget", minimum=17, maximum=25)
+    if (
+        project.min_sdk is not None
+        and project.target_sdk is not None
+        and project.min_sdk > project.target_sdk
+    ):
+        raise ValueError("minSdk must not exceed targetSdk")
+    if (
+        project.target_sdk is not None
+        and project.compile_sdk is not None
+        and project.target_sdk > project.compile_sdk
+    ):
+        raise ValueError("targetSdk must not exceed compileSdk")
+    if (
+        project.min_sdk is not None
+        and project.compile_sdk is not None
+        and project.min_sdk > project.compile_sdk
+    ):
+        raise ValueError("minSdk must not exceed compileSdk")
+    if (
+        project.benchmark_min_sdk is not None
+        and project.min_sdk is not None
+        and project.benchmark_min_sdk < project.min_sdk
+    ):
+        raise ValueError("benchmarkMinSdk must not be lower than minSdk")
+    if (
+        project.benchmark_min_sdk is not None
+        and project.compile_sdk is not None
+        and project.benchmark_min_sdk > project.compile_sdk
+    ):
+        raise ValueError("benchmarkMinSdk must not exceed compileSdk")
+    if project.posts_backend_url is not None:
+        validate_single_line(project.posts_backend_url, "postsBackendUrl")
+        if len(project.posts_backend_url) > 2048:
+            raise ValueError("postsBackendUrl must be at most 2048 characters")
+        parsed_url = urlsplit(project.posts_backend_url)
+        if parsed_url.scheme not in {"http", "https"} or not parsed_url.netloc:
+            raise ValueError(
+                "postsBackendUrl must be an absolute HTTP or HTTPS URL",
+            )
+        if parsed_url.scheme != "https":
+            raise ValueError("postsBackendUrl must use HTTPS")
+        if parsed_url.username is not None or parsed_url.password is not None:
+            raise ValueError("postsBackendUrl must not contain embedded credentials")
+        if parsed_url.query or parsed_url.fragment:
+            raise ValueError("postsBackendUrl must not contain a query or fragment")
+        if not parsed_url.path.endswith("/"):
+            raise ValueError("postsBackendUrl requires a trailing slash")
+        if config.starter.remove_examples:
+            raise ValueError(
+                "postsBackendUrl is available only when example modules are retained",
+            )
 
     unknown = sorted(config.capabilities.difference(CAPABILITY_BY_ID))
     if unknown:
         raise ValueError(f"unknown capabilities: {', '.join(unknown)}")
+
+
+def _validate_package_identifier(value: str, field_name: str) -> None:
+    if not PACKAGE_PATTERN.fullmatch(value):
+        raise ValueError(
+            f"{field_name} must be a lowercase dotted identifier with at least two segments",
+        )
+    invalid_segment = next(
+        (segment for segment in value.split(".") if segment in RESERVED_WORDS),
+        None,
+    )
+    if invalid_segment is not None:
+        raise ValueError(
+            f"{field_name} contains reserved keyword '{invalid_segment}'",
+        )
+
+
+def _validate_optional_range(
+    value: int | None,
+    field_name: str,
+    *,
+    minimum: int,
+    maximum: int,
+) -> None:
+    if value is not None and not minimum <= value <= maximum:
+        raise ValueError(
+            f"{field_name} must be between {minimum} and {maximum}",
+        )
 
 
 def resolve_capabilities(
@@ -518,13 +1002,56 @@ def resolve_capabilities(
 def with_resolved_capabilities(
     config: SetupConfig,
 ) -> tuple[SetupConfig, dict[str, str]]:
+    requested = config.capabilities
+    if config.starter.ai_free:
+        requested = requested.difference({"generative_ai"})
     resolved, reasons = resolve_capabilities(
-        config.capabilities,
+        requested,
         remove_examples=config.starter.remove_examples,
     )
     result = replace(config, capabilities=resolved)
     validate_config(result)
     return result, reasons
+
+
+def with_resolved_project_settings(
+    config: SetupConfig,
+    defaults: ProjectSettingsConfig,
+) -> SetupConfig:
+    requested = config.project_settings
+    if (
+        requested.jvm_target is not None
+        and requested.jvm_target != defaults.jvm_target
+    ):
+        raise ValueError(
+            "jvmTarget is fixed by the repository build-JDK contract",
+        )
+    identity = replace(
+        config.identity,
+        application_id=(
+            config.identity.application_id or config.identity.package_name
+        ),
+        display_name=config.identity.display_name or config.identity.project_name,
+    )
+    resolved = ProjectSettingsConfig(
+        version_code=requested.version_code or defaults.version_code,
+        version_name=requested.version_name or defaults.version_name,
+        compile_sdk=requested.compile_sdk or defaults.compile_sdk,
+        min_sdk=requested.min_sdk or defaults.min_sdk,
+        target_sdk=requested.target_sdk or defaults.target_sdk,
+        benchmark_min_sdk=(
+            requested.benchmark_min_sdk or defaults.benchmark_min_sdk
+        ),
+        jvm_target=requested.jvm_target or defaults.jvm_target,
+        posts_backend_url=(
+            None
+            if config.starter.remove_examples
+            else requested.posts_backend_url or defaults.posts_backend_url
+        ),
+    )
+    result = replace(config, identity=identity, project_settings=resolved)
+    validate_config(result)
+    return result
 
 
 def config_for_preset(
@@ -533,6 +1060,7 @@ def config_for_preset(
     preset: str,
     output: OutputConfig,
     starter: StarterConfig,
+    project_settings: ProjectSettingsConfig | None = None,
     validation: ValidationConfig | None = None,
 ) -> SetupConfig:
     if preset not in PRESETS:
@@ -541,6 +1069,7 @@ def config_for_preset(
         identity=identity,
         output=output,
         starter=starter,
+        project_settings=project_settings or ProjectSettingsConfig(),
         capabilities=PRESETS[preset],
         validation=validation or ValidationConfig(),
     )

@@ -274,6 +274,36 @@ review.
 **Review when:** False-positive or miss data justifies adopting a dedicated scanner, GitHub changes
 Secret Protection availability, or the repository introduces legitimate private-key test fixtures.
 
+### AD-011: Public setup is download-only and stateless
+
+**Status:** Accepted
+
+**Context:** The local setup wizard can publish a directory or mutate the current clone because its
+server is loopback-only and protected by a random session token. A deployed wizard receives
+untrusted, concurrent requests and must not expose server filesystem paths, repository mutation, or
+request-triggered Gradle execution.
+
+**Decision:** Public mode exposes configuration preview and deterministic ZIP download only. The
+server rebuilds and verifies the submitted plan digest against the current source state, packages
+only Git-tracked files or the exact container source manifest, rejects cross-origin browser posts
+and oversized JSON, redacts host paths, and bounds concurrent planning and archive work before
+source scanning. Copy, in-place application, formatting, and build verification remain local-only
+operations.
+
+**Alternatives:** Exposing the local apply endpoint behind a hosted UI was rejected because user
+paths would refer to the server and an untrusted request could modify deployment state. Generating
+the project entirely in browser JavaScript was rejected because it would duplicate the Python
+rename and dependency engine. Running Gradle for every public download was rejected because it
+creates an expensive denial-of-service surface.
+
+**Consequences:** The same planner and transformation engine produce local directories and hosted
+archives without duplicating generation logic. Public deployments require a Python-capable
+container runtime and platform request/resource limits. Downloaded archives receive structural
+validation; users run Android builds after extraction.
+
+**Review when:** The generator becomes portable to a trusted browser runtime, hosted builds gain an
+isolated job queue with quotas, or the deployment platform no longer supports the Python container.
+
 ## New decision template
 
 ```markdown

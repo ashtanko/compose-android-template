@@ -3,29 +3,50 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
+import zipfile
 from datetime import date
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Callable, Iterable, Match
+from xml.sax.saxutils import escape as xml_escape
 
 from .model import (
     CAPABILITY_BY_ID,
+    ProjectSettingsConfig,
     SetupConfig,
     derived_plugin_alias,
     validate_config,
     with_resolved_capabilities,
+    with_resolved_project_settings,
 )
 
 
-SKIPPED_DIRECTORIES = {".git", ".gradle", ".idea", ".kotlin", "build"}
+SKIPPED_DIRECTORIES = {
+    ".git",
+    ".gradle",
+    ".idea",
+    ".kotlin",
+    "__pycache__",
+    "build",
+}
 SKIPPED_LOCAL_FILES = {"local.properties", "key.properties"}
+SOURCE_MANIFEST_PATH = Path("scripts/setup_wizard/source-manifest.txt")
+AI_TOOLING_PATHS = (
+    ".agents",
+    ".claude",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "skills-lock.json",
+)
 EXAMPLE_MODULES = (
     "feature/home",
     "feature/posts",
@@ -110,7 +131,7 @@ class SetupError(RuntimeError):
 @dataclass(frozen=True)
 class SetupPlan:
     source_root: Path
-    target_root: Path
+    target_root: Path | None
     config: SetupConfig
     reasons: dict[str, str]
     operations: tuple[str, ...]
@@ -120,7 +141,12 @@ class SetupPlan:
         return {
             "digest": self.digest,
             "sourceRoot": str(self.source_root),
-            "targetRoot": str(self.target_root),
+            "targetRoot": (
+                str(self.target_root)
+                if self.target_root is not None
+                else None
+            ),
+            "archiveName": archive_name(self.config),
             "outputMode": self.config.output.mode,
             "capabilities": [
                 {
@@ -151,6 +177,13 @@ def build_plan(
     rename_path = source / "scripts" / "rename-template.py"
     if not identity_path.is_file() or not rename_path.is_file():
         raise SetupError(f"{source} is not a supported template repository")
+    try:
+        resolved_config = with_resolved_project_settings(
+            resolved_config,
+            read_project_settings(source),
+        )
+    except ValueError as error:
+        raise SetupError(str(error)) from error
     _validate_plugin_alias_collision(source, resolved_config)
 
     if resolved_config.output.mode == "copy":
@@ -162,22 +195,38 @@ def build_plan(
             target = target.resolve()
         if target == source or _is_relative_to(target, source):
             raise SetupError("copy destination must be outside the template repository")
-    else:
+    elif resolved_config.output.mode == "inPlace":
         target = source
+    else:
+        target = None
 
     identity_bytes = identity_path.read_bytes()
+    if resolved_config.output.mode == "copy":
+        output_operation = f"Copy tracked template files to {target}"
+    elif resolved_config.output.mode == "inPlace":
+        output_operation = f"Configure the current repository at {source}"
+    else:
+        output_operation = (
+            f"Prepare {archive_name(resolved_config)} as a browser download"
+        )
     operations = [
-        (
-            f"Copy tracked template files to {target}"
-            if resolved_config.output.mode == "copy"
-            else f"Configure the current repository at {source}"
-        ),
+        output_operation,
         (
             f"Rename project to “{resolved_config.identity.project_name}” "
             f"with package {resolved_config.identity.package_name}"
         ),
+        (
+            f"Set application ID {resolved_config.identity.application_id} and "
+            f"display name “{resolved_config.identity.display_name}”"
+        ),
+        (
+            "Configure app version and Android SDK levels from the resolved "
+            "project settings"
+        ),
         f"Enable {len(resolved_config.capabilities)} optional capability group(s)",
     ]
+    if resolved_config.project_settings.posts_backend_url is not None:
+        operations.append("Configure the retained Posts example backend URL")
     if resolved_config.starter.remove_examples:
         operations.append(
             "Remove example features and sample libraries; generate a minimal Compose starter",
@@ -186,6 +235,10 @@ def build_plan(
             operations.append("Remove the unused core navigation module")
         if "baseline_profiles" not in resolved_config.capabilities:
             operations.append("Remove the benchmark module and baseline-profile wiring")
+    if resolved_config.starter.ai_free:
+        operations.append(
+            "Remove coding-agent guidance and generative-AI integration",
+        )
     if resolved_config.validation.format:
         operations.append("Apply Spotless formatting")
     if resolved_config.validation.level != "none":
@@ -227,8 +280,10 @@ def apply_plan(
 
     if plan.config.output.mode == "copy":
         result = _apply_to_copy(plan)
-    else:
+    elif plan.config.output.mode == "inPlace":
         result = _apply_in_place(plan, force=force)
+    else:
+        raise SetupError("archive plans must be generated as a ZIP download")
 
     _run_selected_validation(result, plan.config)
     return result
@@ -236,6 +291,8 @@ def apply_plan(
 
 def _apply_to_copy(plan: SetupPlan) -> Path:
     destination = plan.target_root
+    if destination is None:
+        raise SetupError("copy plan is missing its destination")
     destination.parent.mkdir(parents=True, exist_ok=True)
     if destination.exists() and any(destination.iterdir()):
         raise SetupError(f"destination is not empty: {destination}")
@@ -248,15 +305,7 @@ def _apply_to_copy(plan: SetupPlan) -> Path:
     )
     published = False
     try:
-        for relative_path in _tracked_files(plan.source_root):
-            source = plan.source_root / relative_path
-            target = staging / relative_path
-            target.parent.mkdir(parents=True, exist_ok=True)
-            if source.is_symlink():
-                target.symlink_to(os.readlink(source))
-            else:
-                shutil.copy2(source, target)
-        _configure_repository(staging, plan.config)
+        _prepare_project(plan.source_root, staging, plan.config)
         if destination.exists():
             destination.rmdir()
         os.replace(staging, destination)
@@ -267,6 +316,88 @@ def _apply_to_copy(plan: SetupPlan) -> Path:
     finally:
         if not published:
             shutil.rmtree(staging, ignore_errors=True)
+
+
+def create_archive(
+    plan: SetupPlan,
+    *,
+    expected_digest: str | None = None,
+) -> tuple[bytes, str]:
+    if plan.config.output.mode != "archive":
+        raise SetupError("only archive plans can be downloaded")
+    current_plan = build_plan(plan.config, source_root=plan.source_root)
+    if current_plan.digest != plan.digest:
+        raise SetupError("the repository or configuration changed; preview the plan again")
+    if expected_digest is not None and expected_digest != plan.digest:
+        raise SetupError("plan approval is stale; preview the plan again")
+
+    project_directory = archive_name(plan.config).removesuffix(".zip")
+    try:
+        with tempfile.TemporaryDirectory(prefix="project-archive-") as temporary:
+            project_root = Path(temporary) / project_directory
+            project_root.mkdir()
+            _prepare_project(plan.source_root, project_root, plan.config)
+            return (
+                _zip_project(project_root, project_directory),
+                f"{project_directory}.zip",
+            )
+    except (OSError, subprocess.SubprocessError) as error:
+        raise SetupError(f"could not create project archive: {error}") from error
+
+
+def archive_name(config: SetupConfig) -> str:
+    slug = re.sub(
+        r"[^a-z0-9]+",
+        "-",
+        config.identity.project_name.lower(),
+    ).strip("-")
+    return f"{slug or 'android-project'}.zip"
+
+
+def _prepare_project(
+    source_root: Path,
+    target_root: Path,
+    config: SetupConfig,
+) -> None:
+    for relative_path in _tracked_files(source_root):
+        source = source_root / relative_path
+        target = target_root / relative_path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if source.is_symlink():
+            target.symlink_to(os.readlink(source))
+        else:
+            shutil.copy2(source, target)
+    _configure_repository(target_root, config)
+    _write_source_manifest(target_root, _walk_files(target_root))
+
+
+def _zip_project(project_root: Path, project_directory: str) -> bytes:
+    archive = io.BytesIO()
+    with zipfile.ZipFile(
+        archive,
+        mode="w",
+        compression=zipfile.ZIP_DEFLATED,
+        compresslevel=9,
+    ) as output:
+        for path in sorted(
+            (candidate for candidate in project_root.rglob("*") if not candidate.is_dir()),
+        ):
+            relative_path = path.relative_to(project_root)
+            archive_path = f"{project_directory}/{relative_path.as_posix()}"
+            info = zipfile.ZipInfo(
+                archive_path,
+                date_time=(1980, 1, 1, 0, 0, 0),
+            )
+            info.compress_type = zipfile.ZIP_DEFLATED
+            if path.is_symlink():
+                info.external_attr = (stat.S_IFLNK | 0o777) << 16
+                content = os.fsencode(os.readlink(path))
+            else:
+                mode = stat.S_IMODE(path.stat().st_mode)
+                info.external_attr = (stat.S_IFREG | mode) << 16
+                content = path.read_bytes()
+            output.writestr(info, content)
+    return archive.getvalue()
 
 
 def _apply_in_place(plan: SetupPlan, *, force: bool) -> Path:
@@ -343,11 +474,375 @@ class _RepositorySnapshot:
 
 def _configure_repository(root: Path, config: SetupConfig) -> None:
     _run_rename(root, config)
+    _configure_project_settings(root, config)
     _configure_modules_and_dependencies(root, config)
     if config.starter.remove_examples:
         _install_minimal_starter(root, config)
+    if config.starter.ai_free:
+        _configure_ai_free_project(root)
     _sort_kotlin_imports(root)
     _neutralize_missing_markdown_links(root)
+
+
+def read_project_settings(root: Path) -> ProjectSettingsConfig:
+    """Read the template-owned defaults used to resolve partial configurations."""
+    identity = json.loads(
+        _read_required_text(root / "scripts" / "template-identity.json"),
+    )
+    app_build = _read_required_text(root / "app" / "build.gradle.kts")
+    catalog = _read_required_text(root / "gradle" / "libs.versions.toml")
+    posts_network_path = _posts_network_module(root, identity["codePackage"])
+    posts_backend_url = None
+    if posts_network_path.is_file():
+        posts_backend_url = _unescape_kotlin_string(
+            _required_match(
+                _read_required_text(posts_network_path),
+                r'(?m)^\s*private const val POSTS_BASE_URL\s*=\s*"((?:\\.|[^"\\])*)"\s*$',
+                "Posts example backend URL",
+            ),
+        )
+    return ProjectSettingsConfig(
+        version_code=int(
+            _required_match(
+                app_build,
+                r"(?m)^\s*versionCode\s*=\s*(\d+)\s*$",
+                "app versionCode",
+            ),
+        ),
+        version_name=_unescape_kotlin_string(
+            _required_match(
+                app_build,
+                r'(?m)^\s*versionName\s*=\s*"((?:\\.|[^"\\])*)"\s*$',
+                "app versionName",
+            ),
+        ),
+        compile_sdk=_catalog_integer(catalog, "compileSdk"),
+        min_sdk=_catalog_integer(catalog, "minSdk"),
+        target_sdk=_catalog_integer(catalog, "targetSdk"),
+        benchmark_min_sdk=_catalog_integer(catalog, "benchmarkMinSdk"),
+        jvm_target=_catalog_integer(catalog, "jvmTarget"),
+        posts_backend_url=posts_backend_url,
+    )
+
+
+def _configure_project_settings(root: Path, config: SetupConfig) -> None:
+    identity = config.identity
+    project = config.project_settings
+    required_values = {
+        "applicationId": identity.application_id,
+        "displayName": identity.display_name,
+        "versionCode": project.version_code,
+        "versionName": project.version_name,
+        "compileSdk": project.compile_sdk,
+        "minSdk": project.min_sdk,
+        "targetSdk": project.target_sdk,
+        "benchmarkMinSdk": project.benchmark_min_sdk,
+        "jvmTarget": project.jvm_target,
+    }
+    missing = sorted(key for key, value in required_values.items() if value is None)
+    if missing:
+        raise SetupError(
+            f"project settings were not fully resolved: {', '.join(missing)}",
+        )
+
+    app_build_path = root / "app" / "build.gradle.kts"
+    app_build = _read_required_text(app_build_path)
+    app_build = _replace_once(
+        app_build,
+        r'(?m)^(\s*applicationId\s*=\s*")((?:\\.|[^"\\])*)("\s*)$',
+        lambda match: (
+            f"{match.group(1)}{_kotlin_string(identity.application_id or '')}"
+            f"{match.group(3)}"
+        ),
+        "applicationId",
+    )
+    app_build = _replace_once(
+        app_build,
+        r"(?m)^(\s*versionCode\s*=\s*)\d+(\s*)$",
+        lambda match: f"{match.group(1)}{project.version_code}{match.group(2)}",
+        "versionCode",
+    )
+    app_build = _replace_once(
+        app_build,
+        r'(?m)^(\s*versionName\s*=\s*")((?:\\.|[^"\\])*)("\s*)$',
+        lambda match: (
+            f"{match.group(1)}{_kotlin_string(project.version_name or '')}"
+            f"{match.group(3)}"
+        ),
+        "versionName",
+    )
+    app_build_path.write_text(app_build, encoding="utf-8")
+
+    catalog_path = root / "gradle" / "libs.versions.toml"
+    catalog = _read_required_text(catalog_path)
+    for key, value in (
+        ("jvmTarget", project.jvm_target),
+        ("compileSdk", project.compile_sdk),
+        ("minSdk", project.min_sdk),
+        ("benchmarkMinSdk", project.benchmark_min_sdk),
+        ("targetSdk", project.target_sdk),
+    ):
+        catalog = _replace_once(
+            catalog,
+            rf'(?m)^({re.escape(key)}\s*=\s*")[^"\n]*(".*)$',
+            lambda match, setting=value: (
+                f"{match.group(1)}{setting}{match.group(2)}"
+            ),
+            key,
+        )
+    catalog_path.write_text(catalog, encoding="utf-8")
+
+    strings_path = root / "app" / "src" / "main" / "res" / "values" / "strings.xml"
+    strings = _read_required_text(strings_path)
+    strings = _replace_once(
+        strings,
+        r'(?s)(<string\s+name="app_name"[^>]*>).*?(</string>)',
+        lambda match: (
+            f"{match.group(1)}{xml_escape(identity.display_name or '')}"
+            f"{match.group(2)}"
+        ),
+        "app_name resource",
+    )
+    strings_path.write_text(strings, encoding="utf-8")
+
+    identity_path = root / "scripts" / "template-identity.json"
+    identity_value = json.loads(_read_required_text(identity_path))
+    identity_value["applicationPackage"] = identity.application_id
+    identity_value["displayName"] = identity.display_name
+    identity_path.write_text(
+        json.dumps(identity_value, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    benchmark_config = _benchmark_config(root, config.identity.package_name)
+    if benchmark_config.is_file():
+        benchmark = _read_required_text(benchmark_config)
+        benchmark = _replace_once(
+            benchmark,
+            r'(?m)^(\s*internal const val TARGET_PACKAGE_NAME\s*=\s*")'
+            r'((?:\\.|[^"\\])*)("\s*)$',
+            lambda match: (
+                f"{match.group(1)}{_kotlin_string(identity.application_id or '')}"
+                f"{match.group(3)}"
+            ),
+            "benchmark target package",
+        )
+        benchmark_config.write_text(benchmark, encoding="utf-8")
+
+    if project.posts_backend_url is not None:
+        posts_network_path = _posts_network_module(root, config.identity.package_name)
+        posts_network = _read_required_text(posts_network_path)
+        posts_network = _replace_once(
+            posts_network,
+            r'(?m)^(\s*private const val POSTS_BASE_URL\s*=\s*")'
+            r'((?:\\.|[^"\\])*)("\s*)$',
+            lambda match: (
+                f"{match.group(1)}{_kotlin_string(project.posts_backend_url or '')}"
+                f"{match.group(3)}"
+            ),
+            "Posts example backend URL",
+        )
+        posts_network_path.write_text(posts_network, encoding="utf-8")
+
+
+def _posts_network_module(root: Path, package_name: str) -> Path:
+    return (
+        root
+        / "feature"
+        / "posts"
+        / "data"
+        / "src"
+        / "main"
+        / "kotlin"
+        / Path(*package_name.split("."))
+        / "feature"
+        / "posts"
+        / "data"
+        / "di"
+        / "PostsNetworkModule.kt"
+    )
+
+
+def _benchmark_config(root: Path, package_name: str) -> Path:
+    return (
+        root
+        / "benchmarks"
+        / "src"
+        / "main"
+        / "java"
+        / Path(*package_name.split("."))
+        / "benchmarks"
+        / "BenchmarkConfig.kt"
+    )
+
+
+def _read_required_text(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8")
+    except OSError as error:
+        raise SetupError(f"cannot read project setting source {path}: {error}") from error
+
+
+def _required_match(text: str, pattern: str, label: str) -> str:
+    match = re.search(pattern, text)
+    if match is None:
+        raise SetupError(f"cannot locate {label} in its project setting source")
+    return match.group(1)
+
+
+def _catalog_integer(catalog: str, key: str) -> int:
+    return int(
+        _required_match(
+            catalog,
+            rf'(?m)^{re.escape(key)}\s*=\s*"(\d+)"',
+            key,
+        ),
+    )
+
+
+def _replace_once(
+    text: str,
+    pattern: str,
+    replacement: str | Callable[[Match[str]], str],
+    label: str,
+) -> str:
+    updated, count = re.subn(pattern, replacement, text)
+    if count != 1:
+        raise SetupError(f"expected exactly one {label} setting, found {count}")
+    return updated
+
+
+def _kotlin_string(value: str) -> str:
+    return value.replace("\\", "\\\\").replace('"', '\\"').replace("$", "\\$")
+
+
+def _unescape_kotlin_string(value: str) -> str:
+    return value.replace("\\$", "$").replace('\\"', '"').replace("\\\\", "\\")
+
+
+def _configure_ai_free_project(root: Path) -> None:
+    try:
+        for relative_path in AI_TOOLING_PATHS:
+            path = root / relative_path
+            if path.is_dir() and not path.is_symlink():
+                shutil.rmtree(path)
+            else:
+                path.unlink(missing_ok=True)
+        for agent_guide in root.rglob("AGENTS.md"):
+            agent_guide.unlink(missing_ok=True)
+    except OSError as error:
+        raise SetupError(f"could not remove AI guidance: {error}") from error
+
+    retained = [
+        relative_path
+        for relative_path in AI_TOOLING_PATHS
+        if (root / relative_path).exists() or (root / relative_path).is_symlink()
+    ]
+    retained.extend(
+        str(path.relative_to(root))
+        for path in root.rglob("AGENTS.md")
+    )
+    if retained:
+        raise SetupError(
+            "AI-free setup retained guidance paths: " + ", ".join(retained),
+        )
+
+    catalog_path = root / "gradle" / "libs.versions.toml"
+    catalog = catalog_path.read_text(encoding="utf-8")
+    catalog = re.sub(r"(?m)^generativeai\s*=.*\n", "", catalog)
+    catalog_path.write_text(catalog, encoding="utf-8")
+
+    readme_path = root / "README.md"
+    readme = readme_path.read_text(encoding="utf-8")
+    readme = re.sub(
+        r"(?ms)^## 🤖 AI-assisted development\n.*?(?=^## )",
+        "",
+        readme,
+    )
+    readme = re.sub(
+        r"(?m)^├── (?:\.agents/|AGENTS\.md|CLAUDE\.md).*\n",
+        "",
+        readme,
+    )
+    readme = re.sub(
+        r"(?ms)^Enable the repository-owned pre-commit hook once per clone:\n\n"
+        r"```bash\n.*?```\n\n"
+        r"The hook checks staged Git blobs without reading ignored local credentials\. ",
+        "",
+        readme,
+    )
+    readme_path.write_text(readme, encoding="utf-8")
+
+    architecture_path = root / "ARCHITECTURE.md"
+    architecture = architecture_path.read_text(encoding="utf-8")
+    architecture = architecture.replace(
+        "Run the narrow module tests first, then use the validation matrix in\n"
+        "[`.agents/reference/commands.md`](.agents/reference/commands.md).",
+        "Run the narrow module tests first, then use `make verify` for the "
+        "complete host-side validation contract.",
+    )
+    architecture_path.write_text(architecture, encoding="utf-8")
+
+    gitignore_path = root / ".gitignore"
+    gitignore = gitignore_path.read_text(encoding="utf-8")
+    gitignore = re.sub(
+        r"(?ms)^# Shared agent guidance is intentionally versioned\.\n"
+        r"!AGENTS\.md\n"
+        r"!CLAUDE\.md\n"
+        r"!\.agents/\n"
+        r"!\.agents/\*\*\n?",
+        "",
+        gitignore,
+    )
+    gitignore_path.write_text(gitignore, encoding="utf-8")
+
+    pull_request_template = root / ".github" / "PULL_REQUEST_TEMPLATE"
+    if pull_request_template.is_file():
+        template = pull_request_template.read_text(encoding="utf-8")
+        template = template.replace(
+            "Documentation or agent guidance:",
+            "Documentation:",
+        )
+        template = template.replace(
+            "documentation, and agent-guidance impacts",
+            "and documentation impacts",
+        )
+        pull_request_template.write_text(template, encoding="utf-8")
+
+    _configure_ai_free_docs_check(root / "scripts" / "check-docs.sh")
+
+
+def _configure_ai_free_docs_check(path: Path) -> None:
+    text = path.read_text(encoding="utf-8")
+    for function_name in (
+        "check_canonical_agent_entrypoint",
+        "check_documented_modules",
+        "check_pull_request_maintenance_contract",
+    ):
+        text = re.sub(
+            rf"(?ms)^{function_name}\(\) \{{\n.*?^\}}\n\n?",
+            "",
+            text,
+        )
+        text = re.sub(
+            rf"(?m)^{function_name}\n",
+            "",
+            text,
+        )
+    text = text.replace(
+        "            README.md AGENTS.md .agents \\\n",
+        "            README.md \\\n",
+    )
+    text = text.replace(
+        'README.md AGENTS.md .agents)"; then',
+        'README.md)"; then',
+    )
+    text = text.replace(
+        "    for documentation_file in AGENTS.md README.md "
+        ".agents/reference/commands.md; do",
+        "    for documentation_file in README.md; do",
+    )
+    path.write_text(text, encoding="utf-8")
 
 
 def _run_rename(root: Path, config: SetupConfig) -> None:
@@ -881,22 +1376,73 @@ def _run_selected_validation(root: Path, config: SetupConfig) -> None:
 
 
 def _tracked_files(root: Path) -> list[Path]:
-    if not _is_git_root(root):
-        return _walk_files(root)
-    result = subprocess.run(
-        ("git", "ls-files", "-z", "--cached"),
-        cwd=root,
-        check=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
-    )
-    if result.returncode == 0:
-        return sorted(
-            Path(os.fsdecode(value))
-            for value in result.stdout.split(b"\0")
-            if value and (root / os.fsdecode(value)).is_file()
+    if _is_git_root(root):
+        try:
+            result = subprocess.run(
+                ("git", "ls-files", "-z", "--cached"),
+                cwd=root,
+                check=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+            )
+        except OSError:
+            result = None
+        if result is not None and result.returncode == 0:
+            return _existing_source_paths(root, result.stdout)
+    return _manifest_files(root)
+
+
+def _manifest_files(root: Path) -> list[Path]:
+    manifest_path = root / SOURCE_MANIFEST_PATH
+    try:
+        lines = manifest_path.read_text(encoding="utf-8").splitlines()
+    except OSError as error:
+        raise SetupError(
+            "source repository has no Git inventory or setup-wizard source manifest",
+        ) from error
+
+    result: list[Path] = []
+    seen: set[Path] = set()
+    for line in lines:
+        relative_path = Path(line)
+        if (
+            not line
+            or "\\" in line
+            or relative_path.is_absolute()
+            or relative_path.as_posix() != line
+            or any(part in {".", ".."} for part in relative_path.parts)
+        ):
+            raise SetupError(f"invalid source manifest entry: {line!r}")
+        if relative_path in seen:
+            raise SetupError(f"duplicate source manifest entry: {line}")
+        if not _source_path_is_eligible(relative_path):
+            raise SetupError(f"ineligible source manifest entry: {line}")
+        path = root / relative_path
+        if not path.is_file() and not path.is_symlink():
+            raise SetupError(f"source manifest entry is missing: {line}")
+        seen.add(relative_path)
+        result.append(relative_path)
+
+    if SOURCE_MANIFEST_PATH not in seen:
+        raise SetupError(
+            f"source manifest must include {SOURCE_MANIFEST_PATH.as_posix()}",
         )
-    return _walk_files(root)
+    return sorted(result)
+
+
+def _write_source_manifest(root: Path, paths: Iterable[Path]) -> None:
+    entries = {
+        Path(path)
+        for path in paths
+        if _source_path_is_eligible(Path(path))
+    }
+    entries.add(SOURCE_MANIFEST_PATH)
+    manifest_path = root / SOURCE_MANIFEST_PATH
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(
+        "".join(f"{path.as_posix()}\n" for path in sorted(entries)),
+        encoding="utf-8",
+    )
 
 
 def _repository_files(root: Path) -> list[Path]:
@@ -917,12 +1463,22 @@ def _repository_files(root: Path) -> list[Path]:
         stderr=subprocess.DEVNULL,
     )
     if result.returncode == 0:
-        return sorted(
-            Path(os.fsdecode(value))
-            for value in result.stdout.split(b"\0")
-            if value and (root / os.fsdecode(value)).is_file()
-        )
+        return _existing_source_paths(root, result.stdout)
     return _walk_files(root)
+
+
+def _existing_source_paths(root: Path, raw_paths: bytes) -> list[Path]:
+    result: list[Path] = []
+    for raw_path in raw_paths.split(b"\0"):
+        if not raw_path:
+            continue
+        relative_path = Path(os.fsdecode(raw_path))
+        path = root / relative_path
+        if _source_path_is_eligible(relative_path) and (
+            path.is_file() or path.is_symlink()
+        ):
+            result.append(relative_path)
+    return sorted(result)
 
 
 def _walk_files(root: Path) -> list[Path]:
@@ -933,11 +1489,24 @@ def _walk_files(root: Path) -> list[Path]:
         )
         directory_path = Path(directory)
         result.extend(
-            (directory_path / filename).relative_to(root)
+            relative_path
             for filename in sorted(filenames)
-            if filename not in SKIPPED_LOCAL_FILES and not filename.startswith(".env")
+            for relative_path in (
+                (directory_path / filename).relative_to(root),
+            )
+            if _source_path_is_eligible(relative_path)
         )
     return result
+
+
+def _source_path_is_eligible(relative_path: Path) -> bool:
+    return (
+        not relative_path.is_absolute()
+        and not any(part in SKIPPED_DIRECTORIES for part in relative_path.parts)
+        and relative_path.name not in SKIPPED_LOCAL_FILES
+        and not relative_path.name.startswith(".env")
+        and not relative_path.name.endswith((".pyc", ".pyo"))
+    )
 
 
 def _git_is_dirty(root: Path) -> bool:
@@ -954,14 +1523,17 @@ def _git_is_dirty(root: Path) -> bool:
 
 
 def _is_git_root(root: Path) -> bool:
-    result = subprocess.run(
-        ("git", "rev-parse", "--show-toplevel"),
-        cwd=root,
-        check=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
-        text=True,
-    )
+    try:
+        result = subprocess.run(
+            ("git", "rev-parse", "--show-toplevel"),
+            cwd=root,
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+    except OSError:
+        return False
     if result.returncode != 0:
         return False
     try:
@@ -972,7 +1544,8 @@ def _is_git_root(root: Path) -> bool:
 
 def _source_fingerprint(root: Path) -> str:
     digest = hashlib.sha256()
-    for relative_path in _repository_files(root):
+    files = _repository_files(root) if _is_git_root(root) else _tracked_files(root)
+    for relative_path in files:
         path = root / relative_path
         digest.update(os.fsencode(relative_path))
         if path.is_symlink():

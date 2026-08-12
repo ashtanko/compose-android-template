@@ -13,37 +13,42 @@ A modern, production-ready Android template built with **Jetpack Compose**, **Na
 
 1. Click the **[Use this template](https://github.com/ashtanko/compose-android-template/generate)** button.
 2. Clone your new repository.
-3. Run the project setup wizard. It configures project and package names, curated dependency
-   capabilities, example-module removal, and validation. Preview is the default; pass `--apply`
-   only after reviewing the plan:
+3. Run the project setup wizard. It configures code-package and Gradle-project identity separately
+   from the application ID and launcher name. It also covers app versioning, Android SDK levels,
+   curated dependency capabilities, example-module removal, optional AI-free output, and
+   validation. The browser downloads a configured ZIP by default:
 
    ```bash
-   # polished local browser UI
+   # Browser UI: preview, then download the configured project ZIP
    ./scripts/setup-project.sh --ui
 
-   # repeatable CLI preview
+   # Repeatable CLI archive preview
    ./scripts/setup-project.sh \
        --package com.example.myapp \
        --name "My Awesome App" \
        --preset standard \
        --remove-examples \
-       --output ../my-awesome-app
+       --ai-free \
+       --archive ../my-awesome-app.zip
 
-   # apply the reviewed configuration
+   # Create the reviewed archive
    ./scripts/setup-project.sh \
        --package com.example.myapp \
        --name "My Awesome App" \
        --preset standard \
        --remove-examples \
-       --output ../my-awesome-app \
+       --ai-free \
+       --archive ../my-awesome-app.zip \
        --apply
    ```
 
    Running `./scripts/setup-project.sh` without arguments opens an interactive terminal wizard.
-   Both interfaces import and export the same versioned JSON configuration. Copy mode is the safe
-   default; `--in-place` is available when the current clone should be transformed. See
+   Both interfaces import and export the same versioned JSON configuration. The CLI also supports
+   `--output` for a directory copy and `--in-place` when the current clone should be transformed. See
    [`docs/project-setup-wizard.md`](docs/project-setup-wizard.md) for presets, capabilities, JSON
-   schema, safety behavior, and automation examples.
+   schema, configuration coverage, ZIP downloads, deployment, safety behavior, and automation
+   examples. The wizard intentionally leaves dependency versions, build types, Gradle tuning,
+   signing credentials, and brand assets under the template's existing manual workflows.
 
    The focused legacy rename command and its Gradle adapter remain available:
 

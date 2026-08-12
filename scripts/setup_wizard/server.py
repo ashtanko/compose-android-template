@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import secrets
 import threading
 import webbrowser
@@ -12,20 +13,44 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from .engine import SetupError, SetupPlan, apply_plan, build_plan
-from .model import CAPABILITIES, PRESETS, SetupConfig
+from .engine import (
+    SetupError,
+    SetupPlan,
+    apply_plan,
+    build_plan,
+    create_archive,
+    read_project_settings,
+)
+from .model import (
+    CAPABILITIES,
+    CONFIGURATION_SURFACES,
+    PRESETS,
+    PROJECT_SETTING_DEFINITIONS,
+    SCHEMA_VERSION,
+    SUPPORTED_SCHEMA_VERSIONS,
+    SetupConfig,
+)
 
 
 MAX_REQUEST_BYTES = 128 * 1024
+MAX_CONCURRENT_PUBLIC_WORK = 2
 STATIC_ROOT = Path(__file__).resolve().parent / "web"
 
 
 class WizardSession:
-    def __init__(self, source_root: Path, token: str):
+    def __init__(
+        self,
+        source_root: Path,
+        token: str | None,
+        *,
+        public: bool = False,
+    ):
         self.source_root = source_root
         self.token = token
+        self.public = public
         self.plans: dict[str, SetupPlan] = {}
         self.lock = threading.Lock()
+        self.work_slots = threading.BoundedSemaphore(MAX_CONCURRENT_PUBLIC_WORK)
 
     def remember(self, plan: SetupPlan) -> None:
         with self.lock:
@@ -36,17 +61,27 @@ class WizardSession:
             return self.plans.get(digest)
 
 
-def run_server(source_root: Path) -> None:
-    token = secrets.token_urlsafe(32)
-    session = WizardSession(source_root.resolve(), token)
+def run_server(source_root: Path, *, public: bool = False) -> None:
+    token = None if public else secrets.token_urlsafe(32)
+    session = WizardSession(source_root.resolve(), token, public=public)
     handler = _handler_for(session)
-    server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    host = "0.0.0.0" if public else "127.0.0.1"
+    port = _public_port() if public else 0
+    server = ThreadingHTTPServer((host, port), handler)
     host, port = server.server_address
-    url = f"http://{host}:{port}/?token={token}"
+    url = (
+        f"http://{host}:{port}/"
+        if public
+        else f"http://{host}:{port}/?token={token}"
+    )
     print(f"Project Setup Wizard: {url}")
-    print("The server is bound to this computer only. Press Ctrl+C to stop it.")
+    if public:
+        print("Public mode enables ZIP downloads and disables filesystem writes.")
+    else:
+        print("The server is bound to this computer only. Press Ctrl+C to stop it.")
     try:
-        webbrowser.open(url, new=1)
+        if not public:
+            webbrowser.open(url, new=1)
         server.serve_forever()
     except KeyboardInterrupt:
         print("\nStopping setup wizard.")
@@ -86,15 +121,59 @@ def _handler_for(session: WizardSession) -> type[BaseHTTPRequestHandler]:
         def do_POST(self) -> None:
             if not self._authorized() or not self._same_origin():
                 return
+            work_acquired = False
             try:
                 payload = self._read_json()
+                if session.public and self.path in {"/api/plan", "/api/archive"}:
+                    work_acquired = session.work_slots.acquire(blocking=False)
+                    if not work_acquired:
+                        self._send_json(
+                            {
+                                "error": (
+                                    "project generation is busy; try again shortly"
+                                ),
+                            },
+                            status=HTTPStatus.TOO_MANY_REQUESTS,
+                        )
+                        return
                 if self.path == "/api/plan":
                     config = SetupConfig.from_dict(_payload_object(payload, "config"))
+                    _validate_public_config(session, config)
                     plan = build_plan(config, source_root=session.source_root)
-                    session.remember(plan)
-                    self._send_json(plan.to_dict())
+                    if not session.public:
+                        session.remember(plan)
+                    self._send_json(_plan_payload(session, plan))
+                    return
+                if self.path == "/api/archive":
+                    config = SetupConfig.from_dict(_payload_object(payload, "config"))
+                    _validate_public_config(session, config)
+                    digest = _payload_string(payload, "digest")
+                    plan = build_plan(config, source_root=session.source_root)
+                    if plan.digest != digest:
+                        raise SetupError(
+                            "configuration changed; preview the plan again",
+                        )
+                    body, filename = create_archive(
+                        plan,
+                        expected_digest=digest,
+                    )
+                    self._send(
+                        body,
+                        "application/zip",
+                        headers={
+                            "Content-Disposition": (
+                                f'attachment; filename="{filename}"'
+                            ),
+                        },
+                    )
                     return
                 if self.path == "/api/apply":
+                    if session.public:
+                        self._send_json(
+                            {"error": "filesystem generation is disabled"},
+                            status=HTTPStatus.FORBIDDEN,
+                        )
+                        return
                     config = SetupConfig.from_dict(_payload_object(payload, "config"))
                     digest = _payload_string(payload, "digest")
                     remembered = session.approved_plan(digest)
@@ -125,8 +204,13 @@ def _handler_for(session: WizardSession) -> type[BaseHTTPRequestHandler]:
                     {"error": str(error)},
                     status=HTTPStatus.BAD_REQUEST,
                 )
+            finally:
+                if work_acquired:
+                    session.work_slots.release()
 
         def _authorized(self) -> bool:
+            if session.public:
+                return True
             expected_host = f"{self.server.server_address[0]}:{self.server.server_address[1]}"
             host = self.headers.get("Host", "")
             if host != expected_host:
@@ -136,7 +220,10 @@ def _handler_for(session: WizardSession) -> type[BaseHTTPRequestHandler]:
                 )
                 return False
             supplied = self.headers.get("X-Setup-Token", "")
-            if not secrets.compare_digest(supplied, session.token):
+            if session.token is None or not secrets.compare_digest(
+                supplied,
+                session.token,
+            ):
                 self._send_json(
                     {"error": "invalid setup session"},
                     status=HTTPStatus.FORBIDDEN,
@@ -146,11 +233,22 @@ def _handler_for(session: WizardSession) -> type[BaseHTTPRequestHandler]:
 
         def _same_origin(self) -> bool:
             origin = self.headers.get("Origin")
-            expected = (
-                f"http://{self.server.server_address[0]}:"
-                f"{self.server.server_address[1]}"
-            )
-            if origin not in {None, expected}:
+            if session.public:
+                parsed = urlparse(origin) if origin else None
+                valid = (
+                    parsed is None
+                    or (
+                        parsed.scheme in {"http", "https"}
+                        and parsed.netloc == self.headers.get("Host", "")
+                    )
+                )
+            else:
+                expected = (
+                    f"http://{self.server.server_address[0]}:"
+                    f"{self.server.server_address[1]}"
+                )
+                valid = origin in {None, expected}
+            if not valid:
                 self._send_json(
                     {"error": "invalid origin"},
                     status=HTTPStatus.FORBIDDEN,
@@ -192,6 +290,7 @@ def _handler_for(session: WizardSession) -> type[BaseHTTPRequestHandler]:
             content_type: str,
             *,
             status: HTTPStatus = HTTPStatus.OK,
+            headers: dict[str, str] | None = None,
         ) -> None:
             self.send_response(status)
             self.send_header("Content-Type", content_type)
@@ -206,6 +305,8 @@ def _handler_for(session: WizardSession) -> type[BaseHTTPRequestHandler]:
                 "img-src 'self' data:; connect-src 'self'; "
                 "object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
             )
+            for key, value in (headers or {}).items():
+                self.send_header(key, value)
             self.end_headers()
             self.wfile.write(body)
 
@@ -218,11 +319,28 @@ def _handler_for(session: WizardSession) -> type[BaseHTTPRequestHandler]:
 def _bootstrap_payload(session: WizardSession) -> dict[str, Any]:
     identity_path = session.source_root / "scripts" / "template-identity.json"
     identity = json.loads(identity_path.read_text(encoding="utf-8"))
+    project_defaults = {
+        "applicationId": identity["applicationPackage"],
+        "displayName": identity["displayName"],
+        **read_project_settings(session.source_root).to_dict(),
+    }
     suggested = session.source_root.parent / "my-android-app"
     return {
-        "sourceRoot": str(session.source_root),
-        "suggestedOutput": str(suggested),
+        "schemaVersion": SCHEMA_VERSION,
+        "supportedSchemaVersions": sorted(SUPPORTED_SCHEMA_VERSIONS),
+        "sourceRoot": None if session.public else str(session.source_root),
+        "suggestedOutput": None if session.public else str(suggested),
+        "downloadOnly": session.public,
         "identity": identity,
+        "projectDefaults": project_defaults,
+        "projectSettingDefinitions": [
+            definition.to_dict()
+            for definition in PROJECT_SETTING_DEFINITIONS
+        ],
+        "configurationSurfaces": [
+            surface.to_dict()
+            for surface in CONFIGURATION_SURFACES
+        ],
         "presets": {
             key: sorted(value)
             for key, value in PRESETS.items()
@@ -238,6 +356,33 @@ def _bootstrap_payload(session: WizardSession) -> dict[str, Any]:
             for capability in CAPABILITIES
         ],
     }
+
+
+def _plan_payload(session: WizardSession, plan: SetupPlan) -> dict[str, Any]:
+    value = plan.to_dict()
+    if session.public:
+        value["sourceRoot"] = None
+        value["targetRoot"] = None
+    return value
+
+
+def _validate_public_config(
+    session: WizardSession,
+    config: SetupConfig,
+) -> None:
+    if session.public and config.output.mode != "archive":
+        raise ValueError("public mode accepts archive output only")
+
+
+def _public_port() -> int:
+    raw_port = os.environ.get("PORT", "8000")
+    try:
+        port = int(raw_port)
+    except ValueError as error:
+        raise ValueError("PORT must be an integer") from error
+    if not 1 <= port <= 65535:
+        raise ValueError("PORT must be between 1 and 65535")
+    return port
 
 
 def _payload_object(value: dict[str, Any], key: str) -> dict[str, Any]:

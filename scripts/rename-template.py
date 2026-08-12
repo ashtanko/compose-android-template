@@ -187,13 +187,22 @@ def warn(message: str) -> None:
 
 
 def run_git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
-    return subprocess.run(
-        ("git", *args),
-        cwd=repo_root,
-        check=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
-    )
+    command = ("git", *args)
+    try:
+        return subprocess.run(
+            command,
+            cwd=repo_root,
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+        )
+    except OSError:
+        return subprocess.CompletedProcess(
+            command,
+            returncode=127,
+            stdout=b"",
+            stderr=b"",
+        )
 
 
 def is_git_worktree(repo_root: Path) -> bool:
