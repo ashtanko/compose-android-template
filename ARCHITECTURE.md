@@ -109,7 +109,7 @@ Single-module UI features use the same UI convention directly under the feature 
 Kotlin's implicit `public` default is not allowed in modules with intentional feature or layer
 boundaries. These modules currently apply the `androidlab.kotlin.explicit-visibility` convention:
 
-- `:feature:database`;
+- `:core:database`;
 - `:feature:home`;
 - `:feature:posts:domain`;
 - `:feature:posts:data`;
