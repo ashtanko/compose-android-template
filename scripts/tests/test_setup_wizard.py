@@ -5,6 +5,7 @@ from __future__ import annotations
 import http.client
 import io
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -638,6 +639,71 @@ class ProjectSettingsArchiveTest(unittest.TestCase):
 
         self.assertEqual("com.example.runtime", identity["applicationPackage"])
         self.assertEqual("Runtime Display Name", identity["displayName"])
+
+
+class MinimalStarterArchiveTest(unittest.TestCase):
+    """The minimal starter must configure without the removed example modules."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        config = sample_config(
+            Path("/tmp/unused"),
+            capabilities=frozenset(),
+            remove_examples=True,
+            output_mode="archive",
+        )
+        plan = build_plan(config, source_root=REPOSITORY_ROOT)
+        archive_bytes, _ = create_archive(plan, expected_digest=plan.digest)
+        cls.archive = zipfile.ZipFile(io.BytesIO(archive_bytes))
+        cls.root = "wizard-app/"
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.archive.close()
+
+    def _read(self, relative_path: str) -> str:
+        return self.archive.read(f"{self.root}{relative_path}").decode("utf-8")
+
+    def test_build_files_only_reference_included_projects(self) -> None:
+        settings = self._read("settings.gradle.kts")
+        included = set(re.findall(r'include\("([^"]+)"\)', settings))
+
+        referenced = {
+            path
+            for name in self.archive.namelist()
+            if name.endswith(".gradle.kts")
+            for path in re.findall(
+                r'project\("([^"]+)"\)',
+                self.archive.read(name).decode("utf-8"),
+            )
+        }
+
+        self.assertTrue(included)
+        self.assertEqual(set(), referenced - included)
+
+    def test_example_modules_are_absent_from_sources(self) -> None:
+        offenders = [
+            name
+            for name in self.archive.namelist()
+            if name.endswith((".kt", ".kts"))
+            and "feature.posts" in self.archive.read(name).decode("utf-8")
+        ]
+
+        self.assertEqual([], offenders)
+
+    def test_instrumentation_runner_does_not_require_hilt(self) -> None:
+        app_build = self._read("app/build.gradle.kts")
+
+        self.assertIn(
+            'testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"',
+            app_build,
+        )
+        self.assertNotIn("HiltTestRunner", app_build)
+        self.assertNotIn(
+            f"{self.root}app/src/androidTest/kotlin/com/example/wizard/"
+            "HiltTestRunner.kt",
+            self.archive.namelist(),
+        )
 
 
 class BootstrapContractTest(unittest.TestCase):
