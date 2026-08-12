@@ -1,3 +1,5 @@
+
+
 # Android Compose Template 🚀
 
 [![Use this template](https://img.shields.io/badge/from-ashtanko--template-brightgreen?logo=github)](https://github.com/ashtanko/compose-android-template/generate)
@@ -267,6 +269,7 @@ make verify GRADLE_ARGS="--no-daemon --stacktrace"
 - **JDK 21** — required for the build system (set as Kotlin/Java toolchain).
 - **Android SDK** — install the compile SDK declared in the version catalog.
 - **Gradle** — use the checked-in wrapper (`./gradlew`).
+- **Make** — required to run the project's convenience commands (e.g., `make verify`, `make build`).
 
 ## 🤖 AI-assisted development
 
