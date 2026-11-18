@@ -358,6 +358,7 @@ tools/localization-web/src/App.tsx
 tools/localization-web/src/api.ts
 tools/localization-web/src/main.tsx
 tools/localization-web/src/styles.css
+tools/localization-web/src/vite-env.d.ts
 tools/localization-web/tsconfig.json
 tools/localization-web/tsconfig.node.json
 tools/localization-web/vite.config.ts
