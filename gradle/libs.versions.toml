@@ -95,7 +95,7 @@ targetSdk = "37"
 
 firebaseBom = "34.17.0"
 googleServices = "4.5.0"
-firebaseCrashlyticsPlugin = "3.0.7"
+firebaseCrashlyticsPlugin = "3.0.8"
 playPublisher = "4.1.2"
 
 [bundles]
